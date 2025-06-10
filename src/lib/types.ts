@@ -12,3 +12,22 @@ export interface Profile {
   } | null;
   updated_at?: string;
 }
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  is_free: boolean;
+  // La relación con categories nos traerá el objeto completo
+  categories: {
+    name: string;
+    slug: string;
+  } | null;
+}

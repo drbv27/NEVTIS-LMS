@@ -11,6 +11,7 @@ import {
   XIcon,
   PlusCircle,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/authStore"; // <--- CAMBIO CLAVE: Usamos Zustand
 import { Button } from "@/components/ui/button"; // Asumimos que tienes un componente de botón, sino usa <button>
 
@@ -47,7 +48,7 @@ export default function Sidebar() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-40 w-64 h-screen bg-white border-r transition-transform duration-300 ease-in-out sm:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 w-64 h-screen bg-card border-r border-border transition-transform duration-300 ease-in-out sm:translate-x-0 ${
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -63,21 +64,29 @@ export default function Sidebar() {
             <XIcon className="h-6 w-6" />
           </Button>
 
-          <div className="text-2xl font-bold text-indigo-600 mb-10 pl-3">
+          <div className="text-2xl font-bold text-primary mb-10 pl-3">
             MiLMS
           </div>
 
-          <nav className="space-y-2">
+          <nav className="space-y-2 mt-10 sm:mt-0">
+            {" "}
+            {/* Margen superior en móvil para el botón X */}
             {sidebarNavItems.map((item) => (
               <Link
                 key={item.title}
                 href={item.href}
-                onClick={handleLinkClick}
-                className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={cn(
+                  "flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   pathname === item.href
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`}
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                )}
+                onClick={() => {
+                  // Cierra la sidebar al hacer clic en un enlace en móvil
+                  if (isMobileSidebarOpen) {
+                    toggleMobileSidebar();
+                  }
+                }}
               >
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.title}

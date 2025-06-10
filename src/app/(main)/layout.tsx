@@ -1,5 +1,5 @@
 import ProtectedLayout from "@/components/auth/ProtectedLayout";
-import { Navbar } from "@/components/layout/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import Sidebar from "@/components/layout/Sidebar";
 
 export default function DashboardLayout({
