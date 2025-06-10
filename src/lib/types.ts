@@ -31,3 +31,26 @@ export interface Course {
     slug: string;
   } | null;
 }
+
+export interface Lesson {
+  id: string;
+  title: string;
+  lesson_type: "video" | "pdf" | "text";
+  content_url: string | null;
+  // Se elimina content_text ya que no existe en la tabla
+  module_id: string;
+}
+
+export interface Module {
+  id: string;
+  title: string;
+  lessons: Lesson[];
+}
+
+export interface LessonPageData {
+  courseTitle: string;
+  modules: Module[];
+  currentLesson: Lesson;
+  prevLessonId: string | null;
+  nextLessonId: string | null;
+}

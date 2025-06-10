@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/layout/Navbar"; // Importamos la Navbar
+import Navbar from "@/components/layout/Navbar"; // Importamos la Navbar
 
 export default function LandingPage() {
   // Este es un Server Component, es más rápido porque no necesita JavaScript en el navegador
