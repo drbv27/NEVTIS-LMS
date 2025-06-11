@@ -1,10 +1,15 @@
-// components/lessons/LessonView.tsx
 "use client";
 
 import { useLesson } from "@/hooks/useLesson";
+import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import LessonContentPlayer from "./LessonContentPlayer";
 import LessonListSidebar from "./LessonListSidebar";
 
@@ -16,25 +21,26 @@ export default function LessonView({
   lessonId: string;
 }) {
   const { data: lessonData, isLoading, error } = useLesson(courseId, lessonId);
+  const { isLessonSidebarOpen, toggleLessonSidebar } = useAuthStore();
 
   if (isLoading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <p>Cargando lección...</p>
       </div>
     );
   }
   if (error) {
     return (
-      <div className="w-full h-screen flex items-center justify-center text-red-500">
+      <div className="flex h-full items-center justify-center text-destructive">
         <p>Error: {error.message}</p>
       </div>
     );
   }
   if (!lessonData) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <p>No se encontraron datos para esta lección.</p>
+      <div className="flex h-full items-center justify-center">
+        <p>No se encontraron datos.</p>
       </div>
     );
   }
@@ -43,64 +49,93 @@ export default function LessonView({
     lessonData;
 
   return (
-    <div className="flex h-screen bg-white">
-      <LessonListSidebar
-        modules={modules}
-        courseId={courseId}
-        currentLessonId={lessonId}
-      />
-      <div className="flex-1 flex flex-col">
-        <header className="flex items-center justify-between p-4 border-b shrink-0">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" className="lg:hidden">
-              <Menu />
+    <div
+      className={`h-full lg:grid transition-all duration-300 ease-in-out ${
+        isLessonSidebarOpen
+          ? "lg:grid-cols-[18rem_1fr]"
+          : "lg:grid-cols-[0rem_1fr]"
+      }`}
+    >
+      <div className="hidden lg:block">
+        <LessonListSidebar
+          modules={modules}
+          courseId={courseId}
+          currentLessonId={lessonId}
+        />
+      </div>
+
+      <div className="flex flex-col w-full overflow-hidden">
+        <header className="flex items-center justify-between p-2 lg:p-4 border-b shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            {/* Botón para colapsar en DESKTOP */}
+            <Button
+              onClick={toggleLessonSidebar}
+              variant="outline"
+              size="icon"
+              className="hidden lg:flex"
+            >
+              {isLessonSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
             </Button>
-            <div>
+
+            {/* --- INICIO DE LA CORRECCIÓN --- */}
+            {/* Contenedor del título que ahora es visible siempre */}
+            {/* min-w-0 es un truco de flexbox para que truncate funcione */}
+            <div className="flex-1 flex flex-col min-w-0 mx-2">
+              {/* El título del curso (breadcrumb) se oculta en pantallas extra pequeñas */}
               <Link
                 href={`/courses/${courseId}`}
-                className="text-sm text-muted-foreground hover:text-primary"
+                className="hidden sm:block text-xs text-muted-foreground hover:text-primary truncate"
               >
                 {courseTitle}
               </Link>
-              <h1 className="text-lg font-bold truncate">
+              {/* El título de la lección siempre es visible y se trunca si es muy largo */}
+              <h1
+                className="text-md sm:text-lg font-bold truncate"
+                title={currentLesson.title}
+              >
                 {currentLesson.title}
               </h1>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {/* --- INICIO DE LA CORRECCIÓN --- */}
-
-            {/* Botón "Anterior" */}
-            {prevLessonId ? (
-              <Button asChild variant="outline">
-                <Link href={`/courses/${courseId}/lessons/${prevLessonId}`}>
-                  <ChevronLeft className="h-4 w-4 mr-2" /> Anterior
-                </Link>
-              </Button>
-            ) : (
-              <Button variant="outline" disabled>
-                <ChevronLeft className="h-4 w-4 mr-2" /> Anterior
-              </Button>
-            )}
-
-            {/* Botón "Siguiente" */}
-            {nextLessonId ? (
-              <Button asChild>
-                <Link href={`/courses/${courseId}/lessons/${nextLessonId}`}>
-                  Siguiente <ChevronRight className="h-4 w-4 ml-2" />
-                </Link>
-              </Button>
-            ) : (
-              <Button disabled>
-                Siguiente <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            )}
-
             {/* --- FIN DE LA CORRECCIÓN --- */}
           </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              asChild
+              variant="outline"
+              size="icon"
+              disabled={!prevLessonId}
+            >
+              <Link
+                href={
+                  prevLessonId
+                    ? `/courses/${courseId}/lessons/${prevLessonId}`
+                    : "#"
+                }
+                aria-label="Lección anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild size="icon" disabled={!nextLessonId}>
+              <Link
+                href={
+                  nextLessonId
+                    ? `/courses/${courseId}/lessons/${nextLessonId}`
+                    : "#"
+                }
+                aria-label="Siguiente lección"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </header>
+
         <main className="flex-1 overflow-y-auto">
-          <LessonContentPlayer lesson={currentLesson} />
+          <div className="p-2 sm:p-4">
+            <LessonContentPlayer lesson={currentLesson} />
+          </div>
         </main>
       </div>
     </div>

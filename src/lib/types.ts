@@ -1,11 +1,12 @@
 // lib/types.ts
 export interface Profile {
   id: string;
-  full_name?: string | null;
-  phone_number?: string | null;
-  bio?: string | null;
-  // La columna 'social_links' en Supabase es de tipo JSONB
-  social_links?: {
+  full_name: string | null;
+  avatar_url: string | null; // <-- CAMPO AÑADIDO
+  role: "student" | "teacher" | "admin";
+  bio: string | null;
+  phone_number: string | null;
+  social_links: {
     linkedin?: string;
     twitter?: string;
     github?: string;
@@ -35,9 +36,9 @@ export interface Course {
 export interface Lesson {
   id: string;
   title: string;
-  lesson_type: "video" | "pdf" | "text";
+  lesson_type: "video" | "pdf" | "text" | "code" | "quiz";
   content_url: string | null;
-  // Se elimina content_text ya que no existe en la tabla
+  content_text: string | null;
   module_id: string;
 }
 
@@ -53,4 +54,20 @@ export interface LessonPageData {
   currentLesson: Lesson;
   prevLessonId: string | null;
   nextLessonId: string | null;
+}
+
+export interface PostAuthor {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+}
+
+export interface Post {
+  id: string;
+  content: string;
+  image_url: string | null;
+  created_at: string;
+  likes_count: number;
+  comments_count: number;
+  profiles: PostAuthor | null; // El autor del post
 }

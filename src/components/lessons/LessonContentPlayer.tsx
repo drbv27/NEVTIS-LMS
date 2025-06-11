@@ -1,4 +1,3 @@
-// components/lessons/LessonContentPlayer.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,10 +18,16 @@ export default function LessonContentPlayer({
   }, []);
 
   if (!isClient) {
-    return <div className="p-4 text-center">Cargando reproductor...</div>;
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        Cargando reproductor...
+      </div>
+    );
   }
 
-  if (!lesson.content_url) {
+  // Comprobación más robusta
+  const hasContent = lesson.content_url || lesson.content_text;
+  if (!hasContent) {
     return (
       <div className="p-6 text-center text-muted-foreground">
         Contenido no disponible para esta lección.
@@ -33,23 +38,56 @@ export default function LessonContentPlayer({
   switch (lesson.lesson_type) {
     case "video":
       return (
-        <div className="relative w-full aspect-video bg-black">
-          <ReactPlayer
-            url={lesson.content_url}
-            controls={true}
-            width="100%"
-            height="100%"
-            className="absolute top-0 left-0"
-          />
+        <div className="w-full">
+          <div className="relative w-full max-w-4xl mx-auto aspect-video bg-black rounded-lg overflow-hidden shadow-lg">
+            <ReactPlayer
+              url={lesson.content_url!}
+              controls={true}
+              width="100%"
+              height="100%"
+              className="absolute top-0 left-0"
+            />
+          </div>
         </div>
       );
 
     case "pdf":
-      return <PdfViewer pdfUrl={lesson.content_url} />;
+      return <PdfViewer pdfUrl={lesson.content_url!} />;
 
-    // --- CORRECCIÓN ---
-    // Se elimina el caso 'text' ya que la columna 'content_text' no existe.
-    // Si en el futuro la añades, puedes volver a agregar esta lógica.
+    // --- INICIO DE NUEVOS CASOS ---
+    case "text":
+      // Re-introducimos el caso 'text' para renderizar HTML
+      return (
+        <div
+          className="prose dark:prose-invert max-w-none p-4"
+          dangerouslySetInnerHTML={{ __html: lesson.content_text || "" }}
+        />
+      );
+
+    case "code":
+      // Placeholder para el futuro editor de código
+      return (
+        <div className="p-6 bg-gray-100 dark:bg-gray-900 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">
+            Espacio para Editor de Código
+          </h3>
+          <p className="text-muted-foreground">
+            Esta lección contendrá un editor de código interactivo.
+          </p>
+        </div>
+      );
+
+    case "quiz":
+      // Placeholder para el futuro componente de quiz
+      return (
+        <div className="p-6 bg-gray-100 dark:bg-gray-900 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Espacio para Quiz</h3>
+          <p className="text-muted-foreground">
+            Esta lección contendrá un cuestionario interactivo.
+          </p>
+        </div>
+      );
+    // --- FIN DE NUEVOS CASOS ---
 
     default:
       return (
