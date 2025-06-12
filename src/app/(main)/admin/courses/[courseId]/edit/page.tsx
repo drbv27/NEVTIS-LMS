@@ -20,7 +20,9 @@ export default function EditCoursePage({
       <CourseForm initialData={course} />
 
       {/* 3. La nueva lista de módulos y lecciones */}
-      {course && <ModuleList modules={course.modules} />}
+      {course && (
+        <ModuleList modules={course.modules} courseId={params.courseId} />
+      )}
     </div>
   );
 }

@@ -24,6 +24,11 @@ interface UpdateCoursePayload {
   imageFile?: File | null; // La imagen puede o no cambiarse
 }
 
+interface CreateModulePayload {
+  title: string;
+  courseId: string;
+}
+
 export function useCourseMutations() {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -202,6 +207,43 @@ export function useCourseMutations() {
     },
   });
 
+  // --- NUEVA MUTACIÓN PARA CREAR MÓDULO ---
+  const { mutate: createModule, isPending: isCreatingModule } = useMutation({
+    mutationFn: async (payload: CreateModulePayload) => {
+      const supabase = createSupabaseBrowserClient();
+
+      // 1. Obtenemos el orden del último módulo para poner el nuevo al final
+      const { count, error: countError } = await supabase
+        .from("modules")
+        .select("*", { count: "exact", head: true })
+        .eq("course_id", payload.courseId);
+
+      if (countError) throw new Error("Error al calcular el orden del módulo.");
+
+      const newModuleOrder = (count || 0) + 1;
+
+      // 2. Insertamos el nuevo módulo
+      const { error: insertError } = await supabase.from("modules").insert({
+        title: payload.title,
+        course_id: payload.courseId,
+        module_order: newModuleOrder,
+      });
+
+      if (insertError)
+        throw new Error(`Error al crear el módulo: ${insertError.message}`);
+    },
+    onSuccess: (_, variables) => {
+      toast.success("Módulo creado con éxito");
+      // Invalidamos la query del curso específico para que la lista de módulos se refresque
+      queryClient.invalidateQueries({
+        queryKey: ["admin-course", variables.courseId],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   return {
     createCourse,
     isCreatingCourse,
@@ -209,5 +251,7 @@ export function useCourseMutations() {
     isUpdatingCourse,
     deleteCourse,
     isDeletingCourse,
+    createModule,
+    isCreatingModule,
   };
 }

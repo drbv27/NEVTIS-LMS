@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { type Module } from "@/lib/types";
+import { useCourseMutations } from "@/hooks/useCourseMutations";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Accordion,
@@ -15,13 +18,32 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "../ui/button";
-import { GripVertical, Pencil, Trash2 } from "lucide-react";
+import { Input } from "../ui/input";
+import { GripVertical, Pencil, Trash2, PlusCircle } from "lucide-react";
 
 interface ModuleListProps {
   modules: Module[];
+  courseId: string; // Necesitamos el ID del curso para crear un módulo
 }
 
-export default function ModuleList({ modules }: ModuleListProps) {
+export default function ModuleList({ modules, courseId }: ModuleListProps) {
+  // Hook para la mutación de crear módulo
+  const { createModule, isCreatingModule } = useCourseMutations();
+  // Estado local para el título del nuevo módulo
+  const [newModuleTitle, setNewModuleTitle] = useState("");
+
+  const handleCreateModule = () => {
+    if (!newModuleTitle.trim()) return;
+    createModule(
+      { title: newModuleTitle, courseId },
+      {
+        onSuccess: () => {
+          setNewModuleTitle(""); // Limpiamos el input al tener éxito
+        },
+      }
+    );
+  };
+
   return (
     <Card className="max-w-3xl mx-auto mt-8">
       <CardHeader>
@@ -31,6 +53,7 @@ export default function ModuleList({ modules }: ModuleListProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Lista de módulos existentes */}
         {modules && modules.length > 0 ? (
           <Accordion type="multiple" className="w-full space-y-4">
             {modules.map((module) => (
@@ -82,11 +105,33 @@ export default function ModuleList({ modules }: ModuleListProps) {
             ))}
           </Accordion>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
             <p>Este curso aún no tiene módulos.</p>
           </div>
         )}
       </CardContent>
+      {/* --- INICIO DE NUEVO FORMULARIO --- */}
+      <CardFooter className="border-t pt-6">
+        <div className="w-full space-y-2">
+          <h4 className="text-sm font-semibold">Añadir Nuevo Módulo</h4>
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Ej: Introducción al curso"
+              value={newModuleTitle}
+              onChange={(e) => setNewModuleTitle(e.target.value)}
+              disabled={isCreatingModule}
+            />
+            <Button
+              onClick={handleCreateModule}
+              disabled={isCreatingModule || !newModuleTitle.trim()}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {isCreatingModule ? "Añadiendo..." : "Añadir"}
+            </Button>
+          </div>
+        </div>
+      </CardFooter>
+      {/* --- FIN DE NUEVO FORMULARIO --- */}
     </Card>
   );
 }
