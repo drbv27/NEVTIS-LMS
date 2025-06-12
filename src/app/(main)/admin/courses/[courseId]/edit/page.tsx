@@ -2,6 +2,7 @@
 
 import { useAdminCourse } from "@/hooks/useAdminCourse";
 import CourseForm from "@/components/admin/CourseForm";
+import ModuleList from "@/components/admin/ModuleList"; // <-- 1. Importamos el nuevo componente
 
 export default function EditCoursePage({
   params,
@@ -12,6 +13,14 @@ export default function EditCoursePage({
 
   if (isLoading) return <div>Cargando datos del curso...</div>;
 
-  // Renderiza el mismo formulario, pero pasándole los datos iniciales del curso
-  return <CourseForm initialData={course} />;
+  return (
+    // Usamos un div para envolver ambos componentes
+    <div className="space-y-8">
+      {/* 2. El formulario para editar los datos generales del curso */}
+      <CourseForm initialData={course} />
+
+      {/* 3. La nueva lista de módulos y lecciones */}
+      {course && <ModuleList modules={course.modules} />}
+    </div>
+  );
 }
