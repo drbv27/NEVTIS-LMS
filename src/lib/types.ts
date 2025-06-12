@@ -26,8 +26,10 @@ export interface Course {
   description: string | null;
   image_url: string | null;
   is_free: boolean;
+  status: "published" | "draft";
   // La relación con categories nos traerá el objeto completo
   categories: {
+    id: number;
     name: string;
     slug: string;
   } | null;
@@ -40,6 +42,7 @@ export interface Lesson {
   content_url: string | null;
   content_text: string | null;
   module_id: string;
+  is_completed?: boolean;
 }
 
 export interface Module {

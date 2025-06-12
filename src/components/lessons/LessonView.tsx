@@ -9,6 +9,7 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
+  CheckCircle,
 } from "lucide-react";
 import LessonContentPlayer from "./LessonContentPlayer";
 import LessonListSidebar from "./LessonListSidebar";
@@ -20,7 +21,13 @@ export default function LessonView({
   courseId: string;
   lessonId: string;
 }) {
-  const { data: lessonData, isLoading, error } = useLesson(courseId, lessonId);
+  const {
+    data: lessonData,
+    isLoading,
+    error,
+    markAsCompleted,
+    isCompleting,
+  } = useLesson(courseId, lessonId);
   const { isLessonSidebarOpen, toggleLessonSidebar } = useAuthStore();
 
   if (isLoading) {
@@ -40,7 +47,7 @@ export default function LessonView({
   if (!lessonData) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p>No se encontraron datos.</p>
+        <p>No se encontraron datos para esta lección.</p>
       </div>
     );
   }
@@ -49,14 +56,15 @@ export default function LessonView({
     lessonData;
 
   return (
-    <div
-      className={`h-full lg:grid transition-all duration-300 ease-in-out ${
-        isLessonSidebarOpen
-          ? "lg:grid-cols-[18rem_1fr]"
-          : "lg:grid-cols-[0rem_1fr]"
-      }`}
-    >
-      <div className="hidden lg:block">
+    // --- INICIO DE LA CORRECCIÓN DEL LAYOUT ---
+    // Usamos Flexbox, el mismo patrón robusto del layout principal.
+    <div className="flex h-full">
+      {/* Contenedor de la barra lateral de lecciones, su ancho y visibilidad se controlan aquí */}
+      <div
+        className={`transition-all duration-300 ease-in-out hidden lg:block ${
+          isLessonSidebarOpen ? "w-80" : "w-0"
+        }`}
+      >
         <LessonListSidebar
           modules={modules}
           courseId={courseId}
@@ -64,10 +72,10 @@ export default function LessonView({
         />
       </div>
 
-      <div className="flex flex-col w-full overflow-hidden">
-        <header className="flex items-center justify-between p-2 lg:p-4 border-b shrink-0">
+      {/* Contenedor principal del contenido */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="flex items-center justify-between p-2 lg:p-4 border-b shrink-0 gap-4">
           <div className="flex items-center gap-2 min-w-0">
-            {/* Botón para colapsar en DESKTOP */}
             <Button
               onClick={toggleLessonSidebar}
               variant="outline"
@@ -76,19 +84,13 @@ export default function LessonView({
             >
               {isLessonSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
             </Button>
-
-            {/* --- INICIO DE LA CORRECCIÓN --- */}
-            {/* Contenedor del título que ahora es visible siempre */}
-            {/* min-w-0 es un truco de flexbox para que truncate funcione */}
-            <div className="flex-1 flex flex-col min-w-0 mx-2">
-              {/* El título del curso (breadcrumb) se oculta en pantallas extra pequeñas */}
+            <div className="flex-1 flex flex-col min-w-0">
               <Link
                 href={`/courses/${courseId}`}
                 className="hidden sm:block text-xs text-muted-foreground hover:text-primary truncate"
               >
                 {courseTitle}
               </Link>
-              {/* El título de la lección siempre es visible y se trunca si es muy largo */}
               <h1
                 className="text-md sm:text-lg font-bold truncate"
                 title={currentLesson.title}
@@ -96,10 +98,9 @@ export default function LessonView({
                 {currentLesson.title}
               </h1>
             </div>
-            {/* --- FIN DE LA CORRECCIÓN --- */}
           </div>
-
-          <div className="flex items-center gap-2">
+          {/* Botones de acción ahora agrupados a la derecha */}
+          <div className="flex items-center gap-2 shrink-0">
             <Button
               asChild
               variant="outline"
@@ -117,6 +118,25 @@ export default function LessonView({
                 <ChevronLeft className="h-4 w-4" />
               </Link>
             </Button>
+            {/* El botón de completar ahora está aquí, visible y accesible */}
+            <Button
+              onClick={() => markAsCompleted()}
+              disabled={isCompleting || currentLesson.is_completed}
+              variant={currentLesson.is_completed ? "secondary" : "default"}
+            >
+              {isCompleting ? (
+                "Guardando..."
+              ) : currentLesson.is_completed ? (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Completada
+                </>
+              ) : nextLessonId ? (
+                "Completar y Siguiente"
+              ) : (
+                "Finalizar curso"
+              )}
+            </Button>
             <Button asChild size="icon" disabled={!nextLessonId}>
               <Link
                 href={
@@ -132,12 +152,13 @@ export default function LessonView({
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-2 sm:p-4">
+        <main className="flex-1 overflow-y-auto bg-muted/30">
+          <div className="p-4 md:p-6">
             <LessonContentPlayer lesson={currentLesson} />
           </div>
         </main>
       </div>
     </div>
+    // --- FIN DE LA CORRECCIÓN DEL LAYOUT ---
   );
 }

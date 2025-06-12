@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   X,
   Component,
+  ShieldCheck,
 } from "lucide-react"; // Importamos un icono para el logo
 import { Button } from "../ui/button";
 
@@ -21,6 +22,7 @@ const sidebarNavItems = [
   { title: "Comunidad", href: "/feed", icon: Users },
   { title: "Explorar", href: "/courses", icon: Compass },
   { title: "Mi Perfil", href: "/profile", icon: UserCircle },
+  { title: "Admin", href: "/admin/courses", icon: ShieldCheck },
 ];
 
 export default function Sidebar() {
