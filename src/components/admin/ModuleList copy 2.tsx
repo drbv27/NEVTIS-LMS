@@ -1,4 +1,3 @@
-//src/components/admin/ModuleList.tsx
 "use client";
 
 import { useState } from "react";
@@ -25,7 +24,6 @@ import CreateLessonForm from "./CreateLessonForm";
 import EditLessonDialog from "./EditLessonDialog";
 import DeleteLessonAlert from "./DeleteLessonAlert";
 import EditModuleDialog from "./EditModuleDialog";
-import DeleteModuleAlert from "./DeleteModuleAlert";
 
 interface ModuleListProps {
   modules: Module[];
@@ -42,7 +40,6 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
   const [lessonToEdit, setLessonToEdit] = useState<Lesson | null>(null);
   const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
   const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
-  const [moduleToDelete, setModuleToDelete] = useState<Module | null>(null);
 
   const handleCreateModule = () => {
     if (!newModuleTitle.trim()) return;
@@ -74,35 +71,12 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                   key={module.id}
                   className="border rounded-lg bg-background"
                 >
-                  <div className="flex items-center gap-2 pr-4">
-                    <AccordionTrigger className="flex-1 hover:no-underline px-4">
-                      <div className="flex items-center gap-2">
-                        <GripVertical className="h-5 w-5 text-muted-foreground" />
-                        <span className="font-semibold text-left">
-                          {module.title}
-                        </span>
-                      </div>
-                    </AccordionTrigger>
-                    {/* --- INICIO DEL CAMBIO --- */}
-                    {/* 3. Botones para editar y borrar el MÓDULO */}
-                    <Button
-                      onClick={() => setModuleToEdit(module)}
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={() => setModuleToDelete(module)}
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                    {/* --- FIN DEL CAMBIO --- */}
-                  </div>
+                  <AccordionTrigger className="hover:no-underline px-4">
+                    <div className="flex items-center gap-2">
+                      <GripVertical className="h-5 w-5 text-muted-foreground" />
+                      <span className="font-semibold">{module.title}</span>
+                    </div>
+                  </AccordionTrigger>
                   <AccordionContent className="px-1 pb-2">
                     <ul className="space-y-2 pt-2 px-3">
                       {module.lessons.map((lesson) => (
@@ -137,10 +111,13 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                         </p>
                       )}
                     </ul>
+                    {/* --- INICIO DEL CAMBIO --- */}
+                    {/* Añadimos el formulario para crear lecciones a cada módulo */}
                     <CreateLessonForm
                       moduleId={module.id}
                       courseId={courseId}
                     />
+                    {/* --- FIN DEL CAMBIO --- */}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -172,8 +149,7 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
           </div>
         </CardFooter>
       </Card>
-
-      {/* Renderizado condicional de TODOS nuestros diálogos */}
+      {/* Los diálogos se renderizan aquí y se activan con el estado */}
       {lessonToEdit && (
         <EditLessonDialog
           isOpen={!!lessonToEdit}
@@ -187,23 +163,6 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
           isOpen={!!lessonToDelete}
           onOpenChange={() => setLessonToDelete(null)}
           lesson={lessonToDelete}
-          courseId={courseId}
-        />
-      )}
-      {/* 4. El nuevo diálogo para editar módulos */}
-      {moduleToEdit && (
-        <EditModuleDialog
-          isOpen={!!moduleToEdit}
-          onOpenChange={() => setModuleToEdit(null)}
-          module={moduleToEdit}
-          courseId={courseId}
-        />
-      )}
-      {moduleToDelete && (
-        <DeleteModuleAlert
-          isOpen={!!moduleToDelete}
-          onOpenChange={() => setModuleToDelete(null)}
-          module={moduleToDelete}
           courseId={courseId}
         />
       )}

@@ -1,4 +1,4 @@
-// components/lessons/LessonTypeIcon.tsx
+// src/components/lessons/LessonTypeIcon.tsx
 import {
   FileText,
   MonitorPlay,

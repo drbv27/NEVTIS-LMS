@@ -1,4 +1,4 @@
-// app/(main)/courses/[courseId]/page.tsx
+// src/app/(main)/courses/[courseId]/page.tsx
 "use client";
 
 import { useCourseDetails } from "@/hooks/useCourseDetails";
@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookCopy, MonitorPlay, FileText } from "lucide-react";
+import { BookCopy, MonitorPlay, FileText, LetterText } from "lucide-react";
+import { Module, Lesson } from "@/lib/types";
 
 export default function CourseDetailPage({
   params,
@@ -84,19 +85,19 @@ export default function CourseDetailPage({
               </p>
             )}
             {course.categories && (
-              <p>
+              <div className="flex items-center gap-2">
                 <strong>Categoría:</strong>{" "}
                 <Badge variant="secondary">{course.categories.name}</Badge>
-              </p>
+              </div>
             )}
-            <p>
+            <div className="flex items-center gap-2">
               <strong>Precio:</strong>{" "}
               {course.is_free ? (
                 <Badge className="bg-green-100 text-green-800">Gratis</Badge>
               ) : (
                 "De Pago"
               )}
-            </p>
+            </div>
           </div>
           {actionButton}
         </div>
@@ -110,7 +111,7 @@ export default function CourseDetailPage({
           <div className="mt-10 pt-8 border-t">
             <h2 className="text-2xl font-semibold mb-6">Contenido del Curso</h2>
             <div className="space-y-6">
-              {course.modules.map((module) => (
+              {course.modules.map((module: Module) => (
                 <div
                   key={module.id}
                   className="p-6 border rounded-lg bg-card shadow-sm"
@@ -120,7 +121,7 @@ export default function CourseDetailPage({
                     {module.title}
                   </h3>
                   <ul className="space-y-2">
-                    {module.lessons.map((lesson) => (
+                    {module.lessons.map((lesson: Lesson) => (
                       <li
                         key={lesson.id}
                         className="flex items-center p-2.5 rounded-md"

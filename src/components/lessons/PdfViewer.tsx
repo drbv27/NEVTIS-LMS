@@ -1,4 +1,4 @@
-// components/lessons/PdfViewer.tsx
+// src/components/lessons/PdfViewer.tsx
 "use client";
 
 import { useState, useCallback } from "react";

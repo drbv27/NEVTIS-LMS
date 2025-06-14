@@ -1,4 +1,4 @@
-// components/my-courses/MyCoursesList.tsx
+// src/components/my-courses/MyCoursesList.tsx
 "use client";
 
 import { useMyCourses } from "@/hooks/useMyCourses";

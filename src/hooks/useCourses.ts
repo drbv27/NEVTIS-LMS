@@ -1,4 +1,4 @@
-// hooks/useCourses.ts
+// src/hooks/useCourses.ts
 "use client";
 
 import { useQuery } from "@tanstack/react-query";

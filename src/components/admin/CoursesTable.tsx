@@ -1,7 +1,9 @@
+//src/components/admin/CourseTable.tsx
 "use client";
 
 import { useState } from "react"; // Importamos useState
 import { useAdminCourses } from "@/hooks/useAdminCourses";
+import { useCourseMutations } from "@/hooks/useCourseMutations";
 import { type Course } from "@/lib/types"; // Importamos el tipo
 import {
   Table,
@@ -14,7 +16,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import {
+  MoreHorizontal,
+  PlusCircle,
+  ToggleLeft,
+  ToggleRight,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +33,8 @@ import DeleteCourseAlert from "./DeleteCourseAlert"; // Importamos el diálogo d
 
 export default function CoursesTable() {
   const { data: courses, isLoading, error } = useAdminCourses();
+
+  const { updateCourseStatus, isUpdatingStatus } = useCourseMutations();
 
   // Estado para controlar qué curso se va a eliminar y si el diálogo está abierto
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
@@ -99,6 +108,31 @@ export default function CoursesTable() {
                             Editar
                           </Link>
                         </DropdownMenuItem>
+                        {/* --- INICIO DE LA NUEVA LÓGICA --- */}
+                        <DropdownMenuItem
+                          onClick={() =>
+                            updateCourseStatus({
+                              courseId: course.id,
+                              newStatus:
+                                course.status === "published"
+                                  ? "draft"
+                                  : "published",
+                            })
+                          }
+                        >
+                          {course.status === "published" ? (
+                            <>
+                              <ToggleLeft className="mr-2 h-4 w-4" />
+                              Pasar a borrador
+                            </>
+                          ) : (
+                            <>
+                              <ToggleRight className="mr-2 h-4 w-4" />
+                              Publicar curso
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        {/* --- FIN DE LA NUEVA LÓGICA --- */}
                         <DropdownMenuSeparator />
                         {/* Al hacer clic, establecemos el curso a borrar y abrimos el diálogo */}
                         <DropdownMenuItem

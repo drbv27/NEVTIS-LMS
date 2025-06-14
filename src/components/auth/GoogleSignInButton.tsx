@@ -1,3 +1,4 @@
+//src/components/auth/GoogleSignInButton.tsx
 "use client";
 
 // Importamos la función

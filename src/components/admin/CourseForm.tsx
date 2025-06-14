@@ -1,3 +1,4 @@
+//src/components/admin/CourseForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";

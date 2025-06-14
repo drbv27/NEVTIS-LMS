@@ -1,3 +1,4 @@
+//src/app/(main)/courses/[courseId]/completed/page.tsx
 "use client";
 
 import { useCourseCompletion } from "@/hooks/useCourseCompletion";

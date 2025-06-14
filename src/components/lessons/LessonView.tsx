@@ -1,3 +1,4 @@
+//src/components/lessons/LessonView.tsx
 "use client";
 
 import { useLesson } from "@/hooks/useLesson";

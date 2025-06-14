@@ -1,4 +1,12 @@
-// lib/types.ts
+// src/lib/types.ts
+//REVISAR ESTA DESPUES
+export interface CourseDetails extends Course {
+  teacherName: string | null;
+  modules: Module[];
+  isEnrolled: boolean;
+  firstLessonId: string | null;
+}
+
 export interface Profile {
   id: string;
   full_name: string | null;
@@ -38,6 +46,7 @@ export interface Course {
 export interface Lesson {
   id: string;
   title: string;
+  description: string | null;
   lesson_type: "video" | "pdf" | "text" | "code" | "quiz";
   content_url: string | null;
   content_text: string | null;

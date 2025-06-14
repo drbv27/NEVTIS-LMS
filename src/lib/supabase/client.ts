@@ -1,3 +1,4 @@
+//src/lib/supabase/client.ts
 import { createBrowserClient } from "@supabase/ssr";
 
 // No vamos a exportar una constante, sino una función que crea el cliente.

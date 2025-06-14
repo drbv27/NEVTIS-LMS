@@ -1,3 +1,4 @@
+//src/app/(main)/admin/courses/[courseId]/edit/page.tsx
 "use client";
 
 import { useAdminCourse } from "@/hooks/useAdminCourse";

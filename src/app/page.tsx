@@ -1,3 +1,4 @@
+//src/app/page.tsx
 import Navbar from "@/components/layout/Navbar"; // Importamos la Navbar
 
 export default function LandingPage() {

@@ -1,4 +1,4 @@
-// app/admin/layout.tsx
+// src/app/(main)/admin/layout.tsx
 import AdminProtectedLayout from "@/components/auth/AdminProtectedLayout";
 
 export default function AdminLayout({

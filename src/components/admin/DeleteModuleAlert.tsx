@@ -1,8 +1,8 @@
-//src/components/admin/DeleteCourseAlert.tsx
+//src/components/admin/DeleteModuleAlert.tsx
 "use client";
 
 import { useCourseMutations } from "@/hooks/useCourseMutations";
-import { type Course } from "@/lib/types";
+import { type Module } from "@/lib/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,44 +14,45 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface DeleteCourseAlertProps {
-  course: Course;
+interface DeleteModuleAlertProps {
+  module: Module;
+  courseId: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function DeleteCourseAlert({
-  course,
+export default function DeleteModuleAlert({
+  module,
+  courseId,
   isOpen,
   onOpenChange,
-}: DeleteCourseAlertProps) {
-  const { deleteCourse, isDeletingCourse } = useCourseMutations();
+}: DeleteModuleAlertProps) {
+  const { deleteModule, isDeletingModule } = useCourseMutations();
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+          <AlertDialogTitle>
+            ¿Estás seguro de que quieres eliminar este módulo?
+          </AlertDialogTitle>
           <AlertDialogDescription>
             Esta acción no se puede deshacer. Se eliminará permanentemente el
-            curso{" "}
+            módulo{" "}
             <span className="font-semibold text-destructive">
-              {course.title}
+              {module.title}
             </span>
-            , junto con **todos sus módulos, lecciones, archivos y datos de
-            inscripción asociados**.
+            , **junto con todas sus lecciones y archivos asociados**.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => deleteCourse(course)}
-            disabled={isDeletingCourse}
+            onClick={() => deleteModule({ moduleToDelete: module, courseId })}
+            disabled={isDeletingModule}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeletingCourse
-              ? "Eliminando..."
-              : "Sí, eliminar permanentemente"}
+            {isDeletingModule ? "Eliminando..." : "Sí, eliminar módulo"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

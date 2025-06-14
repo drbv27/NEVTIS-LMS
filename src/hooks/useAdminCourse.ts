@@ -1,3 +1,4 @@
+//src/hooks/useAdminCourse.ts
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -24,7 +25,7 @@ async function fetchCourseById(
       categories (id, name, slug),
       modules (
         *,
-        lessons (id, title, lesson_order)
+        lessons (*)
       )
     `
     )
@@ -45,6 +46,15 @@ async function fetchCourseById(
     categories: Array.isArray(data.categories)
       ? data.categories[0]
       : data.categories,
+    // Nos aseguramos de que los módulos y lecciones estén ordenados
+    modules: (data.modules as any[])
+      .map((mod) => ({
+        ...mod,
+        lessons: (mod.lessons as any[]).sort(
+          (a, b) => a.lesson_order - b.lesson_order
+        ),
+      }))
+      .sort((a, b) => a.module_order - b.module_order),
   };
 
   return course as AdminCourseData;

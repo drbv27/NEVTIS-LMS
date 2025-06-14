@@ -1,4 +1,4 @@
-// components/courses/CourseCatalog.tsx
+// src/components/courses/CourseCatalog.tsx
 "use client";
 
 import { useSearchParams } from "next/navigation";

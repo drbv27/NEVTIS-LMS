@@ -1,3 +1,4 @@
+//src/components/lessons/LessonContentPlayer.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -56,12 +57,15 @@ export default function LessonContentPlayer({
 
     // --- INICIO DE NUEVOS CASOS ---
     case "text":
-      // Re-introducimos el caso 'text' para renderizar HTML
+      if (!lesson.content_text) return <p>Contenido de texto no disponible.</p>;
       return (
+        // --- INICIO DE LA CORRECCIÓN ---
+        // La clase 'prose' de Tailwind Typography dará estilo a los h2, ul, li, etc.
         <div
           className="prose dark:prose-invert max-w-none p-4"
-          dangerouslySetInnerHTML={{ __html: lesson.content_text || "" }}
+          dangerouslySetInnerHTML={{ __html: lesson.content_text }}
         />
+        // --- FIN DE LA CORRECCIÓN ---
       );
 
     case "code":

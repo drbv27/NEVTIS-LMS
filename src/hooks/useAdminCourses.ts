@@ -1,3 +1,4 @@
+//src/hooks/useAdminCourses.ts
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +13,7 @@ async function fetchAllCourses(): Promise<Course[]> {
   const { data, error } = await supabase
     .from("courses")
     .select(
-      "id, title, description, image_url, status, is_free, created_at, categories(name, slug)"
+      "id, title, description, image_url, status, is_free, created_at, categories(id, name, slug)"
     )
     .order("created_at", { ascending: false });
   // --- FIN DE LA CORRECCIÓN ---

@@ -1,4 +1,4 @@
-// hooks/useProfile.ts
+// src/hooks/useProfile.ts
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

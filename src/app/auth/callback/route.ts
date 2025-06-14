@@ -1,3 +1,4 @@
+//src/app/auth/callback/route.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr"; // Mantenemos el import

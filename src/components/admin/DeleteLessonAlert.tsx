@@ -1,8 +1,8 @@
-//src/components/admin/DeleteCourseAlert.tsx
+//src/components/admin/DeleteLessonAlert.tsx
 "use client";
 
 import { useCourseMutations } from "@/hooks/useCourseMutations";
-import { type Course } from "@/lib/types";
+import { type Lesson } from "@/lib/types";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,18 +14,20 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface DeleteCourseAlertProps {
-  course: Course;
+interface DeleteLessonAlertProps {
+  lesson: Lesson;
+  courseId: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function DeleteCourseAlert({
-  course,
+export default function DeleteLessonAlert({
+  lesson,
+  courseId,
   isOpen,
   onOpenChange,
-}: DeleteCourseAlertProps) {
-  const { deleteCourse, isDeletingCourse } = useCourseMutations();
+}: DeleteLessonAlertProps) {
+  const { deleteLesson, isDeletingLesson } = useCourseMutations();
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
@@ -33,25 +35,22 @@ export default function DeleteCourseAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente el
-            curso{" "}
+            Esta acción no se puede deshacer. Se eliminará permanentemente la
+            lección{" "}
             <span className="font-semibold text-destructive">
-              {course.title}
-            </span>
-            , junto con **todos sus módulos, lecciones, archivos y datos de
-            inscripción asociados**.
+              {lesson.title}
+            </span>{" "}
+            y sus archivos asociados.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => deleteCourse(course)}
-            disabled={isDeletingCourse}
+            onClick={() => deleteLesson({ lesson, courseId })} // <-- Pasamos el objeto 'lesson' completo
+            disabled={isDeletingLesson}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeletingCourse
-              ? "Eliminando..."
-              : "Sí, eliminar permanentemente"}
+            {isDeletingLesson ? "Eliminando..." : "Sí, eliminar"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

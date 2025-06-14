@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx
+// src/app/(main)/dashboard/page.tsx
 
 export default function DashboardPage() {
   return (

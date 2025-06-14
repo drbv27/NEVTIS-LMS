@@ -1,4 +1,4 @@
-// app/(main)/courses/page.tsx
+// src/app/(main)/courses/page.tsx
 import CourseCatalog from "@/components/courses/CourseCatalog";
 import { Suspense } from "react";
 

@@ -1,3 +1,4 @@
+//src/components/auth/ProtectedLayout.tsx
 "use client";
 
 import { useEffect } from "react";

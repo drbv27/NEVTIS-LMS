@@ -1,4 +1,4 @@
-// components/feed/DeletePostAlert.tsx
+// src/components/feed/DeletePostAlert.tsx
 "use client";
 
 import { useFeed } from "@/hooks/useFeed";

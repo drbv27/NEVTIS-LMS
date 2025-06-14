@@ -1,4 +1,4 @@
-// components/feed/FeedList.tsx
+// src/components/feed/FeedList.tsx
 "use client";
 
 import { useFeed } from "@/hooks/useFeed";

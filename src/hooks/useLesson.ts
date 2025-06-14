@@ -1,3 +1,4 @@
+//src/hooks/useLesson.ts
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -47,7 +48,7 @@ async function fetchLessonData(
   const { data: lessonsData, error: lessonsError } = await supabase
     .from("lessons")
     .select(
-      "id, title, lesson_type, content_url, content_text, lesson_order, module_id"
+      "id, title, description, lesson_type, content_url, content_text, lesson_order, module_id"
     )
     .in("module_id", moduleIds)
     .order("lesson_order", { ascending: true });

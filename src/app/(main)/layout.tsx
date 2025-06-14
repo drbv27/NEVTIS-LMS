@@ -1,4 +1,4 @@
-// app/(main)/layout.tsx
+// src/app/(main)/layout.tsx
 "use client";
 
 import ProtectedLayout from "@/components/auth/ProtectedLayout";

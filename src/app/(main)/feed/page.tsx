@@ -1,4 +1,4 @@
-// app/(main)/feed/page.tsx
+// src/app/(main)/feed/page.tsx
 import FeedList from "@/components/feed/FeedList";
 
 export default function FeedPage() {

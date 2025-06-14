@@ -1,3 +1,4 @@
+//src/components/lessons/LessonListSidebar.tsx
 "use client";
 
 import Link from "next/link";
