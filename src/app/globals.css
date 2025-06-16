@@ -86,3 +86,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .prose strong {
+    color: inherit;
+  }
+}
