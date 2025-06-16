@@ -1,11 +1,13 @@
 // src/components/shared/TiptapEditor.tsx
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Highlight from "@tiptap/extension-highlight";
 import { Color } from "@tiptap/extension-color";
 import TextStyle from "@tiptap/extension-text-style";
+import Link from "@tiptap/extension-link";
+import TextAlign from "@tiptap/extension-text-align"; // <-- 1. IMPORTAMOS LA NUEVA EXTENSIÓN
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -19,14 +21,25 @@ import {
   Italic,
   List,
   ListOrdered,
+  Heading1,
   Heading2,
+  Heading3,
+  Minus,
   Highlighter,
   RemoveFormatting,
   Check,
-  Palette, // <-- 1. IMPORTAMOS EL ICONO DE PALETA
+  Palette,
+  Link as LinkIcon,
+  Unlink,
+  Pilcrow,
+  ChevronDown,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify, // <-- 2. IMPORTAMOS ICONOS DE ALINEACIÓN
 } from "lucide-react";
 
-const Toolbar = ({ editor }: { editor: any | null }) => {
+const Toolbar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) return null;
 
   const highlightColors = [
@@ -34,17 +47,71 @@ const Toolbar = ({ editor }: { editor: any | null }) => {
     { name: "Melocotón", color: "#FAA275" },
     { name: "Malva", color: "#CE6A85" },
   ];
-
-  // 2. CREAMOS UNA LISTA DE COLORES PARA EL TEXTO
   const textColors = [
-    { name: "Default", color: "var(--foreground)" }, // Usará el color por defecto del tema
+    { name: "Default", color: "var(--foreground)" },
     { name: "Coral", color: "#FF8C61" },
     { name: "Ciruela", color: "#985277" },
     { name: "Berenjena", color: "#5C374C" },
   ];
 
+  const setLink = () => {
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("Introduce la URL del enlace:", previousUrl);
+    if (url === null) return;
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  };
+
+  const getCurrentTextStyle = () => {
+    if (editor.isActive("heading", { level: 1 })) return "Encabezado 1";
+    if (editor.isActive("heading", { level: 2 })) return "Encabezado 2";
+    if (editor.isActive("heading", { level: 3 })) return "Encabezado 3";
+    return "Párrafo";
+  };
+
   return (
     <div className="border border-input bg-transparent rounded-t-md p-1 flex items-center gap-1 flex-wrap">
+      {/* Menú de Estilos */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="w-32 justify-between">
+            <span>{getCurrentTextStyle()}</span>
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().setParagraph().run()}
+          >
+            <Pilcrow className="mr-2 h-4 w-4" /> Párrafo
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run()
+            }
+          >
+            <Heading1 className="mr-2 h-4 w-4" /> Encabezado 1
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+          >
+            <Heading2 className="mr-2 h-4 w-4" /> Encabezado 2
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 3 }).run()
+            }
+          >
+            <Heading3 className="mr-2 h-4 w-4" /> Encabezado 3
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <Button
         onClick={() => editor.chain().focus().toggleBold().run()}
         variant={editor.isActive("bold") ? "default" : "ghost"}
@@ -63,16 +130,82 @@ const Toolbar = ({ editor }: { editor: any | null }) => {
       >
         <Italic className="h-4 w-4" />
       </Button>
-      <Button
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        variant={editor.isActive("heading", { level: 2 }) ? "default" : "ghost"}
-        size="icon"
-        type="button"
-        title="Encabezado"
-      >
-        <Heading2 className="h-4 w-4" />
-      </Button>
 
+      {/* --- INICIO DEL NUEVO MENÚ DE ALINEACIÓN --- */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" type="button" title="Alineación">
+            {editor.isActive({ textAlign: "center" }) ? (
+              <AlignCenter className="h-4 w-4" />
+            ) : editor.isActive({ textAlign: "right" }) ? (
+              <AlignRight className="h-4 w-4" />
+            ) : editor.isActive({ textAlign: "justify" }) ? (
+              <AlignJustify className="h-4 w-4" />
+            ) : (
+              <AlignLeft className="h-4 w-4" />
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
+            className="flex items-center gap-2"
+          >
+            {editor.isActive({ textAlign: "left" }) && (
+              <Check className="h-4 w-4" />
+            )}
+            <AlignLeft className="h-4 w-4 mr-2" /> Izquierda
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
+            className="flex items-center gap-2"
+          >
+            {editor.isActive({ textAlign: "center" }) && (
+              <Check className="h-4 w-4" />
+            )}
+            <AlignCenter className="h-4 w-4 mr-2" /> Centro
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
+            className="flex items-center gap-2"
+          >
+            {editor.isActive({ textAlign: "right" }) && (
+              <Check className="h-4 w-4" />
+            )}
+            <AlignRight className="h-4 w-4 mr-2" /> Derecha
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+            className="flex items-center gap-2"
+          >
+            {editor.isActive({ textAlign: "justify" }) && (
+              <Check className="h-4 w-4" />
+            )}
+            <AlignJustify className="h-4 w-4 mr-2" /> Justificado
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {/* --- FIN DEL NUEVO MENÚ DE ALINEACIÓN --- */}
+
+      {/* Otros menús y botones... */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" type="button" title="Enlace">
+            <LinkIcon className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={setLink}>
+            Añadir/Editar Enlace
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().unsetLink().run()}
+            disabled={!editor.isActive("link")}
+          >
+            Quitar Enlace
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" type="button" title="Resaltar">
@@ -107,8 +240,6 @@ const Toolbar = ({ editor }: { editor: any | null }) => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      {/* --- INICIO DEL NUEVO MENÚ PARA COLOR DE TEXTO --- */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -143,31 +274,38 @@ const Toolbar = ({ editor }: { editor: any | null }) => {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      {/* --- FIN DEL NUEVO MENÚ PARA COLOR DE TEXTO --- */}
-
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" type="button" title="Listas">
+            <List className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+          >
+            <List className="mr-2 h-4 w-4" /> Lista de Viñetas
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          >
+            <ListOrdered className="mr-2 h-4 w-4" /> Lista Numerada
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Button
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        variant={editor.isActive("bulletList") ? "default" : "ghost"}
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        variant="ghost"
         size="icon"
         type="button"
-        title="Lista de viñetas"
+        title="Separador Horizontal"
       >
-        <List className="h-4 w-4" />
-      </Button>
-      <Button
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        variant={editor.isActive("orderedList") ? "default" : "ghost"}
-        size="icon"
-        type="button"
-        title="Lista numerada"
-      >
-        <ListOrdered className="h-4 w-4" />
+        <Minus className="h-4 w-4" />
       </Button>
     </div>
   );
 };
 
-// El resto del archivo no cambia
 interface TiptapEditorProps {
   content: string;
   onChange: (richText: string) => void;
@@ -176,10 +314,15 @@ interface TiptapEditorProps {
 export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure(),
+      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
       TextStyle,
       Color,
       Highlight.configure({ multicolor: true }),
+      Link.configure({ openOnClick: false, autolink: true }),
+      // 3. AÑADIMOS Y CONFIGURAMOS LA EXTENSIÓN DE ALINEACIÓN
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
     ],
     content: content,
     editorProps: {
