@@ -1,10 +1,9 @@
-// src/components/layout/Sidebar.tsx
+//src/components/layout/Sidebar.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { useProfile } from "@/hooks/useProfile"; // <-- 1. IMPORTAMOS useProfile
 import {
   Home,
   BookMarked,
@@ -15,7 +14,7 @@ import {
   X,
   Component,
   ShieldCheck,
-} from "lucide-react";
+} from "lucide-react"; // Importamos un icono para el logo
 import { Button } from "../ui/button";
 
 const sidebarNavItems = [
@@ -24,33 +23,12 @@ const sidebarNavItems = [
   { title: "Comunidad", href: "/feed", icon: Users },
   { title: "Explorar", href: "/courses", icon: Compass },
   { title: "Mi Perfil", href: "/profile", icon: UserCircle },
-  // 2. AÑADIMOS UNA PROPIEDAD PARA ESPECIFICAR LOS ROLES REQUERIDOS
-  {
-    title: "Admin",
-    href: "/admin/courses",
-    icon: ShieldCheck,
-    requiredRoles: ["admin", "teacher"],
-  },
+  { title: "Admin", href: "/admin/courses", icon: ShieldCheck },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { isMainSidebarOpen, toggleMainSidebar } = useAuthStore();
-  const { profile, isLoading: isProfileLoading } = useProfile(); // <-- 3. USAMOS EL HOOK PARA OBTENER EL PERFIL
-
-  // 4. FILTRAMOS LOS ENLACES ANTES DE RENDERIZARLOS
-  const filteredNavItems = sidebarNavItems.filter((item) => {
-    // Si el ítem no requiere roles específicos, siempre se muestra
-    if (!item.requiredRoles) {
-      return true;
-    }
-    // Si el ítem requiere roles, pero el perfil aún está cargando o no existe, no lo mostramos
-    if (isProfileLoading || !profile) {
-      return false;
-    }
-    // Si el perfil existe, mostramos el ítem solo si el rol del usuario está en la lista de roles requeridos
-    return item.requiredRoles.includes(profile.role);
-  });
 
   return (
     <aside
@@ -63,12 +41,15 @@ export default function Sidebar() {
           isMainSidebarOpen ? "w-64" : "sm:w-20"
         }`}
       >
+        {/* --- INICIO DE CORRECCIONES (LOGO Y BORDES) --- */}
+        {/* 1. Quitamos la clase 'border-b' para eliminar la cuadrícula */}
         <div
           className={`h-16 shrink-0 flex items-center ${
             isMainSidebarOpen ? "px-6" : "justify-center"
           }`}
         >
           <Link href="/" className="flex items-center gap-2">
+            {/* 2. Mostramos un icono cuando la barra está colapsada */}
             <Component className="h-7 w-7 text-primary" />
             <h1
               className={`text-xl font-bold text-primary transition-all duration-200 ${
@@ -78,6 +59,7 @@ export default function Sidebar() {
               MiLMS
             </h1>
           </Link>
+          {/* Botón de cierre para móvil */}
           <Button
             onClick={toggleMainSidebar}
             variant="ghost"
@@ -87,10 +69,10 @@ export default function Sidebar() {
             <X className="h-6 w-6" />
           </Button>
         </div>
+        {/* --- FIN DE CORRECCIONES --- */}
 
-        {/* 5. USAMOS LA NUEVA LISTA FILTRADA PARA EL MAP */}
         <nav className={`flex-1 px-4 space-y-2`}>
-          {filteredNavItems.map((item) => (
+          {sidebarNavItems.map((item) => (
             <Link
               key={item.title}
               href={item.href}
@@ -107,6 +89,7 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
+        {/* El botón de colapso ahora solo se muestra en desktop */}
         <div className="p-4 mt-auto border-t shrink-0 hidden sm:block">
           <Button
             onClick={toggleMainSidebar}

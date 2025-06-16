@@ -130,7 +130,7 @@ export default function LessonView({
               <Link
                 href={
                   prevLessonId
-                    ? `/courses/<span class="math-inline">\{courseId\}/lessons/</span>{prevLessonId}`
+                    ? `/courses/${courseId}/lessons/${prevLessonId}`
                     : "#"
                 }
                 aria-label="Lección anterior"
@@ -160,7 +160,7 @@ export default function LessonView({
               <Link
                 href={
                   nextLessonId
-                    ? `/courses/<span class="math-inline">\{courseId\}/lessons/</span>{nextLessonId}`
+                    ? `/courses/${courseId}/lessons/${nextLessonId}`
                     : "#"
                 }
                 aria-label="Siguiente lección"
