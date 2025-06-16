@@ -111,7 +111,7 @@ export function useLesson(courseId: string, lessonId: string) {
   const { data, isLoading, error } = useQuery<LessonPageData, Error>({
     queryKey: ["lesson", courseId, lessonId, user?.id],
     queryFn: () => fetchLessonData(courseId, lessonId, user?.id),
-    enabled: !!user && !!courseId && !!lessonId,
+    enabled: !!courseId && !!lessonId,
   });
 
   const { mutate: markAsCompleted, isPending: isCompleting } = useMutation({

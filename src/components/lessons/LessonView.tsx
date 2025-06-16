@@ -1,4 +1,4 @@
-//src/components/lessons/LessonView.tsx
+// src/components/lessons/LessonView.tsx
 "use client";
 
 import { useLesson } from "@/hooks/useLesson";
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import LessonContentPlayer from "./LessonContentPlayer";
 import LessonListSidebar from "./LessonListSidebar";
+import NotFoundOrErrorPage from "../shared/NotFoundOrErrorPage"; // <-- 1. IMPORTAMOS EL COMPONENTE
 
 export default function LessonView({
   courseId,
@@ -38,13 +39,36 @@ export default function LessonView({
       </div>
     );
   }
+
+  // --- INICIO DEL CAMBIO: LÓGICA DE ERROR MEJORADA ---
   if (error) {
-    return (
-      <div className="flex h-full items-center justify-center text-destructive">
-        <p>Error: {error.message}</p>
-      </div>
-    );
+    // Caso 1: El usuario no ha iniciado sesión
+    if (error.message.includes("Debes iniciar sesión")) {
+      return (
+        <NotFoundOrErrorPage
+          title="Acceso Restringido"
+          description="Para ver esta lección, primero necesitas iniciar sesión en tu cuenta."
+          buttonText="Iniciar Sesión"
+          buttonHref={`/login?redirect=/courses/<span class="math-inline">\{courseId\}/lessons/</span>{lessonId}`}
+        />
+      );
+    }
+    // Caso 2: El usuario ha iniciado sesión pero no está inscrito
+    if (error.message.includes("No estás inscrito")) {
+      return (
+        <NotFoundOrErrorPage
+          title="Contenido Exclusivo para Miembros"
+          description="Parece que no estás inscrito en este curso. ¡Inscríbete para acceder a esta y todas las demás lecciones!"
+          buttonText="Ver página del curso"
+          buttonHref={`/courses/${courseId}`}
+        />
+      );
+    }
+    // Caso 3: Cualquier otro error genérico
+    return <NotFoundOrErrorPage description={error.message} />;
   }
+  // --- FIN DEL CAMBIO ---
+
   if (!lessonData) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -57,10 +81,7 @@ export default function LessonView({
     lessonData;
 
   return (
-    // --- INICIO DE LA CORRECCIÓN DEL LAYOUT ---
-    // Usamos Flexbox, el mismo patrón robusto del layout principal.
     <div className="flex h-full">
-      {/* Contenedor de la barra lateral de lecciones, su ancho y visibilidad se controlan aquí */}
       <div
         className={`transition-all duration-300 ease-in-out hidden lg:block ${
           isLessonSidebarOpen ? "w-80" : "w-0"
@@ -73,7 +94,6 @@ export default function LessonView({
         />
       </div>
 
-      {/* Contenedor principal del contenido */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center justify-between p-2 lg:p-4 border-b shrink-0 gap-4">
           <div className="flex items-center gap-2 min-w-0">
@@ -100,7 +120,6 @@ export default function LessonView({
               </h1>
             </div>
           </div>
-          {/* Botones de acción ahora agrupados a la derecha */}
           <div className="flex items-center gap-2 shrink-0">
             <Button
               asChild
@@ -111,7 +130,7 @@ export default function LessonView({
               <Link
                 href={
                   prevLessonId
-                    ? `/courses/${courseId}/lessons/${prevLessonId}`
+                    ? `/courses/<span class="math-inline">\{courseId\}/lessons/</span>{prevLessonId}`
                     : "#"
                 }
                 aria-label="Lección anterior"
@@ -119,7 +138,6 @@ export default function LessonView({
                 <ChevronLeft className="h-4 w-4" />
               </Link>
             </Button>
-            {/* El botón de completar ahora está aquí, visible y accesible */}
             <Button
               onClick={() => markAsCompleted()}
               disabled={isCompleting || currentLesson.is_completed}
@@ -142,7 +160,7 @@ export default function LessonView({
               <Link
                 href={
                   nextLessonId
-                    ? `/courses/${courseId}/lessons/${nextLessonId}`
+                    ? `/courses/<span class="math-inline">\{courseId\}/lessons/</span>{nextLessonId}`
                     : "#"
                 }
                 aria-label="Siguiente lección"
@@ -160,6 +178,5 @@ export default function LessonView({
         </main>
       </div>
     </div>
-    // --- FIN DE LA CORRECCIÓN DEL LAYOUT ---
   );
 }
