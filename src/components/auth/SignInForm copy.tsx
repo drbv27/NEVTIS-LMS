@@ -1,19 +1,19 @@
-// src/components/auth/SignInForm.tsx
+//src/components/auth/SignInForm.tsx
 "use client";
 
 import { useState } from "react";
+// Importamos la función
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
-import { useRouter, useSearchParams } from "next/navigation"; // <-- 1. IMPORTAMOS useSearchParams
+import { useRouter } from "next/navigation";
 
 export function SignInForm() {
+  // Creamos la instancia
   const supabase = createSupabaseBrowserClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { setLoading, setError, error, isLoading } = useAuthStore();
   const router = useRouter();
-  const searchParams = useSearchParams(); // <-- 2. INICIAMOS EL HOOK
-  const redirectPath = searchParams.get("redirect"); // <-- 3. OBTENEMOS LA RUTA DE REDIRECCIÓN
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +28,12 @@ export function SignInForm() {
     if (signInError) {
       setError(signInError.message);
     } else {
-      // 4. LÓGICA DE REDIRECCIÓN INTELIGENTE
-      // Si hay una ruta de redirección, vamos allí. Si no, al dashboard.
-      router.push(redirectPath || "/dashboard");
+      router.push("/dashboard");
     }
     setLoading(false);
   };
 
+  // ... el resto del JSX del formulario no cambia
   return (
     <form onSubmit={handleSignIn} className="space-y-4">
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}

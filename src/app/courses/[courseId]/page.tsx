@@ -1,4 +1,4 @@
-// src/app/(main)/courses/[courseId]/page.tsx
+// src/app/courses/[courseId]/page.tsx
 "use client";
 
 import { useCourseDetails } from "@/hooks/useCourseDetails";
@@ -6,16 +6,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookCopy, MonitorPlay, FileText, LetterText } from "lucide-react";
+import { BookCopy, MonitorPlay, FileText } from "lucide-react";
 import { Module, Lesson } from "@/lib/types";
+import { useRouter } from "next/navigation"; // <-- 1. IMPORTAMOS useRouter
+import { useAuthStore } from "@/store/authStore"; // <-- 2. IMPORTAMOS useAuthStore
+import NotFoundOrErrorPage from "@/components/shared/NotFoundOrErrorPage";
 
 export default function CourseDetailPage({
   params,
 }: {
   params: { courseId: string };
 }) {
+  const router = useRouter(); // <-- 3. INICIAMOS EL HOOK
+  const { user } = useAuthStore(); // <-- 4. OBTENEMOS EL USUARIO DEL STORE
   const { course, isLoading, error, enrollInCourse, isEnrolling } =
     useCourseDetails(params.courseId);
+
+  // 5. NUEVA FUNCIÓN PARA MANEJAR EL CLIC EN EL BOTÓN DE INSCRIPCIÓN
+  const handleEnrollClick = () => {
+    // Si no hay usuario, lo mandamos a login con un parámetro de redirección
+    if (!user) {
+      router.push(`/login?redirect=/courses/${params.courseId}`);
+    } else {
+      // Si sí hay usuario, ejecutamos la inscripción como antes
+      enrollInCourse();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -23,11 +39,7 @@ export default function CourseDetailPage({
     );
   }
   if (error || !course) {
-    return (
-      <div className="text-center text-red-500 py-10">
-        Error: No se pudo cargar el curso.
-      </div>
-    );
+    return <NotFoundOrErrorPage />;
   }
 
   // Lógica para el botón de acción
@@ -51,7 +63,7 @@ export default function CourseDetailPage({
       <Button
         size="lg"
         className="w-full mt-6 text-lg"
-        onClick={() => enrollInCourse()}
+        onClick={handleEnrollClick} // <-- 6. USAMOS LA NUEVA FUNCIÓN AQUÍ
         disabled={isEnrolling}
       >
         {isEnrolling ? "Inscribiendo..." : "Inscribirse Gratis"}
@@ -67,8 +79,8 @@ export default function CourseDetailPage({
 
   return (
     <div className="container mx-auto py-8">
+      {/* El resto del JSX de la página no cambia */}
       <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-        {/* Columna Izquierda: Imagen, Metadatos y Botón de Acción */}
         <div className="lg:col-span-4 xl:col-span-3">
           <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg mb-6">
             <Image
@@ -102,7 +114,6 @@ export default function CourseDetailPage({
           {actionButton}
         </div>
 
-        {/* Columna Derecha: Título, Descripción y Contenido */}
         <div className="lg:col-span-8 xl:col-span-9 mt-8 lg:mt-0">
           <h1 className="text-4xl lg:text-5xl font-bold tracking-tight mb-3">
             {course.title}
