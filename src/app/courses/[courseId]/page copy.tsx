@@ -6,27 +6,29 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookCopy } from "lucide-react"; // <-- 1. HEMOS QUITADO MonitorPlay y FileText
+import { BookCopy, MonitorPlay, FileText } from "lucide-react";
 import { Module, Lesson } from "@/lib/types";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation"; // <-- 1. IMPORTAMOS useRouter
+import { useAuthStore } from "@/store/authStore"; // <-- 2. IMPORTAMOS useAuthStore
 import NotFoundOrErrorPage from "@/components/shared/NotFoundOrErrorPage";
-import LessonTypeIcon from "@/components/lessons/LessonTypeIcon"; // <-- 2. IMPORTAMOS NUESTRO COMPONENTE REUTILIZABLE
 
 export default function CourseDetailPage({
   params,
 }: {
   params: { courseId: string };
 }) {
-  const router = useRouter();
-  const { user } = useAuthStore();
+  const router = useRouter(); // <-- 3. INICIAMOS EL HOOK
+  const { user } = useAuthStore(); // <-- 4. OBTENEMOS EL USUARIO DEL STORE
   const { course, isLoading, error, enrollInCourse, isEnrolling } =
     useCourseDetails(params.courseId);
 
+  // 5. NUEVA FUNCIÓN PARA MANEJAR EL CLIC EN EL BOTÓN DE INSCRIPCIÓN
   const handleEnrollClick = () => {
+    // Si no hay usuario, lo mandamos a login con un parámetro de redirección
     if (!user) {
       router.push(`/login?redirect=/courses/${params.courseId}`);
     } else {
+      // Si sí hay usuario, ejecutamos la inscripción como antes
       enrollInCourse();
     }
   };
@@ -36,18 +38,18 @@ export default function CourseDetailPage({
       <div className="text-center py-10">Cargando detalles del curso...</div>
     );
   }
-
   if (error || !course) {
     return <NotFoundOrErrorPage />;
   }
 
+  // Lógica para el botón de acción
   let actionButton;
   if (course.isEnrolled) {
     actionButton = (
       <Link
         href={
           course.firstLessonId
-            ? `/courses/<span class="math-inline">\{course\.id\}/lessons/</span>{course.firstLessonId}`
+            ? `/courses/${course.id}/lessons/${course.firstLessonId}`
             : "#"
         }
       >
@@ -61,7 +63,7 @@ export default function CourseDetailPage({
       <Button
         size="lg"
         className="w-full mt-6 text-lg"
-        onClick={handleEnrollClick}
+        onClick={handleEnrollClick} // <-- 6. USAMOS LA NUEVA FUNCIÓN AQUÍ
         disabled={isEnrolling}
       >
         {isEnrolling ? "Inscribiendo..." : "Inscribirse Gratis"}
@@ -77,6 +79,7 @@ export default function CourseDetailPage({
 
   return (
     <div className="container mx-auto py-8">
+      {/* El resto del JSX de la página no cambia */}
       <div className="lg:grid lg:grid-cols-12 lg:gap-8">
         <div className="lg:col-span-4 xl:col-span-3">
           <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg mb-6">
@@ -132,17 +135,17 @@ export default function CourseDetailPage({
                     {module.lessons.map((lesson: Lesson) => (
                       <li
                         key={lesson.id}
-                        className="flex items-center p-2.5 rounded-md gap-3" // <-- 3. AÑADIMOS UN GAP
+                        className="flex items-center p-2.5 rounded-md"
                       >
-                        {/* --- INICIO DEL CAMBIO --- */}
-                        <LessonTypeIcon
-                          type={lesson.lesson_type}
-                          className="h-5 w-5 text-secondary"
-                        />
+                        {lesson.lesson_type === "video" && (
+                          <MonitorPlay className="mr-2 h-5 w-5 text-secondary" />
+                        )}
+                        {lesson.lesson_type === "pdf" && (
+                          <FileText className="mr-2 h-5 w-5 text-secondary" />
+                        )}
                         <span className="text-sm text-muted-foreground">
                           {lesson.title}
                         </span>
-                        {/* --- FIN DEL CAMBIO --- */}
                       </li>
                     ))}
                   </ul>

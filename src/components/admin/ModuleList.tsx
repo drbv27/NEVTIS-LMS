@@ -1,4 +1,4 @@
-//src/components/admin/ModuleList.tsx
+// src/components/admin/ModuleList.tsx
 "use client";
 
 import { useState } from "react";
@@ -26,19 +26,17 @@ import EditLessonDialog from "./EditLessonDialog";
 import DeleteLessonAlert from "./DeleteLessonAlert";
 import EditModuleDialog from "./EditModuleDialog";
 import DeleteModuleAlert from "./DeleteModuleAlert";
+import LessonTypeIcon from "../lessons/LessonTypeIcon"; // <-- 1. IMPORTAMOS EL COMPONENTE DE ICONOS
 
 interface ModuleListProps {
   modules: Module[];
-  courseId: string; // Necesitamos el ID del curso para crear un módulo
+  courseId: string;
 }
 
 export default function ModuleList({ modules, courseId }: ModuleListProps) {
-  // Hook para la mutación de crear módulo
   const { createModule, isCreatingModule } = useCourseMutations();
-  // Estado local para el título del nuevo módulo
   const [newModuleTitle, setNewModuleTitle] = useState("");
 
-  // Estados para controlar los diálogos de lecciones
   const [lessonToEdit, setLessonToEdit] = useState<Lesson | null>(null);
   const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
   const [moduleToEdit, setModuleToEdit] = useState<Module | null>(null);
@@ -50,7 +48,7 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
       { title: newModuleTitle, courseId },
       {
         onSuccess: () => {
-          setNewModuleTitle(""); // Limpiamos el input al tener éxito
+          setNewModuleTitle("");
         },
       }
     );
@@ -83,8 +81,6 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                         </span>
                       </div>
                     </AccordionTrigger>
-                    {/* --- INICIO DEL CAMBIO --- */}
-                    {/* 3. Botones para editar y borrar el MÓDULO */}
                     <Button
                       onClick={() => setModuleToEdit(module)}
                       variant="ghost"
@@ -101,7 +97,6 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    {/* --- FIN DEL CAMBIO --- */}
                   </div>
                   <AccordionContent className="px-1 pb-2">
                     <ul className="space-y-2 pt-2 px-3">
@@ -110,7 +105,12 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                           key={lesson.id}
                           className="flex items-center justify-between p-2 rounded-md border bg-muted/30"
                         >
-                          <span className="text-sm">{lesson.title}</span>
+                          {/* --- INICIO DEL CAMBIO --- */}
+                          <div className="flex items-center gap-2">
+                            <LessonTypeIcon type={lesson.lesson_type} />
+                            <span className="text-sm">{lesson.title}</span>
+                          </div>
+                          {/* --- FIN DEL CAMBIO --- */}
                           <div className="flex items-center gap-2">
                             <Button
                               onClick={() => setLessonToEdit(lesson)}
@@ -173,7 +173,6 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
         </CardFooter>
       </Card>
 
-      {/* Renderizado condicional de TODOS nuestros diálogos */}
       {lessonToEdit && (
         <EditLessonDialog
           isOpen={!!lessonToEdit}
@@ -190,7 +189,6 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
           courseId={courseId}
         />
       )}
-      {/* 4. El nuevo diálogo para editar módulos */}
       {moduleToEdit && (
         <EditModuleDialog
           isOpen={!!moduleToEdit}
