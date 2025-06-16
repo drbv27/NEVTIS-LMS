@@ -43,8 +43,6 @@ async function fetchLessonData(
 
   const moduleIds = modulesData.map((m) => m.id);
 
-  // --- INICIO DE LA CORRECCIÓN DEFINITIVA ---
-  // Se añade 'content_text' a la consulta para que coincida con nuestro tipo en types.ts
   const { data: lessonsData, error: lessonsError } = await supabase
     .from("lessons")
     .select(
@@ -52,7 +50,6 @@ async function fetchLessonData(
     )
     .in("module_id", moduleIds)
     .order("lesson_order", { ascending: true });
-  // --- FIN DE LA CORRECCIÓN DEFINITIVA ---
 
   if (lessonsError)
     throw new Error(`Error al cargar las lecciones: ${lessonsError.message}`);
@@ -87,6 +84,36 @@ async function fetchLessonData(
   if (currentIndex === -1) throw new Error("Lección no encontrada.");
 
   const currentLesson = flatLessons[currentIndex];
+
+  // --- INICIO DE LA MODIFICACIÓN IMPORTANTE ---
+  // Si la lección tiene un archivo (PDF o Video), generamos una URL segura y temporal
+  if (
+    currentLesson.content_url &&
+    currentLesson.content_url.includes("supabase.co")
+  ) {
+    // Extraemos el nombre del bucket y la ruta del archivo de la URL guardada
+    const regex = /storage\/v1\/object\/public\/([^/]+)\/(.+)/;
+    const matches = currentLesson.content_url.match(regex);
+
+    if (matches && matches[1] && matches[2]) {
+      const bucketName = matches[1];
+      const filePath = matches[2];
+
+      // Pedimos a Supabase una URL firmada que expira en 1 hora (3600 segundos)
+      const { data: signedUrlData, error: signedUrlError } =
+        await supabase.storage.from(bucketName).createSignedUrl(filePath, 3600);
+
+      if (signedUrlError) {
+        console.error("Error generating signed URL:", signedUrlError);
+        throw new Error("No se pudo obtener acceso seguro al contenido.");
+      }
+
+      // Reemplazamos la URL permanente por la temporal y segura
+      currentLesson.content_url = signedUrlData.signedUrl;
+    }
+  }
+  // --- FIN DE LA MODIFICACIÓN ---
+
   const prevLessonId =
     currentIndex > 0 ? String(flatLessons[currentIndex - 1].id) : null;
   const nextLessonId =
