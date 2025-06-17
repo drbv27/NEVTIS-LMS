@@ -48,20 +48,58 @@ export function useFeed() {
 
   // Mutación para crear un nuevo post
   const { mutate: createPost, isPending: isCreatingPost } = useMutation({
-    mutationFn: async (newPostContent: string) => {
+    // La mutación ahora espera un objeto con el contenido y opcionalmente un archivo de imagen
+    mutationFn: async ({
+      content,
+      imageFile,
+    }: {
+      content: string;
+      imageFile: File | null;
+    }) => {
       if (!user) throw new Error("Usuario no autenticado.");
 
       const supabase = createSupabaseBrowserClient();
+      let imageUrl: string | null = null;
+
+      // 1. Si hay un archivo de imagen, lo subimos primero
+      if (imageFile) {
+        const fileExt = imageFile.name.split(".").pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`; // Guardamos en la raíz del bucket por simplicidad
+
+        const { error: uploadError } = await supabase.storage
+          .from("post-images")
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          console.error("Error subiendo imagen:", uploadError);
+          throw new Error("No se pudo subir la imagen.");
+        }
+
+        // 2. Obtenemos la URL pública del archivo subido
+        const { data: urlData } = supabase.storage
+          .from("post-images")
+          .getPublicUrl(filePath);
+
+        imageUrl = urlData.publicUrl;
+      }
+
+      // 3. Insertamos el post en la base de datos con la URL de la imagen (o null si no hay)
       const { data, error } = await supabase
         .from("posts")
-        .insert({ user_id: user.id, content: newPostContent })
+        .insert({
+          user_id: user.id,
+          content: content,
+          image_url: imageUrl,
+        })
         .select()
         .single();
 
       if (error) throw new Error(error.message);
       return data;
     },
-    onMutate: async (newPostContent: string) => {
+    // Actualizamos onMutate para que funcione con el nuevo payload
+    onMutate: async (newPost: { content: string; imageFile: File | null }) => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
       const previousPosts = queryClient.getQueryData<Post[]>(["posts"]);
       if (previousPosts && profile) {
@@ -70,7 +108,7 @@ export function useFeed() {
           [
             {
               id: `temp-${Date.now()}`,
-              content: newPostContent,
+              content: newPost.content,
               created_at: new Date().toISOString(),
               profiles: {
                 id: profile.id,
@@ -79,7 +117,7 @@ export function useFeed() {
               },
               likes_count: 0,
               comments_count: 0,
-              image_url: null,
+              image_url: null, // No podemos predecir la URL final, así que la dejamos en null
             },
             ...previousPosts,
           ]
