@@ -1,10 +1,11 @@
-//src/components/feed/PostCard.tsx
+// src/components/feed/PostCard.tsx
 "use client";
 
 import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { type Post } from "@/lib/types";
 import Image from "next/image";
+import Linkify from "react-linkify"; // <-- 1. IMPORTAMOS LA LIBRERÍA
 import {
   Card,
   CardHeader,
@@ -30,7 +31,6 @@ import {
 import EditPostDialog from "./EditPostDialog";
 import DeletePostAlert from "./DeletePostAlert";
 
-// Función para mostrar el tiempo transcurrido
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -101,7 +101,25 @@ export default function PostCard({ post }: { post: Post }) {
           </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
-          <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
+          {/* --- INICIO DEL CAMBIO --- */}
+          <p className="text-foreground whitespace-pre-wrap">
+            <Linkify
+              componentDecorator={(decoratedHref, decoratedText, key) => (
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={decoratedHref}
+                  key={key}
+                  className="text-primary hover:underline"
+                >
+                  {decoratedText}
+                </a>
+              )}
+            >
+              {post.content}
+            </Linkify>
+          </p>
+          {/* --- FIN DEL CAMBIO --- */}
           {post.image_url && (
             <div className="mt-4 relative aspect-video rounded-md overflow-hidden border">
               <Image
