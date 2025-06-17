@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { type Post } from "@/lib/types";
 import Image from "next/image";
-import Linkify from "react-linkify"; // <-- 1. IMPORTAMOS LA LIBRERÍA
+import Link from "next/link"; // <-- 1. IMPORTAMOS EL LINK DE NEXT.JS
 import {
   Card,
   CardHeader,
@@ -47,6 +47,49 @@ function timeAgo(dateString: string): string {
   return "hace unos segundos";
 }
 
+// --- INICIO DE LA NUEVA FUNCIÓN ---
+// 2. Esta función toma un texto y lo convierte en un array de texto y componentes de Link
+const renderWithLinksAndHashtags = (text: string) => {
+  // Expresión regular que busca hashtags (#palabra) o URLs (http/https/www)
+  const regex = /(#\w+|\bhttps?:\/\/\S+|\bwww\.\S+)/g;
+  const parts = text.split(regex);
+
+  return parts.map((part, index) => {
+    if (part.match(regex)) {
+      if (part.startsWith("#")) {
+        // Es un hashtag
+        const tag = part.substring(1);
+        return (
+          <Link
+            href={`/feed?tag=${tag}`}
+            key={index}
+            className="text-primary hover:underline"
+          >
+            {part}
+          </Link>
+        );
+      } else {
+        // Es una URL
+        const href = part.startsWith("www.") ? `http://${part}` : part;
+        return (
+          <a
+            href={href}
+            key={index}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+          >
+            {part}
+          </a>
+        );
+      }
+    }
+    // Es texto normal
+    return part;
+  });
+};
+// --- FIN DE LA NUEVA FUNCIÓN ---
+
 export default function PostCard({ post }: { post: Post }) {
   const { user } = useAuthStore();
   const isAuthor = user?.id === post.profiles?.id;
@@ -58,6 +101,7 @@ export default function PostCard({ post }: { post: Post }) {
     <>
       <Card className="overflow-hidden shadow-md">
         <CardHeader className="p-4 sm:p-6">
+          {/* ... El resto del Header no cambia ... */}
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10 border">
@@ -101,25 +145,10 @@ export default function PostCard({ post }: { post: Post }) {
           </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
-          {/* --- INICIO DEL CAMBIO --- */}
+          {/* 3. USAMOS NUESTRA NUEVA FUNCIÓN PARA RENDERIZAR EL CONTENIDO */}
           <p className="text-foreground whitespace-pre-wrap">
-            <Linkify
-              componentDecorator={(decoratedHref, decoratedText, key) => (
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={decoratedHref}
-                  key={key}
-                  className="text-primary hover:underline"
-                >
-                  {decoratedText}
-                </a>
-              )}
-            >
-              {post.content}
-            </Linkify>
+            {renderWithLinksAndHashtags(post.content)}
           </p>
-          {/* --- FIN DEL CAMBIO --- */}
           {post.image_url && (
             <div className="mt-4 relative aspect-video rounded-md overflow-hidden border">
               <Image
@@ -132,6 +161,7 @@ export default function PostCard({ post }: { post: Post }) {
           )}
         </CardContent>
         <CardFooter className="p-2 sm:p-3 border-t bg-muted/50 flex justify-around">
+          {/* ... El resto del Footer no cambia ... */}
           <Button
             variant="ghost"
             size="sm"

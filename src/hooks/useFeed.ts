@@ -1,4 +1,4 @@
-//src/hooks/useFeed.ts
+// src/hooks/useFeed.ts
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +8,6 @@ import { useProfile } from "./useProfile";
 import { type Post } from "@/lib/types";
 import { toast } from "sonner";
 
-// Función para obtener los posts
 async function fetchPosts(): Promise<Post[]> {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase
@@ -30,13 +29,11 @@ async function fetchPosts(): Promise<Post[]> {
   })) as Post[];
 }
 
-// Hook principal que exporta toda la funcionalidad
 export function useFeed() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const { profile } = useProfile();
 
-  // Query para obtener los posts
   const {
     data: posts,
     isLoading,
@@ -46,9 +43,7 @@ export function useFeed() {
     queryFn: fetchPosts,
   });
 
-  // Mutación para crear un nuevo post
   const { mutate: createPost, isPending: isCreatingPost } = useMutation({
-    // La mutación ahora espera un objeto con el contenido y opcionalmente un archivo de imagen
     mutationFn: async ({
       content,
       imageFile,
@@ -61,11 +56,10 @@ export function useFeed() {
       const supabase = createSupabaseBrowserClient();
       let imageUrl: string | null = null;
 
-      // 1. Si hay un archivo de imagen, lo subimos primero
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        const filePath = `${fileName}`; // Guardamos en la raíz del bucket por simplicidad
+        const filePath = `${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from("post-images")
@@ -76,7 +70,6 @@ export function useFeed() {
           throw new Error("No se pudo subir la imagen.");
         }
 
-        // 2. Obtenemos la URL pública del archivo subido
         const { data: urlData } = supabase.storage
           .from("post-images")
           .getPublicUrl(filePath);
@@ -84,8 +77,8 @@ export function useFeed() {
         imageUrl = urlData.publicUrl;
       }
 
-      // 3. Insertamos el post en la base de datos con la URL de la imagen (o null si no hay)
-      const { data, error } = await supabase
+      // 1. Insertamos el post en la base de datos como antes
+      const { data: newPostData, error: insertError } = await supabase
         .from("posts")
         .insert({
           user_id: user.id,
@@ -95,10 +88,29 @@ export function useFeed() {
         .select()
         .single();
 
-      if (error) throw new Error(error.message);
-      return data;
+      if (insertError) throw new Error(insertError.message);
+
+      // --- INICIO DEL NUEVO CÓDIGO ---
+      // 2. Si el post tiene contenido, llamamos a nuestra nueva función
+      if (newPostData.content) {
+        const { error: rpcError } = await supabase.rpc(
+          "extract_and_link_hashtags",
+          {
+            post_id_param: newPostData.id,
+            post_content_param: newPostData.content,
+          }
+        );
+
+        if (rpcError) {
+          // Si la función falla, lo mostramos en la consola, pero no detenemos el proceso
+          // ya que el post principal ya se creó.
+          console.error("Error procesando hashtags:", rpcError);
+        }
+      }
+      // --- FIN DEL NUEVO CÓDIGO ---
+
+      return newPostData;
     },
-    // Actualizamos onMutate para que funcione con el nuevo payload
     onMutate: async (newPost: { content: string; imageFile: File | null }) => {
       await queryClient.cancelQueries({ queryKey: ["posts"] });
       const previousPosts = queryClient.getQueryData<Post[]>(["posts"]);
@@ -117,7 +129,7 @@ export function useFeed() {
               },
               likes_count: 0,
               comments_count: 0,
-              image_url: null, // No podemos predecir la URL final, así que la dejamos en null
+              image_url: null,
             },
             ...previousPosts,
           ]
@@ -136,7 +148,6 @@ export function useFeed() {
     },
   });
 
-  // Mutación para actualizar un post
   const { mutate: updatePost, isPending: isUpdatingPost } = useMutation({
     mutationFn: async ({
       postId,
@@ -158,8 +169,6 @@ export function useFeed() {
     },
     onError: (err) => toast.error(`Error al actualizar: ${err.message}`),
   });
-
-  // Mutación para eliminar un post
   const { mutate: deletePost, isPending: isDeletingPost } = useMutation({
     mutationFn: async (postId: string) => {
       const supabase = createSupabaseBrowserClient();
