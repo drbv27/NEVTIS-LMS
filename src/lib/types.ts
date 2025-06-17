@@ -82,4 +82,5 @@ export interface Post {
   likes_count: number;
   comments_count: number;
   profiles: PostAuthor | null; // El autor del post
+  likes: { user_id: string }[];
 }

@@ -1,11 +1,13 @@
-// src/components/feed/PostCard.tsx
+// Reemplaza todo el contenido de src/components/feed/PostCard.tsx
+
 "use client";
 
 import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { useFeed } from "@/hooks/useFeed";
 import { type Post } from "@/lib/types";
 import Image from "next/image";
-import Link from "next/link"; // <-- 1. IMPORTAMOS EL LINK DE NEXT.JS
+import Link from "next/link";
 import {
   Card,
   CardHeader,
@@ -47,17 +49,11 @@ function timeAgo(dateString: string): string {
   return "hace unos segundos";
 }
 
-// --- INICIO DE LA NUEVA FUNCIÓN ---
-// 2. Esta función toma un texto y lo convierte en un array de texto y componentes de Link
 const renderWithLinksAndHashtags = (text: string) => {
-  // Expresión regular que busca hashtags (#palabra) o URLs (http/https/www)
   const regex = /(#\w+|\bhttps?:\/\/\S+|\bwww\.\S+)/g;
-  const parts = text.split(regex);
-
-  return parts.map((part, index) => {
+  return text.split(regex).map((part, index) => {
     if (part.match(regex)) {
       if (part.startsWith("#")) {
-        // Es un hashtag
         const tag = part.substring(1);
         return (
           <Link
@@ -69,7 +65,6 @@ const renderWithLinksAndHashtags = (text: string) => {
           </Link>
         );
       } else {
-        // Es una URL
         const href = part.startsWith("www.") ? `http://${part}` : part;
         return (
           <a
@@ -84,15 +79,18 @@ const renderWithLinksAndHashtags = (text: string) => {
         );
       }
     }
-    // Es texto normal
     return part;
   });
 };
-// --- FIN DE LA NUEVA FUNCIÓN ---
 
 export default function PostCard({ post }: { post: Post }) {
   const { user } = useAuthStore();
+  const { toggleLike, isLiking } = useFeed();
   const isAuthor = user?.id === post.profiles?.id;
+
+  // Lógica final y correcta para determinar si el usuario actual le ha dado "me gusta"
+  const isLikedByMe =
+    post.likes && post.likes.some((like) => like.user_id === user?.id);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -101,7 +99,6 @@ export default function PostCard({ post }: { post: Post }) {
     <>
       <Card className="overflow-hidden shadow-md">
         <CardHeader className="p-4 sm:p-6">
-          {/* ... El resto del Header no cambia ... */}
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10 border">
@@ -145,7 +142,6 @@ export default function PostCard({ post }: { post: Post }) {
           </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
-          {/* 3. USAMOS NUESTRA NUEVA FUNCIÓN PARA RENDERIZAR EL CONTENIDO */}
           <p className="text-foreground whitespace-pre-wrap">
             {renderWithLinksAndHashtags(post.content)}
           </p>
@@ -161,13 +157,20 @@ export default function PostCard({ post }: { post: Post }) {
           )}
         </CardContent>
         <CardFooter className="p-2 sm:p-3 border-t bg-muted/50 flex justify-around">
-          {/* ... El resto del Footer no cambia ... */}
           <Button
             variant="ghost"
             size="sm"
-            className="text-muted-foreground hover:text-primary w-full"
+            className={`w-full transition-colors ${
+              isLikedByMe ? "text-[#FF8C61]" : "text-muted-foreground"
+            } hover:text-primary`}
+            onClick={() => toggleLike(post.id)}
+            disabled={isLiking}
           >
-            <ThumbsUp className="mr-2 h-4 w-4" /> ({post.likes_count}) Me gusta
+            <ThumbsUp
+              className="mr-2 h-4 w-4"
+              fill={isLikedByMe ? "#FF8C61" : "none"} // Solución final con el color HEX directo
+            />
+            ({post.likes_count}) Me gusta
           </Button>
           <Button
             variant="ghost"
@@ -186,7 +189,6 @@ export default function PostCard({ post }: { post: Post }) {
           </Button>
         </CardFooter>
       </Card>
-
       {isAuthor && (
         <>
           <EditPostDialog
