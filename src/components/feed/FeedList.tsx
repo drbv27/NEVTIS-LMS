@@ -1,13 +1,19 @@
 // src/components/feed/FeedList.tsx
 "use client";
 
+import { useSearchParams } from "next/navigation"; // <-- 1. IMPORTAMOS useSearchParams
 import { useFeed } from "@/hooks/useFeed";
 import CreatePostForm from "./CreatePostForm";
 import PostCard from "./PostCard";
-import { Newspaper } from "lucide-react";
+import { Newspaper, Tag } from "lucide-react"; // <-- 2. AÑADIMOS EL ICONO DE TAG
 
 export default function FeedList() {
-  const { posts, isLoading, error } = useFeed();
+  // 3. LEEMOS LOS PARÁMETROS DE LA URL
+  const searchParams = useSearchParams();
+  const tag = searchParams.get("tag");
+
+  // 4. LE PASAMOS EL TAG (O NULL SI NO HAY) A NUESTRO HOOK
+  const { posts, isLoading, error } = useFeed(tag);
 
   if (isLoading) {
     return (
@@ -24,7 +30,18 @@ export default function FeedList() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <CreatePostForm />
+      {/* 5. SI NO ESTAMOS FILTRANDO, MOSTRAMOS EL FORMULARIO DE CREACIÓN */}
+      {!tag && <CreatePostForm />}
+
+      {/* 6. AÑADIMOS UN TÍTULO DINÁMICO */}
+      {tag && (
+        <div className="mb-8 p-4 border rounded-lg bg-muted/50">
+          <h2 className="text-2xl font-bold flex items-center">
+            <Tag className="mr-3 h-6 w-6 text-primary" />
+            Mostrando posts con #{tag}
+          </h2>
+        </div>
+      )}
 
       {posts.length > 0 ? (
         <div className="space-y-6">
@@ -36,7 +53,11 @@ export default function FeedList() {
         <div className="text-center py-12 text-muted-foreground">
           <Newspaper className="mx-auto h-12 w-12 mb-4" />
           <p className="text-lg">Aún no hay publicaciones.</p>
-          <p className="text-sm">¡Sé el primero en compartir algo!</p>
+          <p className="text-sm">
+            {tag
+              ? `Nadie ha hablado de #${tag} todavía.`
+              : "¡Sé el primero en compartir algo!"}
+          </p>
         </div>
       )}
     </div>
