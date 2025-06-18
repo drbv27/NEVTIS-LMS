@@ -1,16 +1,9 @@
 // src/lib/types.ts
-//REVISAR ESTA DESPUES
-export interface CourseDetails extends Course {
-  teacherName: string | null;
-  modules: Module[];
-  isEnrolled: boolean;
-  firstLessonId: string | null;
-}
 
 export interface Profile {
   id: string;
   full_name: string | null;
-  avatar_url: string | null; // <-- CAMPO AÑADIDO
+  avatar_url: string | null;
   role: "student" | "teacher" | "admin";
   bio: string | null;
   phone_number: string | null;
@@ -35,12 +28,18 @@ export interface Course {
   image_url: string | null;
   is_free: boolean;
   status: "published" | "draft";
-  // La relación con categories nos traerá el objeto completo
   categories: {
     id: number;
     name: string;
     slug: string;
   } | null;
+}
+
+export interface CourseDetails extends Course {
+  teacherName: string | null;
+  modules: Module[];
+  isEnrolled: boolean;
+  firstLessonId: string | null;
 }
 
 export interface Lesson {
@@ -74,6 +73,18 @@ export interface PostAuthor {
   avatar_url: string | null;
 }
 
+// --- INICIO DE LA CORRECCIÓN ---
+// Esta es la definición correcta y completa para un comentario
+export interface Comment {
+  id: number;
+  content: string;
+  created_at: string;
+  user_id: string;
+  post_id: string;
+  parent_comment_id: number | null;
+  profiles: PostAuthor | null; // El autor del comentario
+}
+
 export interface Post {
   id: string;
   content: string;
@@ -83,4 +94,7 @@ export interface Post {
   comments_count: number;
   profiles: PostAuthor | null; // El autor del post
   likes: { user_id: string }[];
+  comments: Comment[]; // El post ahora contiene un array de objetos Comment
+  post_hashtags: { hashtags: { name: string }[] }[];
 }
+// --- FIN DE LA CORRECCIÓN ---

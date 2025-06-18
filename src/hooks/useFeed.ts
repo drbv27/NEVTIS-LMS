@@ -5,82 +5,47 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { useProfile } from "./useProfile";
-import { type Post } from "@/lib/types";
+import { type Post, type Comment } from "@/lib/types"; // <-- Importamos Comment también
 import { toast } from "sonner";
 
 async function fetchPosts(tag: string | null): Promise<Post[]> {
   const supabase = createSupabaseBrowserClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let query = supabase
-    .from("posts")
-    .select(
-      `
-      id, content, image_url, created_at, likes_count, comments_count,
-      profiles(*),
-      likes(*),
-      post_hashtags(hashtags(*))
-    `
-    )
-    .order("created_at", { ascending: false })
-    .limit(20);
-
+  const baseSelect = `id, content, image_url, created_at, likes_count, comments_count, profiles!inner(*), likes(*), post_hashtags(hashtags(*)), comments!comments_post_id_fkey(*, profiles(*))`;
+  let query;
   if (tag) {
-    // Para el filtrado, necesitamos una consulta diferente que asegure el INNER JOIN
+    const filterSelect = baseSelect.replace(
+      "post_hashtags(",
+      "post_hashtags!inner("
+    );
     query = supabase
       .from("posts")
-      .select(
-        `
-        id, content, image_url, created_at, likes_count, comments_count,
-        profiles(*),
-        likes(*),
-        post_hashtags!inner(hashtags!inner(*))
-        `
-      )
+      .select(filterSelect)
       .eq("post_hashtags.hashtags.name", tag.toLowerCase());
+  } else {
+    query = supabase.from("posts").select(baseSelect);
   }
-
-  const { data, error } = await query;
-
+  const { data, error } = await query
+    .order("created_at", { ascending: false })
+    .order("created_at", { foreignTable: "comments", ascending: false })
+    .limit(3, { foreignTable: "comments" })
+    .limit(20);
   if (error) {
     console.error("Error fetching posts:", error);
     throw new Error(error.message);
   }
-
-  if (!data) {
-    return [];
-  }
-
-  // --- INICIO DE LA CORRECCIÓN DEFENSIVA ---
-  // Este bloque es la clave para solucionar los errores de TypeScript y de la UI.
+  if (!data) return [];
   const transformedData = data
-    .map((post: any) => {
-      // Aceptamos 'any' temporalmente para inspeccionar
-      // 1. Nos aseguramos de que el post es un objeto válido antes de continuar
-      if (typeof post !== "object" || post === null) {
-        return null;
-      }
-
-      // 2. Desenvolvemos el array de 'profiles' para obtener un solo objeto
+    .map((post) => {
+      if (typeof post !== "object" || post === null) return null;
       const singleProfile = Array.isArray(post.profiles)
         ? post.profiles[0]
         : post.profiles;
-
-      // 3. Devolvemos el objeto con la forma correcta que espera nuestro tipo 'Post'
-      return {
-        ...post,
-        profiles: singleProfile || null,
-      };
+      return { ...post, profiles: singleProfile || null };
     })
-    .filter(Boolean); // 4. Eliminamos cualquier resultado nulo del paso anterior
-
+    .filter(Boolean);
   return transformedData as Post[];
-  // --- FIN DE LA CORRECCIÓN DEFENSIVA ---
 }
 
-// El resto del hook no necesita cambios, pero lo incluyo para que tengas el archivo completo.
 export function useFeed(tag: string | null = null) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
@@ -115,7 +80,6 @@ export function useFeed(tag: string | null = null) {
       toast.error(err.message);
     },
   });
-
   const { mutate: createPost, isPending: isCreatingPost } = useMutation({
     mutationFn: async ({
       content,
@@ -129,7 +93,7 @@ export function useFeed(tag: string | null = null) {
       let imageUrl: string | null = null;
       if (imageFile) {
         const fileExt = imageFile.name.split(".").pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const fileName = `<span class="math-inline">\{user\.id\}\-</span>{Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
           .from("post-images")
           .upload(fileName, imageFile);
@@ -163,6 +127,75 @@ export function useFeed(tag: string | null = null) {
       toast.error(`Error al publicar: ${err.message}`);
     },
   });
+  const { mutate: createComment, isPending: isCreatingComment } = useMutation({
+    mutationFn: async ({
+      postId,
+      content,
+    }: {
+      postId: string;
+      content: string;
+    }) => {
+      if (!user) throw new Error("Debes iniciar sesión para comentar.");
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase
+        .from("comments")
+        .insert({ post_id: postId, user_id: user.id, content: content });
+      if (error) {
+        console.error("Error creating comment:", error);
+        throw new Error("No se pudo publicar el comentario.");
+      }
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["posts", tag] });
+      queryClient.invalidateQueries({
+        queryKey: ["comments", variables.postId],
+      });
+      toast.success("Comentario añadido con éxito");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+
+  // --- INICIO DEL NUEVO CÓDIGO ---
+  const { mutate: deleteComment, isPending: isDeletingComment } = useMutation({
+    // 1. La mutación ahora espera un objeto con el ID del comentario Y el ID del post
+    mutationFn: async ({
+      commentId,
+      postId,
+    }: {
+      commentId: number;
+      postId: string;
+    }) => {
+      if (!user)
+        throw new Error("Debes iniciar sesión para borrar comentarios.");
+
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase
+        .from("comments")
+        .delete()
+        .eq("id", commentId);
+
+      if (error) {
+        console.error("Error deleting comment:", error);
+        throw new Error("No se pudo borrar el comentario.");
+      }
+    },
+    // 2. Usamos el segundo argumento 'variables' en onSuccess, que contiene lo que le pasamos a la mutación.
+    //    Ya no necesitamos el 'context' que causaba el error.
+    onSuccess: (_, variables) => {
+      // Invalidamos ambas cachés para que todo se actualice
+      queryClient.invalidateQueries({ queryKey: ["posts", tag] });
+      queryClient.invalidateQueries({
+        queryKey: ["comments", variables.postId],
+      });
+      toast.success("Comentario eliminado");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+  // --- FIN DEL NUEVO CÓDIGO ---
 
   const { mutate: updatePost, isPending: isUpdatingPost } = useMutation({
     mutationFn: async ({
@@ -195,5 +228,9 @@ export function useFeed(tag: string | null = null) {
     isDeletingPost,
     toggleLike,
     isLiking,
+    createComment,
+    isCreatingComment,
+    deleteComment,
+    isDeletingComment, // <-- Exportamos la nueva mutación
   };
 }
