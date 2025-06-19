@@ -13,6 +13,8 @@ export interface Profile {
     github?: string;
   } | null;
   updated_at?: string;
+  followers_count: number;
+  following_count: number;
 }
 
 export interface Category {
@@ -67,14 +69,8 @@ export interface LessonPageData {
   nextLessonId: string | null;
 }
 
-export interface PostAuthor {
-  id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-}
+// Ya no necesitamos PostAuthor porque la información viene directamente en Post
 
-// --- INICIO DE LA CORRECCIÓN ---
-// Esta es la definición correcta y completa para un comentario
 export interface Comment {
   id: number;
   content: string;
@@ -82,19 +78,35 @@ export interface Comment {
   user_id: string;
   post_id: string;
   parent_comment_id: number | null;
-  profiles: PostAuthor | null; // El autor del comentario
+  profiles: {
+    // El autor del comentario sí es una relación anidada
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
+// --- INICIO DE LA MODIFICACIÓN IMPORTANTE EN 'Post' ---
 export interface Post {
   id: string;
+  user_id: string;
   content: string;
   image_url: string | null;
   created_at: string;
   likes_count: number;
   comments_count: number;
-  profiles: PostAuthor | null; // El autor del post
-  likes: { user_id: string }[];
-  comments: Comment[]; // El post ahora contiene un array de objetos Comment
+
+  // Datos del autor, ahora directamente en el objeto Post gracias a la vista
+  author_full_name: string | null;
+  author_avatar_url: string | null;
+  followers_count: number;
+
+  // Datos calculados por la vista para el usuario actual
+  is_liked_by_me: boolean;
+  is_followed_by_me: boolean;
+
+  // Las relaciones que aún necesitamos traer por separado
+  comments: Comment[];
   post_hashtags: { hashtags: { name: string }[] }[];
 }
-// --- FIN DE LA CORRECCIÓN ---
+// --- FIN DE LA MODIFICACIÓN IMPORTANTE ---

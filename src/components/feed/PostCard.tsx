@@ -3,8 +3,8 @@
 
 import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { useProfile } from "@/hooks/useProfile"; // Importamos useProfile para el botón de seguir
 import { useFeed } from "@/hooks/useFeed";
-import { useProfile } from "@/hooks/useProfile";
 import { type Post } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,14 +29,11 @@ import {
   MoreHorizontal,
   Edit,
   Trash2,
-  Send,
 } from "lucide-react";
 import EditPostDialog from "./EditPostDialog";
 import DeletePostAlert from "./DeletePostAlert";
-import { Input } from "../ui/input";
-import CommentsDialog from "./CommentsDialog"; // <-- 1. IMPORTAMOS EL NUEVO DIÁLOGO
+import CommentsDialog from "./CommentsDialog";
 
-// ... (las funciones timeAgo y renderWithLinksAndHashtags no cambian)
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -52,6 +49,7 @@ function timeAgo(dateString: string): string {
   if (interval > 1) return `hace ${Math.floor(interval)} minutos`;
   return "hace unos segundos";
 }
+
 const renderWithLinksAndHashtags = (text: string) => {
   const regex = /(#\w+|\bhttps?:\/\/\S+|\bwww\.\S+)/g;
   return text.split(regex).map((part, index) => {
@@ -88,39 +86,61 @@ const renderWithLinksAndHashtags = (text: string) => {
 
 export default function PostCard({ post }: { post: Post }) {
   const { user } = useAuthStore();
-  const { profile } = useProfile();
-  const { toggleLike, isLiking, createComment, isCreatingComment } = useFeed();
-  const isAuthor = user?.id === post.profiles?.id;
-  const isLikedByMe =
-    post.likes && post.likes.some((like) => like.user_id === user?.id);
+  const { toggleLike, isLiking } = useFeed();
+  const { toggleFollow, isFollowing } = useProfile(); // Obtenemos la nueva mutación de useProfile
 
-  const [comment, setComment] = useState("");
+  // La lógica ahora es mucho más simple gracias a la vista
+  const isAuthor = user?.id === post.user_id;
+  const isLikedByMe = post.is_liked_by_me;
+  const isFollowedByAuthor = post.is_followed_by_me;
+
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isCommentsOpen, setIsCommentsOpen] = useState(false); // <-- 2. NUEVO ESTADO PARA EL DIÁLOGO
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
 
-  // ... la función handleCommentSubmit no la necesitamos aquí por ahora ...
+  const handleFollow = () => {
+    if (!isAuthor) {
+      toggleFollow(post.user_id);
+    }
+  };
 
   return (
     <>
       <Card className="overflow-hidden shadow-md">
         <CardHeader className="p-4 sm:p-6">
-          {/* ... Header ... */}
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
+              {/* Usamos los nuevos campos de la vista */}
               <Avatar className="h-10 w-10 border">
                 <AvatarImage
-                  src={post.profiles?.avatar_url || undefined}
-                  alt={post.profiles?.full_name || "Avatar"}
+                  src={post.author_avatar_url || undefined}
+                  alt={post.author_full_name || "Avatar"}
                 />
                 <AvatarFallback>
-                  {post.profiles?.full_name?.charAt(0) || "U"}
+                  {post.author_full_name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {post.profiles?.full_name || "Usuario Anónimo"}
-                </p>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-foreground">
+                    {post.author_full_name || "Usuario Anónimo"}
+                  </p>
+                  {/* --- INICIO DEL NUEVO BOTÓN DE SEGUIR --- */}
+                  {!isAuthor && (
+                    <>
+                      <span className="text-muted-foreground">&middot;</span>
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto text-sm"
+                        onClick={handleFollow}
+                        disabled={isFollowing}
+                      >
+                        {isFollowedByAuthor ? "Siguiendo" : "Seguir"}
+                      </Button>
+                    </>
+                  )}
+                  {/* --- FIN DEL NUEVO BOTÓN DE SEGUIR --- */}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {timeAgo(post.created_at)}
                 </p>
@@ -162,11 +182,8 @@ export default function PostCard({ post }: { post: Post }) {
               />
             </div>
           )}
-
-          {/* 3. YA NO MOSTRAMOS LOS COMENTARIOS AQUÍ DIRECTAMENTE */}
         </CardContent>
-        <CardFooter className="p-2 sm:p-3 flex justify-around border-t bg-muted/50">
-          {/* ... Botón de Me Gusta ... */}
+        <CardFooter className="p-2 sm:p-3 border-t bg-muted/50 flex justify-around">
           <Button
             variant="ghost"
             size="sm"
@@ -182,8 +199,6 @@ export default function PostCard({ post }: { post: Post }) {
             />
             ({post.likes_count}) Me gusta
           </Button>
-
-          {/* 4. EL BOTÓN DE COMENTAR AHORA ABRE EL DIÁLOGO */}
           <Button
             variant="ghost"
             size="sm"
@@ -193,8 +208,6 @@ export default function PostCard({ post }: { post: Post }) {
             <MessageCircle className="mr-2 h-4 w-4" /> ({post.comments_count})
             Comentar
           </Button>
-
-          {/* ... Botón de Compartir ... */}
           <Button
             variant="ghost"
             size="sm"
@@ -204,14 +217,11 @@ export default function PostCard({ post }: { post: Post }) {
           </Button>
         </CardFooter>
       </Card>
-
-      {/* 5. RENDERIZAMOS NUESTRO DIÁLOGO Y LE PASAMOS EL ESTADO */}
       <CommentsDialog
         post={post}
         isOpen={isCommentsOpen}
         onOpenChange={setIsCommentsOpen}
       />
-
       {isAuthor && (
         <>
           <EditPostDialog
