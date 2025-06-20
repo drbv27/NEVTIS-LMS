@@ -1,27 +1,52 @@
 // src/components/feed/FeedList.tsx
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect, useRef, useCallback } from "react"; // 1. IMPORTAMOS MÁS HOOKS
 import { useSearchParams } from "next/navigation";
 import { useFeed, type FeedType } from "@/hooks/useFeed";
 import CreatePostForm from "./CreatePostForm";
 import PostCard from "./PostCard";
 import { Button } from "@/components/ui/button";
-import { Newspaper, Rss, Tag } from "lucide-react";
-import PostCardSkeleton from "./PostCardSkeleton"; // 1. IMPORTAMOS el nuevo esqueleto
+import { Loader2, Newspaper, Rss, Tag } from "lucide-react"; // 2. IMPORTAMOS Loader2
+import PostCardSkeleton from "./PostCardSkeleton";
 
 export default function FeedList() {
   const searchParams = useSearchParams();
   const tag = searchParams.get("tag");
   const [feedType, setFeedType] = useState<FeedType>("global");
 
-  const { posts, isLoading, error } = useFeed(tag, feedType);
+  // 3. OBTENEMOS LAS NUEVAS PROPIEDADES DEL HOOK useFeed
+  const {
+    posts,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useFeed(tag, feedType);
+
   const activeFeedType = tag ? "global" : feedType;
 
-  // 2. CAMBIAMOS LA LÓGICA DE CARGA
+  // 4. LÓGICA PARA DETECTAR EL SCROLL
+  // Usamos un observer para detectar cuando el último elemento es visible
+  const observer = useRef<IntersectionObserver>();
+  const lastPostRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
+
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto space-y-6 mt-8">
-        {/* Mostramos 3 esqueletos para simular la carga del contenido */}
         <PostCardSkeleton />
         <PostCardSkeleton />
         <PostCardSkeleton />
@@ -97,9 +122,13 @@ export default function FeedList() {
       <div className="mt-8">
         {posts.length > 0 ? (
           <div className="space-y-6">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
+            {posts.map((post, index) => {
+              // 5. ASIGNAMOS LA REFERENCIA AL ÚLTIMO ELEMENTO
+              if (posts.length === index + 1) {
+                return <PostCard ref={lastPostRef} key={post.id} post={post} />;
+              }
+              return <PostCard key={post.id} post={post} />;
+            })}
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
@@ -113,6 +142,23 @@ export default function FeedList() {
                 : "¡Sé el primero en compartir algo!"}
             </p>
           </div>
+        )}
+      </div>
+
+      {/* 6. INDICADOR DE CARGA Y BOTÓN PARA CARGAR MÁS */}
+      <div className="flex justify-center py-6">
+        {isFetchingNextPage ? (
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        ) : hasNextPage ? (
+          <Button onClick={() => fetchNextPage()} variant="outline">
+            Cargar más publicaciones
+          </Button>
+        ) : (
+          posts.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              Has llegado al final.
+            </p>
+          )
         )}
       </div>
     </div>

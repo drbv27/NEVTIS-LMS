@@ -1,22 +1,34 @@
-//src/hooks/useFeed.ts
+// src/hooks/useFeed.ts
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
-import { useProfile } from "./useProfile";
 import { type Post } from "@/lib/types";
 import { toast } from "sonner";
 
 export type FeedType = "global" | "following";
+const POSTS_PER_PAGE = 5;
 
-async function fetchPosts(
-  tag: string | null,
-  feedType: FeedType
-): Promise<Post[]> {
+async function fetchPosts({
+  tag,
+  feedType,
+  pageParam = 0,
+}: {
+  tag: string | null;
+  feedType: FeedType;
+  pageParam: number;
+}) {
   const supabase = createSupabaseBrowserClient();
   const fromView =
     feedType === "following" ? "followed_posts_view" : "posts_with_details";
+
+  const from = pageParam * POSTS_PER_PAGE;
+  const to = from + POSTS_PER_PAGE - 1;
 
   let query;
   const baseSelect = `
@@ -42,14 +54,17 @@ async function fetchPosts(
     .order("created_at", { ascending: false })
     .order("created_at", { foreignTable: "comments", ascending: false })
     .limit(3, { foreignTable: "comments" })
-    .limit(20);
+    .range(from, to);
 
   if (error) {
     console.error(`Error fetching posts from view '${fromView}':`, error);
     throw new Error(error.message);
   }
 
-  return (data as Post[]) || [];
+  return {
+    posts: (data as Post[]) || [],
+    nextCursor: data.length === POSTS_PER_PAGE ? pageParam + 1 : undefined,
+  };
 }
 
 export function useFeed(
@@ -58,18 +73,28 @@ export function useFeed(
 ) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const { profile } = useProfile();
 
+  // --- INICIO DE LA CORRECCIÓN ---
+  // 1. DESTRUCTURAMOS EL `isLoading` QUE NOS DA EL HOOK DIRECTAMENTE
   const {
-    data: posts,
-    isLoading,
+    data,
     error,
-  } = useQuery<Post[], Error>({
+    fetchNextPage,
+    hasNextPage,
+    isLoading, // <-- ESTE ES EL `isLoading` CORRECTO
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["posts", feedType, tag],
-    queryFn: () => fetchPosts(tag, feedType),
+    queryFn: ({ pageParam }) => fetchPosts({ tag, feedType, pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: !!user,
   });
+  // --- FIN DE LA CORRECCIÓN ---
 
+  const posts = data?.pages.flatMap((page) => page.posts) ?? [];
+
+  // --- LAS MUTACIONES PERMANECEN IGUAL ---
   const { mutate: toggleLike, isPending: isLiking } = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) throw new Error("Debes iniciar sesión.");
@@ -110,13 +135,12 @@ export function useFeed(
     onError: (err) => toast.error(err.message),
   });
 
-  // --- INICIO DE LA CORRECCIÓN BUG #1: MUTACIÓN DE BORRAR COMENTARIO ---
   const { mutate: deleteComment, isPending: isDeletingComment } = useMutation({
     mutationFn: async ({
       commentId,
     }: {
       commentId: number;
-      postId: string; // Lo recibimos para invalidar la caché correcta
+      postId: string;
     }) => {
       if (!user) throw new Error("No autenticado.");
       const supabase = createSupabaseBrowserClient();
@@ -124,7 +148,7 @@ export function useFeed(
         .from("comments")
         .delete()
         .eq("id", commentId)
-        .eq("user_id", user.id); // Doble seguridad
+        .eq("user_id", user.id);
 
       if (error) {
         throw new Error("No se pudo eliminar el comentario.");
@@ -132,9 +156,7 @@ export function useFeed(
     },
     onSuccess: (_, variables) => {
       toast.success("Comentario eliminado.");
-      // Invalidamos la query de posts para actualizar el contador de comentarios
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      // Y también la query específica de los comentarios de ese post
       queryClient.invalidateQueries({
         queryKey: ["comments", variables.postId],
       });
@@ -143,7 +165,6 @@ export function useFeed(
       toast.error(err.message);
     },
   });
-  // --- FIN DE LA CORRECCIÓN BUG #1 ---
 
   const { mutate: createPost, isPending: isCreatingPost } = useMutation({
     mutationFn: async ({
@@ -184,7 +205,6 @@ export function useFeed(
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      // El toast de éxito ya no lo ponemos aquí, porque lo pusimos en el componente
     },
     onError: (err) => {
       toast.error(`Error al publicar: ${err.message}`);
@@ -206,7 +226,6 @@ export function useFeed(
         .eq("id", postId);
       if (error) throw new Error("Error al actualizar el post.");
     },
-    // CORRECCIÓN PREVENTIVA: Añadimos onSuccess
     onSuccess: () => {
       toast.success("Publicación actualizada.");
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -214,12 +233,9 @@ export function useFeed(
     onError: (err) => toast.error(err.message),
   });
 
-  // --- INICIO DE LA CORRECCIÓN BUG #2: MUTACIÓN DE BORRAR POST ---
   const { mutate: deletePost, isPending: isDeletingPost } = useMutation({
     mutationFn: async (postId: string) => {
       const supabase = createSupabaseBrowserClient();
-      // ¡IMPORTANTE! Tenemos que borrar la imagen del storage también
-      // Primero, obtenemos la URL de la imagen del post
       const { data: postData } = await supabase
         .from("posts")
         .select("image_url")
@@ -233,25 +249,24 @@ export function useFeed(
         }
       }
 
-      // Luego, borramos el post de la base de datos
       const { error } = await supabase.from("posts").delete().eq("id", postId);
       if (error) throw new Error("No se pudo eliminar la publicación.");
     },
-    // Añadimos los handlers que faltaban
     onSuccess: () => {
       toast.success("Publicación eliminada.");
       queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
-    onError: (err) => {
-      toast.error(err.message);
-    },
+    onError: (err) => toast.error(err.message),
   });
-  // --- FIN DE LA CORRECCIÓN BUG #2 ---
 
   return {
-    posts: posts || [],
-    isLoading,
+    posts,
     error,
+    // 2. RETORNAMOS EL isLoading CORRECTO
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
     createPost,
     isCreatingPost,
     updatePost,
@@ -262,7 +277,6 @@ export function useFeed(
     isLiking,
     createComment,
     isCreatingComment,
-    // Exportamos las nuevas funciones
     deleteComment,
     isDeletingComment,
   };

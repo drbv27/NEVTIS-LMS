@@ -1,9 +1,10 @@
 // src/components/feed/PostCard.tsx
 "use client";
 
-import { useState } from "react";
+// 1. IMPORTAMOS forwardRef de React
+import { useState, forwardRef } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { useProfile } from "@/hooks/useProfile"; // Importamos useProfile para el botón de seguir
+import { useProfile } from "@/hooks/useProfile";
 import { useFeed } from "@/hooks/useFeed";
 import { type Post } from "@/lib/types";
 import Image from "next/image";
@@ -84,12 +85,13 @@ const renderWithLinksAndHashtags = (text: string) => {
   });
 };
 
-export default function PostCard({ post }: { post: Post }) {
+// 2. ENVOLVEMOS EL COMPONENTE CON forwardRef
+// Ahora acepta 'post' y un 'ref' que le pasamos desde fuera
+const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
   const { user } = useAuthStore();
   const { toggleLike, isLiking } = useFeed();
-  const { toggleFollow, isFollowing } = useProfile(); // Obtenemos la nueva mutación de useProfile
+  const { toggleFollow, isFollowing } = useProfile();
 
-  // La lógica ahora es mucho más simple gracias a la vista
   const isAuthor = user?.id === post.user_id;
   const isLikedByMe = post.is_liked_by_me;
   const isFollowedByAuthor = post.is_followed_by_me;
@@ -106,11 +108,11 @@ export default function PostCard({ post }: { post: Post }) {
 
   return (
     <>
-      <Card className="overflow-hidden shadow-md">
+      {/* 3. ASIGNAMOS EL ref AL ELEMENTO DOM RAÍZ DEL COMPONENTE */}
+      <Card ref={ref} className="overflow-hidden shadow-md">
         <CardHeader className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
-              {/* Usamos los nuevos campos de la vista */}
               <Avatar className="h-10 w-10 border">
                 <AvatarImage
                   src={post.author_avatar_url || undefined}
@@ -125,7 +127,6 @@ export default function PostCard({ post }: { post: Post }) {
                   <p className="text-sm font-semibold text-foreground">
                     {post.author_full_name || "Usuario Anónimo"}
                   </p>
-                  {/* --- INICIO DEL NUEVO BOTÓN DE SEGUIR --- */}
                   {!isAuthor && (
                     <>
                       <span className="text-muted-foreground">&middot;</span>
@@ -139,7 +140,6 @@ export default function PostCard({ post }: { post: Post }) {
                       </Button>
                     </>
                   )}
-                  {/* --- FIN DEL NUEVO BOTÓN DE SEGUIR --- */}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {timeAgo(post.created_at)}
@@ -238,4 +238,9 @@ export default function PostCard({ post }: { post: Post }) {
       )}
     </>
   );
-}
+});
+
+// 4. AÑADIMOS EL displayName PARA FACILITAR LA DEPURACIÓN
+PostCard.displayName = "PostCard";
+
+export default PostCard;
