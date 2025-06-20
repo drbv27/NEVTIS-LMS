@@ -109,4 +109,3 @@ export interface Post {
   comments: Comment[];
   post_hashtags: { hashtags: { name: string }[] }[];
 }
-// --- FIN DE LA MODIFICACIÓN IMPORTANTE ---
