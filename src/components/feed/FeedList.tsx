@@ -1,32 +1,34 @@
 // src/components/feed/FeedList.tsx
 "use client";
-
-import { useState } from "react"; // 1. IMPORTAMOS useState
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useFeed, type FeedType } from "@/hooks/useFeed"; // 2. IMPORTAMOS el tipo FeedType
+import { useFeed, type FeedType } from "@/hooks/useFeed";
 import CreatePostForm from "./CreatePostForm";
 import PostCard from "./PostCard";
-import { Button } from "@/components/ui/button"; // 3. IMPORTAMOS Button
+import { Button } from "@/components/ui/button";
 import { Newspaper, Rss, Tag } from "lucide-react";
+import PostCardSkeleton from "./PostCardSkeleton"; // 1. IMPORTAMOS el nuevo esqueleto
 
 export default function FeedList() {
   const searchParams = useSearchParams();
   const tag = searchParams.get("tag");
-  // 4. CREAMOS UN ESTADO PARA MANEJAR EL TIPO DE FEED SELECCIONADO
   const [feedType, setFeedType] = useState<FeedType>("global");
 
-  // 5. PASAMOS EL feedType Y EL tag A NUESTRO HOOK
   const { posts, isLoading, error } = useFeed(tag, feedType);
-
-  // Si estamos filtrando por un tag, forzamos la vista a "global"
-  // para evitar inconsistencias lógicas.
   const activeFeedType = tag ? "global" : feedType;
 
+  // 2. CAMBIAMOS LA LÓGICA DE CARGA
   if (isLoading) {
     return (
-      <p className="text-center py-10">Cargando el feed de la comunidad...</p>
+      <div className="max-w-2xl mx-auto space-y-6 mt-8">
+        {/* Mostramos 3 esqueletos para simular la carga del contenido */}
+        <PostCardSkeleton />
+        <PostCardSkeleton />
+        <PostCardSkeleton />
+      </div>
     );
   }
+
   if (error) {
     return (
       <p className="text-center text-destructive py-10">
@@ -37,8 +39,6 @@ export default function FeedList() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* 6. RENDERIZADO CONDICIONAL DE LOS NUEVOS CONTROLES */}
-      {/* Solo mostramos el selector de feed si NO estamos filtrando por un tag */}
       {!tag ? (
         <>
           <div className="mb-6">
@@ -83,7 +83,6 @@ export default function FeedList() {
               </div>
             </div>
           </div>
-          {/* El formulario de creación ahora solo aparece si estamos en "Comunidad" */}
           {activeFeedType === "global" && <CreatePostForm />}
         </>
       ) : (
@@ -95,7 +94,6 @@ export default function FeedList() {
         </div>
       )}
 
-      {/* El resto de la lógica de renderizado de posts no cambia */}
       <div className="mt-8">
         {posts.length > 0 ? (
           <div className="space-y-6">
