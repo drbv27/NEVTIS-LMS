@@ -9,7 +9,6 @@ import PostCard from "./PostCard";
 import { Button } from "@/components/ui/button";
 import { Loader2, Newspaper, Rss, Tag } from "lucide-react"; // 2. IMPORTAMOS Loader2
 import PostCardSkeleton from "./PostCardSkeleton";
-import FeedSearchInput from "./FeedSearchInput";
 
 export default function FeedList() {
   const searchParams = useSearchParams();
@@ -65,7 +64,6 @@ export default function FeedList() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <FeedSearchInput />
       {!tag ? (
         <>
           <div className="mb-6">
