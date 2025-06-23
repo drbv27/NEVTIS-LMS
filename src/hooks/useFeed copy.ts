@@ -99,65 +99,15 @@ export function useFeed(
     mutationFn: async (postId: string) => {
       if (!user) throw new Error("Debes iniciar sesión.");
       const supabase = createSupabaseBrowserClient();
-      // La llamada a la base de datos no cambia
       const { error } = await supabase.rpc("toggle_like", {
         post_id_param: postId,
       });
-      if (error) {
-        // Si hay un error, lo lanzamos para que se active el onError
-        throw new Error("No se pudo procesar el 'me gusta'.");
-      }
+      if (error) throw new Error("No se pudo procesar el 'me gusta'.");
     },
-    // onMutate se ejecuta ANTES de la mutación. Aquí es donde hacemos la magia.
-    onMutate: async (postId: string) => {
-      // 1. Cancelamos cualquier re-fetch pendiente para que no sobreescriba nuestra actualización optimista.
-      await queryClient.cancelQueries({ queryKey: ["posts", feedType, tag] });
-
-      // 2. Guardamos una instantánea del estado anterior por si necesitamos revertir.
-      const previousPosts = queryClient.getQueryData(["posts", feedType, tag]);
-
-      // 3. Actualizamos la caché de forma optimista.
-      queryClient.setQueryData(["posts", feedType, tag], (oldData: any) => {
-        // Buscamos el post específico y cambiamos su estado de "like"
-        const newPages = oldData.pages.map((page: any) => ({
-          ...page,
-          posts: page.posts.map((post: Post) => {
-            if (post.id === postId) {
-              return {
-                ...post,
-                is_liked_by_me: !post.is_liked_by_me,
-                likes_count: post.is_liked_by_me
-                  ? post.likes_count - 1
-                  : post.likes_count + 1,
-              };
-            }
-            return post;
-          }),
-        }));
-
-        return { ...oldData, pages: newPages };
-      });
-
-      // 4. Devolvemos el contexto con la instantánea para usarla en onError.
-      return { previousPosts };
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
     },
-    // onError se ejecuta si la mutación falla.
-    onError: (err, postId, context) => {
-      toast.error("Error al dar 'me gusta'. Reintentando...");
-      // 5. Si hubo un error, revertimos la caché al estado anterior.
-      if (context?.previousPosts) {
-        queryClient.setQueryData(
-          ["posts", feedType, tag],
-          context.previousPosts
-        );
-      }
-    },
-    // onSettled se ejecuta siempre, ya sea con éxito o error.
-    onSettled: () => {
-      // 6. Volvemos a pedir los datos del servidor para asegurarnos de que la UI
-      // esté perfectamente sincronizada con la base de datos.
-      queryClient.invalidateQueries({ queryKey: ["posts", feedType, tag] });
-    },
+    onError: (err) => toast.error(err.message),
   });
 
   const { mutate: createComment, isPending: isCreatingComment } = useMutation({
@@ -312,6 +262,7 @@ export function useFeed(
   return {
     posts,
     error,
+    // 2. RETORNAMOS EL isLoading CORRECTO
     isLoading,
     isFetchingNextPage,
     fetchNextPage,
