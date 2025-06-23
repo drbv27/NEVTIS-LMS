@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile } from "@/hooks/useProfile"; // <-- 1. IMPORTAMOS useProfile
 import {
   Home,
   BookMarked,
@@ -15,54 +15,43 @@ import {
   X,
   Component,
   ShieldCheck,
-  Users2, // 1. IMPORTAMOS un nuevo ícono para la gestión de usuarios
+  Users2,
 } from "lucide-react";
 import { Button } from "../ui/button";
 
-// 2. ACTUALIZAMOS LA ESTRUCTURA DE LOS ITEMS DE NAVEGACIÓN
 const sidebarNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: Home },
   { title: "Mis Cursos", href: "/my-courses", icon: BookMarked },
   { title: "Comunidad", href: "/feed", icon: Users },
   { title: "Explorar", href: "/courses", icon: Compass },
   { title: "Mi Perfil", href: "/profile", icon: UserCircle },
-];
-
-// Agrupamos los enlaces de administración para una mejor organización
-const adminNavItems = [
+  // 2. AÑADIMOS UNA PROPIEDAD PARA ESPECIFICAR LOS ROLES REQUERIDOS
   {
-    title: "Gestión Cursos",
+    title: "Admin",
     href: "/admin/courses",
     icon: ShieldCheck,
     requiredRoles: ["admin", "teacher"],
-  },
-  {
-    title: "Gestión Usuarios",
-    href: "/admin/users", // El nuevo enlace
-    icon: Users2, // El nuevo ícono
-    requiredRoles: ["admin"], // Solo los admins pueden ver esto
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { isMainSidebarOpen, toggleMainSidebar } = useAuthStore();
-  const { profile, isLoading: isProfileLoading } = useProfile();
+  const { profile, isLoading: isProfileLoading } = useProfile(); // <-- 3. USAMOS EL HOOK PARA OBTENER EL PERFIL
 
-  // 3. FILTRAMOS AMBAS LISTAS Y LAS UNIMOS
+  // 4. FILTRAMOS LOS ENLACES ANTES DE RENDERIZARLOS
   const filteredNavItems = sidebarNavItems.filter((item) => {
-    // La lógica para items públicos no cambia
-    return true;
-  });
-
-  const filteredAdminNavItems = adminNavItems.filter((item) => {
+    // Si el ítem no requiere roles específicos, siempre se muestra
+    if (!item.requiredRoles) {
+      return true;
+    }
+    // Si el ítem requiere roles, pero el perfil aún está cargando o no existe, no lo mostramos
     if (isProfileLoading || !profile) {
       return false;
     }
+    // Si el perfil existe, mostramos el ítem solo si el rol del usuario está en la lista de roles requeridos
     return item.requiredRoles.includes(profile.role);
   });
-
-  const allNavItems = [...filteredNavItems, ...filteredAdminNavItems];
 
   return (
     <aside
@@ -100,9 +89,9 @@ export default function Sidebar() {
           </Button>
         </div>
 
-        {/* 4. RENDERIZAMOS LA LISTA COMPLETA DE ITEMS */}
+        {/* 5. USAMOS LA NUEVA LISTA FILTRADA PARA EL MAP */}
         <nav className={`flex-1 px-4 space-y-2`}>
-          {allNavItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <Link
               key={item.title}
               href={item.href}

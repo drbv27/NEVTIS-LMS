@@ -12,6 +12,7 @@ export interface Profile {
     twitter?: string;
     github?: string;
   } | null;
+  created_at?: string;
   updated_at?: string;
   followers_count: number;
   following_count: number;
