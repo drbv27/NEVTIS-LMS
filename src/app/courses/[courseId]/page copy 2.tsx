@@ -1,30 +1,17 @@
-// src/app/(main)/courses/[courseId]/page.tsx
+// src/app/courses/[courseId]/page.tsx
 "use client";
 
 import { useCourseDetails } from "@/hooks/useCourseDetails";
-import { useStripeCheckout } from "@/hooks/useStripeCheckout"; // 1. IMPORTAMOS nuestro nuevo hook
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookCopy, DollarSign, Loader2 } from "lucide-react"; // 2. IMPORTAMOS Loader2
+import { BookCopy } from "lucide-react"; // <-- 1. HEMOS QUITADO MonitorPlay y FileText
 import { Module, Lesson } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import NotFoundOrErrorPage from "@/components/shared/NotFoundOrErrorPage";
-import LessonTypeIcon from "@/components/lessons/LessonTypeIcon";
-import { toast } from "sonner";
-
-// El helper para formatear el precio no cambia
-function formatPrice(price: number | null) {
-  if (price === null || price === 0) {
-    return "Gratis";
-  }
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(price);
-}
+import LessonTypeIcon from "@/components/lessons/LessonTypeIcon"; // <-- 2. IMPORTAMOS NUESTRO COMPONENTE REUTILIZABLE
 
 export default function CourseDetailPage({
   params,
@@ -36,35 +23,12 @@ export default function CourseDetailPage({
   const { course, isLoading, error, enrollInCourse, isEnrolling } =
     useCourseDetails(params.courseId);
 
-  // 3. USAMOS el hook de Stripe
-  const { redirectToCheckout, isRedirecting } = useStripeCheckout();
-
   const handleEnrollClick = () => {
     if (!user) {
       router.push(`/login?redirect=/courses/${params.courseId}`);
     } else {
       enrollInCourse();
     }
-  };
-
-  // 4. ACTUALIZAMOS la función de compra para usar el hook
-  const handlePurchaseClick = () => {
-    if (!user) {
-      toast.info("Por favor, inicia sesión para comprar un curso.");
-      router.push(`/login?redirect=/courses/${params.courseId}`);
-      return;
-    }
-    if (!course?.stripe_price_id) {
-      toast.error(
-        "Este curso no está disponible para la compra en este momento."
-      );
-      return;
-    }
-    // Llamamos a la mutación desde nuestro hook
-    redirectToCheckout({
-      priceId: course.stripe_price_id,
-      courseId: course.id,
-    });
   };
 
   if (isLoading) {
@@ -83,7 +47,7 @@ export default function CourseDetailPage({
       <Link
         href={
           course.firstLessonId
-            ? `/courses/${course.id}/lessons/${course.firstLessonId}`
+            ? `/courses/<span class="math-inline">\{course\.id\}/lessons/</span>{course.firstLessonId}`
             : "#"
         }
       >
@@ -104,24 +68,9 @@ export default function CourseDetailPage({
       </Button>
     );
   } else {
-    // 5. ACTUALIZAMOS el botón para mostrar un estado de carga
     actionButton = (
-      <Button
-        size="lg"
-        className="w-full mt-6 text-lg"
-        onClick={handlePurchaseClick}
-        disabled={isRedirecting} // El botón se deshabilita mientras redirige
-      >
-        {isRedirecting ? (
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-        ) : (
-          <DollarSign className="mr-2 h-5 w-5" />
-        )}
-        <span>
-          {isRedirecting
-            ? "Redirigiendo a pago..."
-            : `Comprar Curso por ${formatPrice(course.price)}`}
-        </span>
+      <Button size="lg" className="w-full mt-6 text-lg" disabled>
+        Comprar Curso (Próximamente)
       </Button>
     );
   }
@@ -152,15 +101,11 @@ export default function CourseDetailPage({
             )}
             <div className="flex items-center gap-2">
               <strong>Precio:</strong>{" "}
-              <Badge
-                className={
-                  course.is_free
-                    ? "bg-green-100 text-green-800"
-                    : "bg-blue-100 text-blue-800"
-                }
-              >
-                {formatPrice(course.price)}
-              </Badge>
+              {course.is_free ? (
+                <Badge className="bg-green-100 text-green-800">Gratis</Badge>
+              ) : (
+                "De Pago"
+              )}
             </div>
           </div>
           {actionButton}
@@ -187,8 +132,9 @@ export default function CourseDetailPage({
                     {module.lessons.map((lesson: Lesson) => (
                       <li
                         key={lesson.id}
-                        className="flex items-center p-2.5 rounded-md gap-3"
+                        className="flex items-center p-2.5 rounded-md gap-3" // <-- 3. AÑADIMOS UN GAP
                       >
+                        {/* --- INICIO DEL CAMBIO --- */}
                         <LessonTypeIcon
                           type={lesson.lesson_type}
                           className="h-5 w-5 text-secondary"
@@ -196,6 +142,7 @@ export default function CourseDetailPage({
                         <span className="text-sm text-muted-foreground">
                           {lesson.title}
                         </span>
+                        {/* --- FIN DEL CAMBIO --- */}
                       </li>
                     ))}
                   </ul>

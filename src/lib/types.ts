@@ -31,6 +31,8 @@ export interface Course {
   image_url: string | null;
   is_free: boolean;
   status: "published" | "draft";
+  price: number | null; // <-- Nuevo
+  stripe_price_id: string | null; // <-- Nuevo
   categories: {
     id: number;
     name: string;

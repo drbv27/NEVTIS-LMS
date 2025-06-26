@@ -6,18 +6,17 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { type CourseDetails, type Module, type Lesson } from "@/lib/types";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 // --- FUNCIÓN DE FETCHING PRINCIPAL ---
 async function fetchCourseDetails(courseId: string, userId?: string) {
   const supabase = createSupabaseBrowserClient();
 
-  // 1. AÑADIMOS 'price' Y 'stripe_price_id' A LA CONSULTA
+  // 1. Obtener los detalles completos del curso con sus módulos y lecciones
   const { data: courseData, error: courseError } = await supabase
     .from("courses")
     .select(
       `
-      id, title, description, image_url, is_free, status, price, stripe_price_id,
+      id, title, description, image_url, is_free, status,
       categories ( id, name, slug ),
       profiles ( full_name ),
       modules ( id, title, lessons ( id, title, lesson_type, lesson_order ) )
@@ -28,7 +27,7 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
 
   if (courseError) throw new Error(courseError.message);
 
-  // El resto de la lógica para procesar los datos no cambia
+  // 2. Verificar la inscripción SOLO si hay un usuario logueado
   let isEnrolled = false;
   if (userId) {
     const { count } = await supabase
@@ -39,6 +38,7 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
     isEnrolled = (count ?? 0) > 0;
   }
 
+  // 3. Procesar y organizar los datos
   const modules = (courseData.modules as any[])
     .map((mod) => ({
       ...mod,
@@ -68,18 +68,20 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
 export function useCourseDetails(courseId: string) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const router = useRouter(); // Importamos el router por si lo necesitamos
 
+  // QUERY para obtener los datos
   const {
     data: course,
     isLoading,
     error,
   } = useQuery({
+    // La clave incluye el userId para que la query se actualice si el usuario cambia (login/logout)
     queryKey: ["course", courseId, user?.id],
     queryFn: () => fetchCourseDetails(courseId, user?.id),
-    enabled: !!courseId,
+    enabled: !!courseId, // Solo se ejecuta si hay un courseId
   });
 
+  // MUTATION para inscribirse en el curso (reemplaza la Server Action)
   const { mutate: enrollInCourse, isPending: isEnrolling } = useMutation({
     mutationFn: async () => {
       if (!user) throw new Error("Debes iniciar sesión para inscribirte.");
@@ -93,6 +95,8 @@ export function useCourseDetails(courseId: string) {
     },
     onSuccess: () => {
       toast.success("¡Inscripción exitosa!");
+      // ¡La magia de React Query! Invalidamos la query del curso.
+      // Esto hará que se vuelva a pedir la información y la UI se actualice sola.
       queryClient.invalidateQueries({
         queryKey: ["course", courseId, user?.id],
       });

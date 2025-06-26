@@ -1,4 +1,4 @@
-// src/components/admin/CourseForm.tsx
+//src/components/admin/CourseForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -25,8 +25,8 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { type Course } from "@/lib/types";
 import Image from "next/image";
-import { Switch } from "@/components/ui/switch"; // 1. IMPORTAMOS EL SWITCH
 
+// El formulario ahora acepta datos iniciales para el modo de edición
 interface CourseFormProps {
   initialData?: Course | null;
 }
@@ -37,28 +37,22 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   const { createCourse, isCreatingCourse, updateCourse, isUpdatingCourse } =
     useCourseMutations();
 
-  // 2. AÑADIMOS ESTADOS PARA LOS NUEVOS CAMPOS
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isFree, setIsFree] = useState(true);
-  const [price, setPrice] = useState<number | string>("");
-  const [stripePriceId, setStripePriceId] = useState("");
 
   const isEditing = !!initialData;
   const isSubmitting = isCreatingCourse || isUpdatingCourse;
 
+  // Rellenamos el formulario si estamos en modo de edición
   useEffect(() => {
     if (isEditing && initialData) {
       setTitle(initialData.title);
       setDescription(initialData.description || "");
       setCategoryId(initialData.categories?.id?.toString() || "");
       setImagePreview(initialData.image_url || null);
-      setIsFree(initialData.is_free);
-      setPrice(initialData.price || "");
-      setStripePriceId(initialData.stripe_price_id || "");
     }
   }, [isEditing, initialData]);
 
@@ -72,29 +66,24 @@ export default function CourseForm({ initialData }: CourseFormProps) {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    // 3. AÑADIMOS LOS NUEVOS DATOS AL PAYLOAD
-    const payload = {
-      title,
-      description,
-      categoryId: parseInt(categoryId),
-      is_free: isFree,
-      price: isFree ? null : Number(price),
-      stripe_price_id: isFree ? null : stripePriceId,
-    };
-
     if (isEditing) {
+      // Lógica de Actualización
       if (!initialData?.id) return;
       updateCourse({
-        ...payload,
         courseId: initialData.id,
+        title,
+        description,
+        categoryId: parseInt(categoryId),
         imageFile,
       });
     } else {
+      // Lógica de Creación
       if (!title || !categoryId || !imageFile)
         return alert("Completa todos los campos");
       createCourse({
-        ...payload,
+        title,
+        description,
+        categoryId: parseInt(categoryId),
         imageFile,
       });
     }
@@ -114,6 +103,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* El resto del formulario es igual, pero los valores y acciones son dinámicos */}
           <div className="space-y-2">
             <Label htmlFor="title">Título del Curso</Label>
             <Input
@@ -146,47 +136,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
               </SelectContent>
             </Select>
           </div>
-
-          {/* 4. AÑADIMOS LOS NUEVOS CAMPOS AL FORMULARIO */}
-          <div className="space-y-2">
-            <Label>Precio del Curso</Label>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="is-free-switch"
-                checked={isFree}
-                onCheckedChange={setIsFree}
-              />
-              <Label htmlFor="is-free-switch">
-                {isFree ? "Este curso es Gratuito" : "Este curso es de Pago"}
-              </Label>
-            </div>
-          </div>
-
-          {!isFree && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="price">Precio (USD)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ej: 99.99"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="stripePriceId">ID del Precio en Stripe</Label>
-                <Input
-                  id="stripePriceId"
-                  placeholder="Ej: price_1P6..."
-                  value={stripePriceId}
-                  onChange={(e) => setStripePriceId(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-
           <div className="space-y-2">
             <Label htmlFor="imageFile">Imagen de Portada</Label>
             {imagePreview && (
@@ -206,7 +155,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
               required={!isEditing}
             />
           </div>
-
           <div className="flex justify-end gap-4">
             <Button type="button" variant="ghost" onClick={() => router.back()}>
               Cancelar

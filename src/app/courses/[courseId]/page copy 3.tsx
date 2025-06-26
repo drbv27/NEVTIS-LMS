@@ -2,20 +2,19 @@
 "use client";
 
 import { useCourseDetails } from "@/hooks/useCourseDetails";
-import { useStripeCheckout } from "@/hooks/useStripeCheckout"; // 1. IMPORTAMOS nuestro nuevo hook
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookCopy, DollarSign, Loader2 } from "lucide-react"; // 2. IMPORTAMOS Loader2
+import { BookCopy, DollarSign } from "lucide-react";
 import { Module, Lesson } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import NotFoundOrErrorPage from "@/components/shared/NotFoundOrErrorPage";
 import LessonTypeIcon from "@/components/lessons/LessonTypeIcon";
-import { toast } from "sonner";
+import { toast } from "sonner"; // 1. IMPORTAMOS toast
 
-// El helper para formatear el precio no cambia
+// Helper para formatear el precio
 function formatPrice(price: number | null) {
   if (price === null || price === 0) {
     return "Gratis";
@@ -36,9 +35,6 @@ export default function CourseDetailPage({
   const { course, isLoading, error, enrollInCourse, isEnrolling } =
     useCourseDetails(params.courseId);
 
-  // 3. USAMOS el hook de Stripe
-  const { redirectToCheckout, isRedirecting } = useStripeCheckout();
-
   const handleEnrollClick = () => {
     if (!user) {
       router.push(`/login?redirect=/courses/${params.courseId}`);
@@ -47,24 +43,17 @@ export default function CourseDetailPage({
     }
   };
 
-  // 4. ACTUALIZAMOS la función de compra para usar el hook
+  // 2. LÓGICA DE COMPRA CORREGIDA Y MEJORADA
   const handlePurchaseClick = () => {
     if (!user) {
       toast.info("Por favor, inicia sesión para comprar un curso.");
       router.push(`/login?redirect=/courses/${params.courseId}`);
       return;
     }
-    if (!course?.stripe_price_id) {
-      toast.error(
-        "Este curso no está disponible para la compra en este momento."
-      );
-      return;
-    }
-    // Llamamos a la mutación desde nuestro hook
-    redirectToCheckout({
-      priceId: course.stripe_price_id,
-      courseId: course.id,
-    });
+    // Reemplazamos el alert con un toast más informativo
+    toast.info(
+      `Próximamente: Iniciar compra para "${course?.title}" con ID de precio: ${course?.stripe_price_id}`
+    );
   };
 
   if (isLoading) {
@@ -104,24 +93,15 @@ export default function CourseDetailPage({
       </Button>
     );
   } else {
-    // 5. ACTUALIZAMOS el botón para mostrar un estado de carga
+    // 3. BOTÓN CORREGIDO CON UN SPAN
     actionButton = (
       <Button
         size="lg"
         className="w-full mt-6 text-lg"
         onClick={handlePurchaseClick}
-        disabled={isRedirecting} // El botón se deshabilita mientras redirige
       >
-        {isRedirecting ? (
-          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-        ) : (
-          <DollarSign className="mr-2 h-5 w-5" />
-        )}
-        <span>
-          {isRedirecting
-            ? "Redirigiendo a pago..."
-            : `Comprar Curso por ${formatPrice(course.price)}`}
-        </span>
+        {/* <DollarSign className="mr-2 h-5 w-5" /> */}
+        <span>Comprar Curso por {formatPrice(course.price)}</span>
       </Button>
     );
   }

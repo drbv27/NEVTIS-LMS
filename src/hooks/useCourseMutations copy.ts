@@ -14,9 +14,6 @@ interface CreateCoursePayload {
   description: string;
   categoryId: number;
   imageFile: File;
-  is_free: boolean;
-  price?: number | null;
-  stripe_price_id?: string | null;
 }
 interface UpdateCoursePayload {
   courseId: string;
@@ -24,9 +21,6 @@ interface UpdateCoursePayload {
   description?: string;
   categoryId?: number;
   imageFile?: File | null;
-  is_free: boolean;
-  price?: number | null;
-  stripe_price_id?: string | null;
 }
 interface CreateModulePayload {
   title: string;
@@ -85,9 +79,6 @@ export function useCourseMutations() {
           category_id: payload.categoryId,
           teacher_id: user.id,
           status: "draft",
-          is_free: payload.is_free,
-          price: payload.is_free ? null : payload.price,
-          stripe_price_id: payload.is_free ? null : payload.stripe_price_id,
         })
         .select("id")
         .single();
@@ -143,12 +134,7 @@ export function useCourseMutations() {
         imageUrl = supabase.storage.from("course-images").getPublicUrl(filePath)
           .data.publicUrl;
       }
-      const courseUpdateData: { [key: string]: any } = {
-        is_free: payload.is_free,
-        price: payload.is_free ? null : payload.price,
-        stripe_price_id: payload.is_free ? null : payload.stripe_price_id,
-        updated_at: new Date().toISOString(),
-      };
+      const courseUpdateData: { [key: string]: any } = {};
       if (payload.title) courseUpdateData.title = payload.title;
       if (payload.description)
         courseUpdateData.description = payload.description;
