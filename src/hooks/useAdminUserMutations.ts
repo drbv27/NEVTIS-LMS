@@ -20,9 +20,14 @@ interface UpdateUserPayload {
   bio: string | null;
 }
 
-// 1. AÑADIMOS EL PAYLOAD PARA LA ELIMINACIÓN
 interface DeleteUserPayload {
   userIdToDelete: string;
+}
+
+// 1. AÑADIMOS EL PAYLOAD PARA LA INSCRIPCIÓN MANUAL
+interface EnrollUserPayload {
+  userId: string;
+  courseId: string;
 }
 
 async function updateUserProfile({
@@ -59,7 +64,6 @@ async function createNewUser(payload: CreateUserPayload) {
   return data;
 }
 
-// 2. AÑADIMOS LA FUNCIÓN PARA LLAMAR A LA EDGE FUNCTION 'delete-user'
 async function deleteUserAccount({ userIdToDelete }: DeleteUserPayload) {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase.functions.invoke("delete-user", {
@@ -69,6 +73,24 @@ async function deleteUserAccount({ userIdToDelete }: DeleteUserPayload) {
   if (error) throw new Error(error.message);
   if (data.error) throw new Error(data.error);
   return data;
+}
+
+// 2. AÑADIMOS LA FUNCIÓN PARA INSCRIBIR A UN USUARIO EN UN CURSO
+async function enrollUserInCourse({ userId, courseId }: EnrollUserPayload) {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase
+    .from("enrollments")
+    .insert({ student_id: userId, course_id: courseId });
+
+  if (error) {
+    // Si el error es por una clave duplicada, significa que el usuario ya está inscrito.
+    if (
+      error.message.includes("duplicate key value violates unique constraint")
+    ) {
+      throw new Error("Este usuario ya está inscrito en este curso.");
+    }
+    throw new Error("No se pudo realizar la inscripción.");
+  }
 }
 
 export function useAdminUserMutations() {
@@ -96,12 +118,23 @@ export function useAdminUserMutations() {
     },
   });
 
-  // 3. CREAMOS LA NUEVA MUTACIÓN PARA 'deleteUser'
   const { mutate: deleteUser, isPending: isDeletingUser } = useMutation({
     mutationFn: deleteUserAccount,
     onSuccess: (data) => {
       toast.success(data.message || "Usuario eliminado con éxito.");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  // 3. CREAMOS LA NUEVA MUTACIÓN PARA 'enrollUser'
+  const { mutate: enrollUser, isPending: isEnrollingUser } = useMutation({
+    mutationFn: enrollUserInCourse,
+    onSuccess: () => {
+      toast.success("¡Usuario inscrito exitosamente!");
+      // Podríamos invalidar queries aquí si fuera necesario, pero por ahora no lo es.
     },
     onError: (error) => {
       toast.error(error.message);
@@ -116,5 +149,7 @@ export function useAdminUserMutations() {
     isCreatingUser,
     deleteUser,
     isDeletingUser,
+    enrollUser,
+    isEnrollingUser,
   };
 }

@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { type Profile } from "@/lib/types";
 import { useAdminUserMutations } from "@/hooks/useAdminUserMutations";
+import { useCourseList } from "@/hooks/useCourseList"; // 1. IMPORTAMOS el nuevo hook
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,8 +16,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input"; // 1. IMPORTAMOS Input
-import { Textarea } from "@/components/ui/textarea"; // 2. IMPORTAMOS Textarea
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -24,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator"; // 2. IMPORTAMOS un separador visual
 
 interface EditUserDialogProps {
   user: Profile;
@@ -36,14 +38,17 @@ export default function EditUserDialog({
   isOpen,
   onOpenChange,
 }: EditUserDialogProps) {
-  const { updateUser, isUpdatingUser } = useAdminUserMutations();
+  // 3. OBTENEMOS LAS NUEVAS FUNCIONES Y DATOS
+  const { updateUser, isUpdatingUser, enrollUser, isEnrollingUser } =
+    useAdminUserMutations();
+  const { data: courses, isLoading: isLoadingCourses } = useCourseList();
 
-  // 3. AÑADIMOS ESTADOS LOCALES PARA LOS NUEVOS CAMPOS
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
   const [selectedRole, setSelectedRole] = useState<Profile["role"]>("student");
+  // 4. AÑADIMOS ESTADO PARA EL CURSO SELECCIONADO
+  const [selectedCourseId, setSelectedCourseId] = useState("");
 
-  // Rellenamos todos los campos del formulario cuando el usuario cambia
   useEffect(() => {
     if (user) {
       setFullName(user.full_name || "");
@@ -52,7 +57,6 @@ export default function EditUserDialog({
     }
   }, [user]);
 
-  // 4. ACTUALIZAMOS EL MANEJADOR PARA ENVIAR TODOS LOS DATOS
   const handleSaveChanges = () => {
     if (!fullName.trim()) {
       alert("El nombre completo no puede estar vacío.");
@@ -67,10 +71,22 @@ export default function EditUserDialog({
       },
       {
         onSuccess: () => {
-          onOpenChange(false); // Cierra el diálogo si la mutación es exitosa
+          onOpenChange(false);
         },
       }
     );
+  };
+
+  // 5. NUEVA FUNCIÓN PARA MANEJAR LA INSCRIPCIÓN MANUAL
+  const handleEnroll = () => {
+    if (!selectedCourseId) {
+      alert("Por favor, selecciona un curso para inscribir.");
+      return;
+    }
+    enrollUser({
+      userId: user.id,
+      courseId: selectedCourseId,
+    });
   };
 
   return (
@@ -83,8 +99,8 @@ export default function EditUserDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* 5. AÑADIMOS LOS NUEVOS CAMPOS AL FORMULARIO */}
-        <div className="py-4 space-y-4">
+        <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto pr-4">
+          {/* Sección de Editar Perfil (sin cambios) */}
           <div className="space-y-2">
             <Label htmlFor="fullName">Nombre Completo</Label>
             <Input
@@ -120,6 +136,39 @@ export default function EditUserDialog({
                 <SelectItem value="admin">Administrador</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* 6. AÑADIMOS LA NUEVA SECCIÓN DE INSCRIPCIÓN */}
+          <Separator className="my-6" />
+          <div>
+            <h3 className="text-lg font-medium">Inscripción Manual</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Inscribe a este usuario en un curso específico.
+            </p>
+            <div className="flex items-center gap-2">
+              <Select
+                value={selectedCourseId}
+                onValueChange={setSelectedCourseId}
+                disabled={isLoadingCourses}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Selecciona un curso..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses?.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleEnroll}
+                disabled={!selectedCourseId || isEnrollingUser}
+              >
+                {isEnrollingUser ? "Inscribiendo..." : "Inscribir"}
+              </Button>
+            </div>
           </div>
         </div>
 
