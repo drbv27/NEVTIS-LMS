@@ -1,16 +1,5 @@
 // src/lib/types.ts
 
-// 1. AÑADIMOS LA NUEVA INTERFAZ PARA 'Community'
-export interface Community {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  image_url: string | null;
-  stripe_price_id: string | null;
-  created_at: string;
-}
-
 export interface Profile {
   id: string;
   full_name: string | null;
@@ -29,7 +18,6 @@ export interface Profile {
   following_count: number;
 }
 
-// ...el resto de las interfaces no cambian...
 export interface Category {
   id: number;
   name: string;
@@ -43,8 +31,8 @@ export interface Course {
   image_url: string | null;
   is_free: boolean;
   status: "published" | "draft";
-  price: number | null;
-  stripe_price_id: string | null;
+  price: number | null; // <-- Nuevo
+  stripe_price_id: string | null; // <-- Nuevo
   categories: {
     id: number;
     name: string;
@@ -84,6 +72,8 @@ export interface LessonPageData {
   nextLessonId: string | null;
 }
 
+// Ya no necesitamos PostAuthor porque la información viene directamente en Post
+
 export interface Comment {
   id: number;
   content: string;
@@ -92,12 +82,14 @@ export interface Comment {
   post_id: string;
   parent_comment_id: number | null;
   profiles: {
+    // El autor del comentario sí es una relación anidada
     id: string;
     full_name: string | null;
     avatar_url: string | null;
   } | null;
 }
 
+// --- INICIO DE LA MODIFICACIÓN IMPORTANTE EN 'Post' ---
 export interface Post {
   id: string;
   user_id: string;
@@ -106,11 +98,17 @@ export interface Post {
   created_at: string;
   likes_count: number;
   comments_count: number;
+
+  // Datos del autor, ahora directamente en el objeto Post gracias a la vista
   author_full_name: string | null;
   author_avatar_url: string | null;
   followers_count: number;
+
+  // Datos calculados por la vista para el usuario actual
   is_liked_by_me: boolean;
   is_followed_by_me: boolean;
+
+  // Las relaciones que aún necesitamos traer por separado
   comments: Comment[];
   post_hashtags: { hashtags: { name: string }[] }[];
 }
