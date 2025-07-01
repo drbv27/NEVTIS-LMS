@@ -1,6 +1,5 @@
 // src/lib/types.ts
 
-// 1. AÑADIMOS LA NUEVA INTERFAZ PARA 'Community'
 export interface Community {
   id: string;
   name: string;
@@ -29,7 +28,6 @@ export interface Profile {
   following_count: number;
 }
 
-// ...el resto de las interfaces no cambian...
 export interface Category {
   id: number;
   name: string;
@@ -45,6 +43,7 @@ export interface Course {
   status: "published" | "draft";
   price: number | null;
   stripe_price_id: string | null;
+  community_id: string | null;
   categories: {
     id: number;
     name: string;

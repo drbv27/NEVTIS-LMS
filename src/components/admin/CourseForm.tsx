@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useCategories } from "@/hooks/useCategories";
 import { useCourseMutations } from "@/hooks/useCourseMutations";
+import { useAdminCommunities } from "@/hooks/useAdminCommunities";
 import {
   Card,
   CardContent,
@@ -26,6 +27,7 @@ import { useRouter } from "next/navigation";
 import { type Course } from "@/lib/types";
 import Image from "next/image";
 import { Switch } from "@/components/ui/switch"; // 1. IMPORTAMOS EL SWITCH
+import { toast } from "sonner";
 
 interface CourseFormProps {
   initialData?: Course | null;
@@ -34,6 +36,8 @@ interface CourseFormProps {
 export default function CourseForm({ initialData }: CourseFormProps) {
   const router = useRouter();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
+  const { data: communities, isLoading: isLoadingCommunities } =
+    useAdminCommunities();
   const { createCourse, isCreatingCourse, updateCourse, isUpdatingCourse } =
     useCourseMutations();
 
@@ -41,6 +45,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [communityId, setCommunityId] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isFree, setIsFree] = useState(true);
@@ -55,6 +60,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
       setTitle(initialData.title);
       setDescription(initialData.description || "");
       setCategoryId(initialData.categories?.id?.toString() || "");
+      setCommunityId(initialData.community_id || "");
       setImagePreview(initialData.image_url || null);
       setIsFree(initialData.is_free);
       setPrice(initialData.price || "");
@@ -73,11 +79,17 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (!communityId) {
+      toast.error("Debes asignar el curso a una comunidad.");
+      return;
+    }
+
     // 3. AÑADIMOS LOS NUEVOS DATOS AL PAYLOAD
     const payload = {
       title,
       description,
       categoryId: parseInt(categoryId),
+      communityId,
       is_free: isFree,
       price: isFree ? null : Number(price),
       stripe_price_id: isFree ? null : stripePriceId,
@@ -130,6 +142,21 @@ export default function CourseForm({ initialData }: CourseFormProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="community">Comunidad</Label>
+            <Select onValueChange={setCommunityId} value={communityId} required>
+              <SelectTrigger id="community" disabled={isLoadingCommunities}>
+                <SelectValue placeholder="Asigna este curso a una comunidad..." />
+              </SelectTrigger>
+              <SelectContent>
+                {communities?.map((community) => (
+                  <SelectItem key={community.id} value={community.id}>
+                    {community.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="category">Categoría</Label>

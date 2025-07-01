@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Lesson, Module, Course } from "@/lib/types";
 
-// Interfaces para los payloads (sin cambios)
+// 1. ACTUALIZAMOS LOS PAYLOADS PARA INCLUIR 'communityId'
 interface CreateCoursePayload {
   title: string;
   description: string;
@@ -17,6 +17,7 @@ interface CreateCoursePayload {
   is_free: boolean;
   price?: number | null;
   stripe_price_id?: string | null;
+  communityId: string; // <-- Nuevo y requerido
 }
 interface UpdateCoursePayload {
   courseId: string;
@@ -27,7 +28,9 @@ interface UpdateCoursePayload {
   is_free: boolean;
   price?: number | null;
   stripe_price_id?: string | null;
+  communityId?: string; // <-- Nuevo y opcional
 }
+
 interface CreateModulePayload {
   title: string;
   courseId: string;
@@ -88,6 +91,7 @@ export function useCourseMutations() {
           is_free: payload.is_free,
           price: payload.is_free ? null : payload.price,
           stripe_price_id: payload.is_free ? null : payload.stripe_price_id,
+          community_id: payload.communityId,
         })
         .select("id")
         .single();
@@ -153,6 +157,8 @@ export function useCourseMutations() {
       if (payload.description)
         courseUpdateData.description = payload.description;
       if (payload.categoryId) courseUpdateData.category_id = payload.categoryId;
+      if (payload.communityId)
+        courseUpdateData.community_id = payload.communityId;
       if (imageUrl) courseUpdateData.image_url = imageUrl;
       courseUpdateData.updated_at = new Date().toISOString();
       const { error: updateError } = await supabase
