@@ -13,7 +13,11 @@ async function fetchAllCourses(): Promise<Course[]> {
   const { data, error } = await supabase
     .from("courses")
     .select(
-      "id, title, description, image_url, status, is_free, created_at, categories(id, name, slug)"
+      `
+      id, title, description, image_url, status, is_free, 
+      created_at, price, stripe_price_id, community_id, 
+      categories (id, name, slug)
+      `
     )
     .order("created_at", { ascending: false });
   // --- FIN DE LA CORRECCIÓN ---

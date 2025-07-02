@@ -15,11 +15,11 @@ import {
   X,
   Component,
   ShieldCheck,
-  Users2, // 1. IMPORTAMOS un nuevo ícono para la gestión de usuarios
+  Users2,
+  Library, // 1. IMPORTAMOS un nuevo ícono para las comunidades
 } from "lucide-react";
 import { Button } from "../ui/button";
 
-// 2. ACTUALIZAMOS LA ESTRUCTURA DE LOS ITEMS DE NAVEGACIÓN
 const sidebarNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: Home },
   { title: "Mis Cursos", href: "/my-courses", icon: BookMarked },
@@ -28,8 +28,14 @@ const sidebarNavItems = [
   { title: "Mi Perfil", href: "/profile", icon: UserCircle },
 ];
 
-// Agrupamos los enlaces de administración para una mejor organización
 const adminNavItems = [
+  // 2. AÑADIMOS EL NUEVO ENLACE A LA LISTA DE ADMIN
+  {
+    title: "Gestión Comunidades",
+    href: "/admin/communities",
+    icon: Library,
+    requiredRoles: ["admin"], // Solo los admins pueden gestionar comunidades
+  },
   {
     title: "Gestión Cursos",
     href: "/admin/courses",
@@ -38,9 +44,9 @@ const adminNavItems = [
   },
   {
     title: "Gestión Usuarios",
-    href: "/admin/users", // El nuevo enlace
-    icon: Users2, // El nuevo ícono
-    requiredRoles: ["admin"], // Solo los admins pueden ver esto
+    href: "/admin/users",
+    icon: Users2,
+    requiredRoles: ["admin"],
   },
 ];
 
@@ -49,9 +55,7 @@ export default function Sidebar() {
   const { isMainSidebarOpen, toggleMainSidebar } = useAuthStore();
   const { profile, isLoading: isProfileLoading } = useProfile();
 
-  // 3. FILTRAMOS AMBAS LISTAS Y LAS UNIMOS
   const filteredNavItems = sidebarNavItems.filter((item) => {
-    // La lógica para items públicos no cambia
     return true;
   });
 
@@ -100,7 +104,6 @@ export default function Sidebar() {
           </Button>
         </div>
 
-        {/* 4. RENDERIZAMOS LA LISTA COMPLETA DE ITEMS */}
         <nav className={`flex-1 px-4 space-y-2`}>
           {allNavItems.map((item) => (
             <Link

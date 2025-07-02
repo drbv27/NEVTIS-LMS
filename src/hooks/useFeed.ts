@@ -14,15 +14,23 @@ import { toast } from "sonner";
 export type FeedType = "global" | "following";
 const POSTS_PER_PAGE = 5;
 
+// 1. LA FUNCIÓN AHORA NECESITA EL ID DE LA COMUNIDAD ACTIVA
 async function fetchPosts({
   tag,
   feedType,
   pageParam = 0,
+  activeCommunityId, // <-- Nuevo parámetro
 }: {
   tag: string | null;
   feedType: FeedType;
   pageParam: number;
+  activeCommunityId: string | null; // <-- Nuevo parámetro
 }) {
+  // Si no hay una comunidad activa, no mostramos nada.
+  if (!activeCommunityId) {
+    return { posts: [], nextCursor: undefined };
+  }
+
   const supabase = createSupabaseBrowserClient();
   const fromView =
     feedType === "following" ? "followed_posts_view" : "posts_with_details";
@@ -50,6 +58,10 @@ async function fetchPosts({
     query = supabase.from(fromView).select(baseSelect);
   }
 
+  // 2. AÑADIMOS EL FILTRO CLAVE POR 'community_id'
+  // Esto asegura que solo traemos posts de la comunidad activa.
+  query = query.eq("community_id", activeCommunityId);
+
   const { data, error } = await query
     .order("created_at", { ascending: false })
     .order("created_at", { foreignTable: "comments", ascending: false })
@@ -67,34 +79,37 @@ async function fetchPosts({
   };
 }
 
+// 3. EL HOOK AHORA LEE 'activeCommunityId' DEL STORE
 export function useFeed(
   tag: string | null = null,
   feedType: FeedType = "global"
 ) {
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
+  const { user, activeCommunityId } = useAuthStore(); // <-- Leemos el ID activo
 
-  // --- INICIO DE LA CORRECCIÓN ---
-  // 1. DESTRUCTURAMOS EL `isLoading` QUE NOS DA EL HOOK DIRECTAMENTE
   const {
     data,
     error,
     fetchNextPage,
     hasNextPage,
-    isLoading, // <-- ESTE ES EL `isLoading` CORRECTO
+    isLoading,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["posts", feedType, tag],
-    queryFn: ({ pageParam }) => fetchPosts({ tag, feedType, pageParam }),
+    // 4. AÑADIMOS 'activeCommunityId' A LA QUERY KEY
+    // Esto hará que el feed se refresque automáticamente al cambiar de comunidad.
+    queryKey: ["posts", feedType, tag, activeCommunityId],
+    queryFn: ({ pageParam }) =>
+      fetchPosts({ tag, feedType, pageParam, activeCommunityId }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    enabled: !!user,
+    // La query solo se activa si hay usuario Y una comunidad activa.
+    enabled: !!user && !!activeCommunityId,
   });
-  // --- FIN DE LA CORRECCIÓN ---
 
   const posts = data?.pages.flatMap((page) => page.posts) ?? [];
 
-  // --- LAS MUTACIONES PERMANECEN IGUAL ---
+  // Las mutaciones no necesitan cambios, ya que invalidar la query 'posts'
+  // refrescará la vista actual.
   const { mutate: toggleLike, isPending: isLiking } = useMutation({
     mutationFn: async (postId: string) => {
       if (!user) throw new Error("Debes iniciar sesión.");

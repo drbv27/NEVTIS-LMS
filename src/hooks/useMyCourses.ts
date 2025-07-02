@@ -1,4 +1,4 @@
-//src/hooks/useMyCourses.ts
+// src/hooks/useMyCourses.ts
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -6,72 +6,69 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { type Course } from "@/lib/types";
 
-// La función que obtiene los datos, ahora con la lógica de transformación correcta
-async function fetchMyCourses(userId?: string): Promise<Course[]> {
-  if (!userId) return [];
+// La función de fetching ahora necesita saber qué comunidad está activa
+async function fetchMyCourses(
+  userId: string | undefined,
+  activeCommunityId: string | null
+): Promise<Course[]> {
+  // Si no hay usuario o no hay una comunidad activa seleccionada, no devolvemos cursos.
+  if (!userId || !activeCommunityId) {
+    return [];
+  }
 
   const supabase = createSupabaseBrowserClient();
 
-  // Esta consulta está bien, el problema es cómo procesamos su resultado.
+  // La consulta ahora es más simple:
+  // Obtenemos todos los cursos que pertenecen a la comunidad activa.
+  // La seguridad de si el usuario puede verlos o no ya está manejada por las RLS.
   const { data, error } = await supabase
-    .from("enrollments")
+    .from("courses")
     .select(
       `
-      courses (
-        id,
-        title,
-        description,
-        image_url,
-        is_free,
-        categories ( name, slug )
-      )
+      id,
+      title,
+      description,
+      image_url,
+      is_free,
+      price,
+      stripe_price_id,
+      status,
+      community_id,
+      categories ( name, slug )
     `
     )
-    .eq("student_id", userId);
+    .eq("community_id", activeCommunityId)
+    .eq("status", "published");
 
   if (error) {
-    console.error("Error fetching enrolled courses:", error);
+    console.error("Error fetching my courses:", error);
     throw new Error(error.message);
   }
 
   if (!data) return [];
 
-  // --- INICIO DE LA CORRECCIÓN DEFINITIVA ---
+  // Transformamos la propiedad 'categories' como ya sabemos
+  const transformedData = data.map((course) => {
+    const categoryObject = Array.isArray(course.categories)
+      ? course.categories[0]
+      : course.categories;
+    return { ...course, categories: categoryObject || null };
+  });
 
-  // 1. Usamos flatMap para extraer y aplanar la lista de cursos.
-  //    Esto convierte el array de arrays en un solo array de cursos.
-  const coursesFromEnrollments = data.flatMap(
-    (enrollment) => enrollment.courses || []
-  );
-
-  // 2. Transformamos la propiedad 'categories' de cada curso, igual que en useCourses.ts
-  const correctlyTypedCourses = coursesFromEnrollments
-    .map((course) => {
-      if (!course) return null; // Añadimos un chequeo de seguridad
-
-      const categoryObject =
-        Array.isArray(course.categories) && course.categories.length > 0
-          ? course.categories[0]
-          : course.categories;
-
-      return {
-        ...course,
-        categories: categoryObject || null,
-      };
-    })
-    .filter(Boolean); // Filtramos cualquier posible nulo
-
-  return correctlyTypedCourses as Course[];
-  // --- FIN DE LA CORRECCIÓN DEFINITIVA ---
+  return transformedData as Course[];
 }
 
-// El hook no necesita cambios
+// El hook ahora depende del 'activeCommunityId' del store
 export function useMyCourses() {
-  const { user } = useAuthStore();
+  const { user, activeCommunityId } = useAuthStore();
 
   return useQuery<Course[], Error>({
-    queryKey: ["my-courses", user?.id],
-    queryFn: () => fetchMyCourses(user?.id),
-    enabled: !!user,
+    // La queryKey ahora incluye el activeCommunityId.
+    // Esto es CRUCIAL: si el usuario cambia de comunidad, React Query
+    // automáticamente volverá a ejecutar esta query con el nuevo ID.
+    queryKey: ["my-courses", user?.id, activeCommunityId],
+    queryFn: () => fetchMyCourses(user?.id, activeCommunityId),
+    // La query solo se ejecuta si hay un usuario y una comunidad activa.
+    enabled: !!user && !!activeCommunityId,
   });
 }

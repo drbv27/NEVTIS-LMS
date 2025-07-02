@@ -17,11 +17,12 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
     .from("courses")
     .select(
       `
-      id, title, description, image_url, is_free, status, price, stripe_price_id,
+      id, title, description, image_url, is_free, status, price, 
+      stripe_price_id, community_id,
       categories ( id, name, slug ),
       profiles ( full_name ),
       modules ( id, title, lessons ( id, title, lesson_type, lesson_order ) )
-    `
+      `
     )
     .eq("id", courseId)
     .single();

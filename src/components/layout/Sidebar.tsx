@@ -12,14 +12,25 @@ import {
   Compass,
   UserCircle,
   ChevronLeft,
+  ChevronsUpDown, // 1. IMPORTAMOS un nuevo ícono
   X,
   Component,
   ShieldCheck,
   Users2,
-  Library, // 1. IMPORTAMOS un nuevo ícono para las comunidades
+  Library,
 } from "lucide-react";
 import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // 2. IMPORTAMOS Avatar
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"; // 3. IMPORTAMOS DropdownMenu
 
+// Las listas de navegación no cambian
 const sidebarNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: Home },
   { title: "Mis Cursos", href: "/my-courses", icon: BookMarked },
@@ -29,12 +40,11 @@ const sidebarNavItems = [
 ];
 
 const adminNavItems = [
-  // 2. AÑADIMOS EL NUEVO ENLACE A LA LISTA DE ADMIN
   {
     title: "Gestión Comunidades",
     href: "/admin/communities",
     icon: Library,
-    requiredRoles: ["admin"], // Solo los admins pueden gestionar comunidades
+    requiredRoles: ["admin"],
   },
   {
     title: "Gestión Cursos",
@@ -52,20 +62,28 @@ const adminNavItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { isMainSidebarOpen, toggleMainSidebar } = useAuthStore();
+  // 4. OBTENEMOS LOS NUEVOS ESTADOS Y ACCIONES DEL STORE
+  const {
+    isMainSidebarOpen,
+    toggleMainSidebar,
+    userMemberships,
+    activeCommunityId,
+    setActiveCommunityId,
+  } = useAuthStore();
+
   const { profile, isLoading: isProfileLoading } = useProfile();
 
-  const filteredNavItems = sidebarNavItems.filter((item) => {
-    return true;
-  });
+  // Lógica para encontrar la comunidad activa actual
+  const activeCommunity = userMemberships.find(
+    (m) => m.community_id === activeCommunityId
+  )?.communities;
 
+  // Lógica de filtrado de enlaces (sin cambios)
+  const filteredNavItems = sidebarNavItems.filter(() => true);
   const filteredAdminNavItems = adminNavItems.filter((item) => {
-    if (isProfileLoading || !profile) {
-      return false;
-    }
+    if (isProfileLoading || !profile) return false;
     return item.requiredRoles.includes(profile.role);
   });
-
   const allNavItems = [...filteredNavItems, ...filteredAdminNavItems];
 
   return (
@@ -75,10 +93,11 @@ export default function Sidebar() {
       }`}
     >
       <div
-        className={`flex flex-col gap-y-7 overflow-y-auto ${
+        className={`flex flex-col gap-y-4 overflow-y-auto ${
           isMainSidebarOpen ? "w-64" : "sm:w-20"
         }`}
       >
+        {/* Logo (sin cambios) */}
         <div
           className={`h-16 shrink-0 flex items-center ${
             isMainSidebarOpen ? "px-6" : "justify-center"
@@ -104,6 +123,60 @@ export default function Sidebar() {
           </Button>
         </div>
 
+        {/* 5. NUEVO SELECTOR DE COMUNIDAD */}
+        <div className={`px-4 ${!isMainSidebarOpen && "px-2"}`}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className={`w-full justify-between ${
+                  !isMainSidebarOpen && "justify-center"
+                }`}
+              >
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={activeCommunity?.image_url || ""} />
+                    <AvatarFallback>
+                      <Library className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <span
+                    className={`truncate ${!isMainSidebarOpen && "hidden"}`}
+                  >
+                    {activeCommunity?.name || "Seleccionar..."}
+                  </span>
+                </div>
+                <ChevronsUpDown
+                  className={`h-4 w-4 text-muted-foreground ${
+                    !isMainSidebarOpen && "hidden"
+                  }`}
+                />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuLabel>Tus Comunidades</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {userMemberships.map((membership) => (
+                <DropdownMenuItem
+                  key={membership.community_id}
+                  onClick={() => setActiveCommunityId(membership.community_id)}
+                >
+                  <Avatar className="h-6 w-6 mr-2">
+                    <AvatarImage
+                      src={membership.communities?.image_url || ""}
+                    />
+                    <AvatarFallback>
+                      <Library className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <span>{membership.communities?.name}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Navegación principal (sin cambios) */}
         <nav className={`flex-1 px-4 space-y-2`}>
           {allNavItems.map((item) => (
             <Link
@@ -122,6 +195,8 @@ export default function Sidebar() {
             </Link>
           ))}
         </nav>
+
+        {/* Botón de colapsar (sin cambios) */}
         <div className="p-4 mt-auto border-t shrink-0 hidden sm:block">
           <Button
             onClick={toggleMainSidebar}

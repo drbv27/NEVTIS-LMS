@@ -105,7 +105,7 @@ export default function CommentsDialog({
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Publicación de {post.profiles?.full_name}</DialogTitle>
+            <DialogTitle>Publicación de {post.author_full_name}</DialogTitle>
             <DialogDescription>
               Viendo comentarios y respondiendo a esta publicación.
             </DialogDescription>
