@@ -17,15 +17,46 @@ async function fetchLessonData(
 
   const supabase = createSupabaseBrowserClient();
 
+  // En la función fetchLessonData dentro de useLesson.ts
+
+  // Primero, obtenemos el community_id del curso que se está intentando ver.
+  const { data: courseData, error: courseError } = await supabase
+    .from("courses")
+    .select("community_id")
+    .eq("id", courseId)
+    .single();
+
+  if (courseError || !courseData) {
+    throw new Error("No se pudo encontrar el curso para verificar el acceso.");
+  }
+
+  // Verificación 1: ¿Es miembro activo de la comunidad?
+  const { count: membershipCount, error: membershipError } = await supabase
+    .from("community_memberships")
+    .select("user_id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("community_id", courseData.community_id)
+    .eq("status", "active");
+
+  const isCommunityMember = (membershipCount ?? 0) > 0;
+
+  // Verificación 2: ¿Tiene una inscripción directa?
   const { count: enrollmentCount, error: enrollmentError } = await supabase
     .from("enrollments")
     .select("id", { count: "exact", head: true })
     .eq("student_id", userId)
     .eq("course_id", courseId);
 
-  if (enrollmentError) throw new Error("Error al verificar tu inscripción.");
-  if (enrollmentCount === 0)
-    throw new Error("Acceso denegado: No estás inscrito en este curso.");
+  const hasDirectEnrollment = (enrollmentCount ?? 0) > 0;
+
+  // Regla final: Si no es miembro Y TAMPOCO tiene inscripción directa, se deniega el acceso.
+  if (!isCommunityMember && !hasDirectEnrollment) {
+    throw new Error(
+      "Acceso denegado: No eres miembro de la comunidad ni estás inscrito en este curso."
+    );
+  }
+
+  // Si pasa la verificación, la función continúa como antes...
 
   const { data: courseInfo, error: courseInfoError } = await supabase
     .from("courses")
