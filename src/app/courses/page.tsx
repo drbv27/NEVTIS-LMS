@@ -1,15 +1,13 @@
 // src/app/courses/page.tsx
-import CourseCatalog from "@/components/courses/CourseCatalog";
+import CommunityCatalog from "@/components/communities/CommunityCatalog";
 import { Suspense } from "react";
 
-// El componente de página en sí es muy simple
-export default function CoursesPage() {
+export default function CommunitiesPage() {
   return (
-    // Suspense es necesario porque CourseCatalog usa useSearchParams
-    <Suspense
-      fallback={<p className="text-center py-10">Cargando filtros...</p>}
-    >
-      <CourseCatalog />
+    // Suspense no es estrictamente necesario aquí ya que el hook usa
+    // isLoading, pero es una buena práctica mantenerlo.
+    <Suspense>
+      <CommunityCatalog />
     </Suspense>
   );
 }
