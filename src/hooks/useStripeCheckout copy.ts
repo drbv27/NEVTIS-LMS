@@ -5,32 +5,29 @@ import { useMutation } from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-// --- INICIO DE LA CORRECCIÓN ---
-
-// 1. Actualizamos el Payload para que espere un communityId
+// Define la estructura de datos que necesita nuestra Edge Function
 interface CheckoutPayload {
-  communityId: string;
+  priceId: string;
+  courseId: string;
 }
 
-// 2. La función ahora recibe y usa el communityId
-async function createCheckoutSession({ communityId }: CheckoutPayload) {
+// La función que llama a nuestra Edge Function
+async function createCheckoutSession({ priceId, courseId }: CheckoutPayload) {
   const supabase = createSupabaseBrowserClient();
-
   const { data, error } = await supabase.functions.invoke(
     "create-stripe-checkout",
     {
-      // 3. Enviamos el communityId en el cuerpo de la petición
-      body: { communityId },
+      body: { priceId, courseId },
     }
   );
 
-  // --- FIN DE LA CORRECCIÓN ---
-
   if (error) {
+    // Esto captura errores de red o si la función no se encuentra
     throw new Error(`Error de red o de función: ${error.message}`);
   }
 
   if (data.error) {
+    // Esto captura los errores lógicos que devolvemos desde dentro de la función
     throw new Error(data.error);
   }
 
@@ -38,13 +35,16 @@ async function createCheckoutSession({ communityId }: CheckoutPayload) {
     throw new Error("No se recibió la URL de pago desde el servidor.");
   }
 
+  // Si todo va bien, devolvemos la URL de pago
   return data.checkoutUrl;
 }
 
+// El hook que exportaremos para usar en nuestros componentes
 export function useStripeCheckout() {
   const { mutate: redirectToCheckout, isPending: isRedirecting } = useMutation({
     mutationFn: createCheckoutSession,
     onSuccess: (checkoutUrl) => {
+      // Si la mutación es exitosa (obtenemos una URL), redirigimos al usuario
       window.location.href = checkoutUrl;
     },
     onError: (error) => {

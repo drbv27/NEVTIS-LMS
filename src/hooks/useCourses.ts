@@ -5,11 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { type Course, type Category } from "@/lib/types";
 
-// --- FUNCIÓN PARA OBTENER CURSOS (CORREGIDA) ---
-async function fetchCourses(categorySlug: string | null) {
+// La función de fetching ahora acepta un segundo parámetro: communitySlug
+async function fetchCourses(
+  categorySlug: string | null,
+  communitySlug: string | null // <-- Nuevo parámetro
+) {
   const supabase = createSupabaseBrowserClient();
-
-  // Empezamos la query base para todos los cursos publicados
   let query = supabase
     .from("courses")
     .select(
@@ -17,66 +18,80 @@ async function fetchCourses(categorySlug: string | null) {
     )
     .eq("status", "published");
 
-  // --- INICIO DE LA CORRECCIÓN ---
-  // Si hay un filtro de categoría, necesitamos el ID de esa categoría.
+  // --- LÓGICA DE FILTRADO MEJORADA ---
+
+  // Si se proporciona un communitySlug, filtramos por él.
+  if (communitySlug) {
+    const { data: communityData, error: communityError } = await supabase
+      .from("communities")
+      .select("id")
+      .eq("slug", communitySlug)
+      .single();
+
+    if (communityError || !communityData) {
+      console.error(
+        "Error o no se encontró la comunidad por slug",
+        communityError
+      );
+      return []; // Devuelve vacío si la comunidad no existe
+    }
+    // Añadimos el filtro por el ID de la comunidad
+    query = query.eq("community_id", communityData.id);
+  }
+
+  // El filtro de categoría sigue funcionando igual que antes
   if (categorySlug) {
-    // 1. Obtenemos el ID de la categoría a partir de su slug.
     const { data: categoryData, error: categoryError } = await supabase
       .from("categories")
       .select("id")
       .eq("slug", categorySlug)
       .single();
 
-    if (categoryError) {
-      console.error("Error fetching category ID:", categoryError);
-      // Si no se encuentra la categoría, devolvemos un array vacío para no mostrar nada.
-      return [];
-    }
-
     if (categoryData) {
-      // 2. Aplicamos el filtro usando el category_id en la tabla de cursos.
       query = query.eq("category_id", categoryData.id);
     } else {
-      // Si el slug no corresponde a ninguna categoría, no devolvemos cursos.
       return [];
     }
   }
-  // --- FIN DE LA CORRECCIÓN ---
+  // --- FIN DE LA LÓGICA DE FILTRADO ---
 
-  const { data, error } = await query;
+  const { data, error } = await query.order("title", { ascending: true });
   if (error) throw new Error(error.message);
 
-  const transformedData = data.map((course) => {
-    const categoryObject = Array.isArray(course.categories)
+  const transformedData = data.map((course) => ({
+    ...course,
+    categories: Array.isArray(course.categories)
       ? course.categories[0]
-      : course.categories;
-    return { ...course, categories: categoryObject || null };
-  });
+      : course.categories,
+  }));
 
   return transformedData as Course[];
 }
 
-// La función fetchCategories y el hook useCourses no necesitan cambios.
+// ... (la función fetchCategories no cambia)
 async function fetchCategories() {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase
     .from("categories")
     .select("id, name, slug")
     .order("name", { ascending: true });
-
   if (error) throw new Error(error.message);
-
   return data as Category[];
 }
 
-export function useCourses(categorySlug: string | null) {
+// El hook ahora acepta el communitySlug y lo pasa a la query
+export function useCourses(
+  categorySlug: string | null,
+  communitySlug: string | null // <-- Nuevo parámetro
+) {
   const {
     data: courses,
     isLoading: isLoadingCourses,
     error: coursesError,
   } = useQuery({
-    queryKey: ["courses", categorySlug],
-    queryFn: () => fetchCourses(categorySlug),
+    // La queryKey ahora incluye el communitySlug para un cacheo correcto
+    queryKey: ["courses", categorySlug, communitySlug],
+    queryFn: () => fetchCourses(categorySlug, communitySlug),
   });
 
   const {
@@ -84,8 +99,8 @@ export function useCourses(categorySlug: string | null) {
     isLoading: isLoadingCategories,
     error: categoriesError,
   } = useQuery({
-    queryKey: ["categories"],
-    queryFn: fetchCategories,
+    queryKey: ["categories", communitySlug], // La query de categorías también debe depender de la comunidad
+    queryFn: fetchCategories, // A futuro, podríamos filtrar categorías por comunidad
     staleTime: 1000 * 60 * 60,
   });
 

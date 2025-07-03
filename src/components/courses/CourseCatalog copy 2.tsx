@@ -2,8 +2,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-// El hook ahora necesita el communitySlug
-import { useCourses } from "@/hooks/useCourses";
+import { useCourses } from "@/hooks/useCourses"; // <-- Nuestro hook
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -15,24 +14,21 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Filter } from "lucide-react";
 
-// Añadimos la nueva prop
-interface CourseCatalogProps {
-  communitySlug: string;
-}
-
-export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
+export default function CourseCatalog() {
   const searchParams = useSearchParams();
   const selectedCategorySlug = searchParams.get("category");
 
-  // Pasamos ambos slugs al hook
-  const { courses, categories, isLoading, error } = useCourses(
-    selectedCategorySlug,
-    communitySlug
-  );
+  // Usamos el hook para obtener todos los datos y estados
+  const { courses, categories, isLoading, error } =
+    useCourses(selectedCategorySlug);
+
+  // El resto del componente es casi idéntico al que tenías,
+  // pero ahora es mucho más "tonto", solo se dedica a renderizar.
 
   if (isLoading) {
-    return <p className="text-center py-10">Cargando cursos...</p>;
+    return <p className="text-center py-10">Cargando...</p>;
   }
 
   if (error) {
@@ -45,9 +41,18 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
 
   return (
     <div className="container mx-auto py-8">
-      {/* --- Filtros de Categoría (los enlaces ahora deben mantener el slug de la comunidad) --- */}
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          Nuestro Catálogo de Cursos
+        </h1>
+        <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          Encuentra la formación que necesitas para impulsar tu carrera.
+        </p>
+      </div>
+
+      {/* --- Filtros de Categoría --- */}
       <div className="mb-10 flex flex-wrap justify-center items-center gap-3">
-        <Link href={`/community/${communitySlug}`}>
+        <Link href="/courses">
           <Button
             variant={!selectedCategorySlug ? "default" : "outline"}
             size="sm"
@@ -57,10 +62,7 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
           </Button>
         </Link>
         {categories.map((category) => (
-          <Link
-            href={`/community/${communitySlug}?category=${category.slug}`}
-            key={category.id}
-          >
+          <Link href={`/courses?category=${category.slug}`} key={category.id}>
             <Button
               variant={
                 selectedCategorySlug === category.slug ? "default" : "outline"
@@ -74,7 +76,7 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
         ))}
       </div>
 
-      {/* --- Grid de Cursos (sin cambios en la lógica de renderizado) --- */}
+      {/* --- Grid de Cursos --- */}
       {courses.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {courses.map((course) => (
@@ -84,7 +86,7 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
             >
               <div className="relative w-full aspect-video">
                 <Image
-                  src={course.image_url || "/images/placeholder.png"}
+                  src={course.image_url || "/images/placeholder.png"} // Ten un placeholder en public/images
                   alt={`Imagen de ${course.title}`}
                   fill
                   className="object-cover"
@@ -94,19 +96,16 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
               <CardHeader>
                 {course.categories && (
                   <Badge variant="secondary" className="w-fit">
-                    {" "}
-                    {course.categories.name}{" "}
+                    {course.categories.name}
                   </Badge>
                 )}
                 <CardTitle className="mt-2 text-lg font-semibold line-clamp-2">
-                  {" "}
-                  {course.title}{" "}
+                  {course.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-gray-600 line-clamp-3">
-                  {" "}
-                  {course.description || "No hay descripción disponible."}{" "}
+                  {course.description || "No hay descripción disponible."}
                 </p>
               </CardContent>
               <CardFooter>

@@ -4,15 +4,40 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@12.12.0?target=deno";
 
-// Inicializamos Stripe con la clave secreta obtenida de las variables de entorno.
-// ¡IMPORTANTE! Esta clave NUNCA debe estar en el código del cliente.
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
-  // La API de Stripe requiere esta configuración cuando se usa en entornos como Deno.
   httpClient: Stripe.createFetchHttpClient(),
 });
 
+const getOrCreateStripeCustomer = async (userId: string, email: string) => {
+  const adminClient = createClient(
+    Deno.env.get("PROJECT_URL") ?? "",
+    Deno.env.get("SERVICE_ROLE_KEY") ?? ""
+  );
+
+  const { data: profileData } = await adminClient
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("id", userId)
+    .single();
+
+  if (profileData?.stripe_customer_id) {
+    return profileData.stripe_customer_id;
+  }
+
+  const customer = await stripe.customers.create({
+    email: email,
+    metadata: { supabase_user_id: userId },
+  });
+
+  await adminClient
+    .from("profiles")
+    .update({ stripe_customer_id: customer.id })
+    .eq("id", userId);
+
+  return customer.id;
+};
+
 serve(async (req) => {
-  // Manejo de la solicitud pre-vuelo (CORS)
   if (req.method === "OPTIONS") {
     return new Response("ok", {
       headers: {
@@ -24,13 +49,9 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Obtener los datos del cuerpo de la solicitud
-    const { priceId, courseId } = await req.json();
-    if (!priceId || !courseId) {
-      throw new Error("El ID del precio y el ID del curso son requeridos.");
-    }
+    const { communityId } = await req.json();
+    if (!communityId) throw new Error("El ID de la comunidad es requerido.");
 
-    // 2. Obtener el usuario autenticado que realiza la llamada
     const userClient = createClient(
       Deno.env.get("PROJECT_URL") ?? "",
       Deno.env.get("ANON_KEY") ?? "",
@@ -42,40 +63,61 @@ serve(async (req) => {
     );
     const {
       data: { user },
-      error: userError,
     } = await userClient.auth.getUser();
 
-    if (userError || !user) {
-      throw new Error("Acceso denegado: Usuario no autenticado.");
+    if (!user) throw new Error("Acceso denegado: Usuario no autenticado.");
+
+    const adminClient = createClient(
+      Deno.env.get("PROJECT_URL") ?? "",
+      Deno.env.get("SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // --- INICIO DE LA CORRECCIÓN ---
+    // 1. Ahora pedimos tanto el price_id como el slug
+    const { data: communityData, error: communityError } = await adminClient
+      .from("communities")
+      .select("stripe_price_id, slug")
+      .eq("id", communityId)
+      .single();
+
+    if (
+      communityError ||
+      !communityData ||
+      !communityData.stripe_price_id ||
+      !communityData.slug
+    ) {
+      throw new Error(
+        "Esta comunidad no tiene una suscripción o un slug configurado."
+      );
     }
 
-    // 3. Crear una Sesión de Checkout en Stripe
+    const priceId = communityData.stripe_price_id;
+    const communitySlug = communityData.slug; // Guardamos el slug
+    // --- FIN DE LA CORRECCIÓN ---
+
+    const customerId = await getOrCreateStripeCustomer(user.id, user.email!);
+
     const session = await stripe.checkout.sessions.create({
+      customer: customerId,
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      // URLs a las que Stripe redirigirá al usuario después de la compra
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      // 2. Usamos el communitySlug para construir las URLs correctas
       success_url: `${Deno.env.get(
         "SITE_URL"
-      )}/courses/${courseId}?purchase=success`,
-      cancel_url: `${Deno.env.get("SITE_URL")}/courses/${courseId}`,
-      // Guardamos metadatos importantes que usaremos después para la inscripción
-      metadata: {
-        user_id: user.id,
-        course_id: courseId,
+      )}/community/${communitySlug}?purchase=success`,
+      cancel_url: `${Deno.env.get("SITE_URL")}/community/${communitySlug}`,
+      subscription_data: {
+        metadata: {
+          supabase_user_id: user.id,
+          community_id: communityId,
+        },
       },
     });
 
-    if (!session.url) {
+    if (!session.url)
       throw new Error("No se pudo crear la sesión de pago de Stripe.");
-    }
 
-    // 4. Devolver la URL de la sesión de checkout al cliente
     return new Response(JSON.stringify({ checkoutUrl: session.url }), {
       headers: {
         "Content-Type": "application/json",
@@ -84,7 +126,6 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    // Devolvemos siempre status 200, el error viaja en el JSON
     return new Response(JSON.stringify({ error: error.message }), {
       headers: {
         "Content-Type": "application/json",
