@@ -8,6 +8,7 @@ export interface Community {
   image_url: string | null;
   stripe_price_id: string | null;
   created_at: string;
+  status: "draft" | "published";
 }
 
 export interface Profile {

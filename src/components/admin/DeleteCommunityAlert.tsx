@@ -32,7 +32,7 @@ export default function DeleteCommunityAlert({
     // Advertencia: La eliminación en cascada borrará cursos y posts.
     // Asegurarse de que el usuario entiende esto es crucial.
     deleteCommunity(
-      { id: community.id },
+      { id: community.id, image_url: community.image_url },
       {
         onSuccess: () => {
           onOpenChange(false); // Cierra la alerta si la eliminación es exitosa
