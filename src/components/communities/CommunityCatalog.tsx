@@ -12,9 +12,10 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge"; // Importamos Badge
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils"; // Importamos cn para clases condicionales
 
-// Un componente de esqueleto para mejorar la UX de carga
 function CommunityCardSkeleton() {
   return (
     <div className="flex flex-col space-y-3">
@@ -29,15 +30,16 @@ function CommunityCardSkeleton() {
 }
 
 export default function CommunityCatalog() {
-  // Usamos el hook que ya creamos para obtener las comunidades
   const { data: communities, isLoading, error } = usePublicCommunities();
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <CommunityCardSkeleton key={i} />
-        ))}
+      <div className="container mx-auto py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CommunityCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -64,42 +66,66 @@ export default function CommunityCatalog() {
 
       {communities && communities.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {communities.map((community) => (
-            <Card
-              key={community.id}
-              className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="relative w-full aspect-video">
-                <Image
-                  src={community.image_url || "/images/placeholder.png"}
-                  alt={`Imagen de ${community.name}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, 50vw, 33vw"
-                />
-              </div>
-              <CardHeader>
-                <CardTitle className="mt-2 text-lg font-semibold line-clamp-2">
-                  {community.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {community.description || "Explora esta comunidad."}
-                </p>
-              </CardContent>
-              <CardFooter>
-                {/* A futuro, este enlace llevará a /community/[slug] */}
-                <Link href="#" className="w-full">
-                  <Button className="w-full">Ver Comunidad</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+          {communities.map((community) => {
+            const isPublished = community.status === "published";
+            return (
+              <Card
+                key={community.id}
+                className={cn(
+                  "flex flex-col overflow-hidden shadow-lg transition-all duration-300",
+                  isPublished
+                    ? "hover:shadow-xl"
+                    : "opacity-60 grayscale cursor-not-allowed"
+                )}
+              >
+                <div className="relative w-full aspect-video">
+                  <Image
+                    src={community.image_url || "/images/placeholder.png"}
+                    alt={`Imagen de ${community.name}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 50vw, 33vw"
+                  />
+                  {!isPublished && (
+                    <Badge
+                      variant="secondary"
+                      className="absolute top-2 right-2"
+                    >
+                      Próximamente
+                    </Badge>
+                  )}
+                </div>
+                <CardHeader>
+                  <CardTitle className="mt-2 text-lg font-semibold line-clamp-2">
+                    {community.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {community.description || "Explora esta comunidad."}
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  {isPublished ? (
+                    <Link
+                      href={`/community/${community.slug}`}
+                      className="w-full"
+                    >
+                      <Button className="w-full">Ver Comunidad</Button>
+                    </Link>
+                  ) : (
+                    <Button className="w-full" disabled>
+                      Próximamente
+                    </Button>
+                  )}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-xl text-gray-500">
+          <p className="text-xl text-muted-foreground">
             No hay comunidades disponibles en este momento.
           </p>
         </div>
