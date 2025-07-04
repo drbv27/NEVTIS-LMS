@@ -107,9 +107,7 @@ export default function CreateLessonForm({
             <SelectItem value="video">📹 Video</SelectItem>
             <SelectItem value="pdf">📄 PDF</SelectItem>
             <SelectItem value="text">📝 Texto Enriquecido</SelectItem>
-            <SelectItem value="quiz" disabled>
-              🧠 Quiz (próximamente)
-            </SelectItem>
+            <SelectItem value="quiz">🧠 Quiz</SelectItem>
             <SelectItem value="code">💻 Código</SelectItem>
           </SelectContent>
         </Select>
