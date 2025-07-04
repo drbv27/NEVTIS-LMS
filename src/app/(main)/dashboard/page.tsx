@@ -1,12 +1,8 @@
 // src/app/(main)/dashboard/page.tsx
+import DashboardManager from "@/components/dashboard/DashboardManager";
 
 export default function DashboardPage() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p className="mt-2 text-gray-600">
-        Bienvenido a tu panel de control. Este contenido es protegido.
-      </p>
-    </div>
-  );
+  // La página ahora solo se encarga de renderizar el gestor,
+  // que contiene toda la lógica.
+  return <DashboardManager />;
 }
