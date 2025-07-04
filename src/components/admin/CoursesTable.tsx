@@ -29,7 +29,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import DeleteCourseAlert from "./DeleteCourseAlert"; // Importamos el diálogo de alerta
+import DeleteCourseAlert from "./DeleteCourseAlert";
+import TableSkeleton from "../shared/TableSkeleton";
 
 export default function CoursesTable() {
   const { data: courses, isLoading, error } = useAdminCourses();
@@ -39,7 +40,7 @@ export default function CoursesTable() {
   // Estado para controlar qué curso se va a eliminar y si el diálogo está abierto
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
 
-  if (isLoading) return <p>Cargando lista de cursos...</p>;
+  if (isLoading) return <TableSkeleton columns={5} />;
   if (error) return <p className="text-destructive">Error: {error.message}</p>;
 
   return (
