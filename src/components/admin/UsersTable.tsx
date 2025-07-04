@@ -15,17 +15,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react"; // 1. IMPORTAMOS el ícono de Papelera
+import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator, // 2. IMPORTAMOS el Separador
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import EditUserDialog from "./EditUserDialog";
-import DeleteUserAlert from "./DeleteUserAlert"; // 3. IMPORTAMOS la nueva alerta
+import DeleteUserAlert from "./DeleteUserAlert";
 
 function formatDate(dateString: string | undefined) {
   if (!dateString) return "N/A";
@@ -40,7 +40,7 @@ export default function UsersTable() {
   const { data: users, isLoading, error } = useAdminUsers();
 
   const [userToEdit, setUserToEdit] = useState<Profile | null>(null);
-  // 4. AÑADIMOS ESTADO PARA CONTROLAR QUÉ USUARIO SE VA A ELIMINAR
+
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
 
   if (isLoading) {

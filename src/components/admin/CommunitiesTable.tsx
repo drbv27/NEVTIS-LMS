@@ -24,7 +24,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import EditCommunityDialog from "./EditCommunityDialog";
-import DeleteCommunityAlert from "./DeleteCommunityAlert"; // 1. IMPORTAMOS la nueva alerta
+import DeleteCommunityAlert from "./DeleteCommunityAlert";
+import TableSkeleton from "../shared/TableSkeleton";
 
 function formatDate(dateString: string | undefined) {
   if (!dateString) return "N/A";
@@ -41,7 +42,7 @@ export default function CommunitiesTable() {
   const [communityToEdit, setCommunityToEdit] = useState<Community | null>(
     null
   );
-  // 2. AÑADIMOS ESTADO PARA CONTROLAR QUÉ COMUNIDAD SE VA A ELIMINAR
+
   const [communityToDelete, setCommunityToDelete] = useState<Community | null>(
     null
   );
