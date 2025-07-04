@@ -28,12 +28,7 @@ export default function LessonContentPlayer({
 
   // Comprobación más robusta
   const hasContent = lesson.content_url || lesson.content_text;
-  // Permitimos que los tipos 'code' y 'quiz' pasen aunque no tengan contenido inicial
-  if (
-    !hasContent &&
-    lesson.lesson_type !== "code" &&
-    lesson.lesson_type !== "quiz"
-  ) {
+  if (!hasContent) {
     return (
       <div className="p-6 text-center text-muted-foreground">
         Contenido no disponible para esta lección.

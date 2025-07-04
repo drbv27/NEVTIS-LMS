@@ -110,9 +110,7 @@ export default function CreateLessonForm({
             <SelectItem value="quiz" disabled>
               🧠 Quiz (próximamente)
             </SelectItem>
-            <SelectItem value="code" disabled>
-              💻 Código (próximamente)
-            </SelectItem>
+            <SelectItem value="code">💻 Código</SelectItem>
           </SelectContent>
         </Select>
       </div>
