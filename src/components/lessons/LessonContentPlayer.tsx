@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import ReactPlayer from "react-player/lazy";
 import PdfViewer from "./PdfViewer";
 import { type Lesson } from "@/lib/types";
+import CodeLessonPlayer from "./CodeLessonPlayer";
 
 interface LessonContentPlayerProps {
   lesson: Lesson;
@@ -75,16 +76,7 @@ export default function LessonContentPlayer({
 
     case "code":
       // Placeholder para el futuro editor de código
-      return (
-        <div className="p-6 bg-gray-100 dark:bg-gray-900 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">
-            Espacio para Editor de Código
-          </h3>
-          <p className="text-muted-foreground">
-            Esta lección contendrá un editor de código interactivo.
-          </p>
-        </div>
-      );
+      return <CodeLessonPlayer lesson={lesson} />;
 
     case "quiz":
       // Placeholder para el futuro componente de quiz

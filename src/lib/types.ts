@@ -68,6 +68,9 @@ export interface Lesson {
   content_text: string | null;
   module_id: string;
   is_completed?: boolean;
+  setup_code?: string | null;
+  solution_code?: string | null;
+  test_code?: string | null;
 }
 
 export interface Module {

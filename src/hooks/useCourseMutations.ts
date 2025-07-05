@@ -43,6 +43,11 @@ interface CreateLessonPayload {
   lessonType: Lesson["lesson_type"];
   file?: File | null;
   contentText?: string;
+  // --- INICIO DE LA MODIFICACIÓN ---
+  setup_code?: string | null;
+  solution_code?: string | null;
+  test_code?: string | null;
+  // --- FIN DE LA MODIFICACIÓN ---
 }
 interface UpdateLessonPayload {
   lessonId: string;
@@ -336,29 +341,20 @@ export function useCourseMutations() {
 
       let fileUrl: string | null = null;
 
-      // --- INICIO DE LÓGICA DE SUBIDA DE ARCHIVO ---
       if (payload.file) {
         const fileExt = payload.file.name.split(".").pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        // Ruta organizada: c(ID_CURSO)-m(ID_MODULO)-nombrearchivo.ext
         const filePath = `c${payload.courseId}-m${payload.moduleId}-${fileName}`;
-
-        // Determinamos el bucket correcto según el tipo de lección
         const bucket =
           payload.lessonType === "video" ? "lesson-videos" : "lesson-pdfs";
-
         const { error: uploadError } = await supabase.storage
           .from(bucket)
           .upload(filePath, payload.file);
-
         if (uploadError)
           throw new Error(`Error al subir el archivo: ${uploadError.message}`);
-
-        // Obtenemos la URL pública para guardarla en la tabla 'lessons'
         fileUrl = supabase.storage.from(bucket).getPublicUrl(filePath)
           .data.publicUrl;
       }
-      // --- FIN DE LÓGICA DE SUBIDA DE ARCHIVO ---
 
       const { count } = await supabase
         .from("lessons")
@@ -374,6 +370,10 @@ export function useCourseMutations() {
         content_url: fileUrl,
         content_text: payload.contentText,
         lesson_order: newLessonOrder,
+        // Guardamos los nuevos campos de código en la base de datos
+        setup_code: payload.setup_code,
+        solution_code: payload.solution_code,
+        test_code: payload.test_code,
       });
 
       if (insertError)

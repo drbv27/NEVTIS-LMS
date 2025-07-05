@@ -77,10 +77,14 @@ async function fetchLessonData(
   const { data: lessonsData, error: lessonsError } = await supabase
     .from("lessons")
     .select(
-      "id, title, description, lesson_type, content_url, content_text, lesson_order, module_id"
+      "id, title, description, lesson_type, content_url, content_text, lesson_order, module_id, setup_code, solution_code, test_code"
     )
     .in("module_id", moduleIds)
     .order("lesson_order", { ascending: true });
+  // --- INICIO DE LA DEPURACIÓN ---
+  // Vamos a inspeccionar los datos crudos que nos devuelve Supabase
+  console.log("DATOS CRUDOS RECIBIDOS DE LA TABLA 'lessons':", lessonsData);
+  // --- FIN DE LA DEPURACIÓN ---
 
   if (lessonsError)
     throw new Error(`Error al cargar las lecciones: ${lessonsError.message}`);
