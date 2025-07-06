@@ -173,7 +173,10 @@ export default function LessonView({
 
         <main className="flex-1 overflow-y-auto bg-muted/30">
           <div className="p-4 md:p-6">
-            <LessonContentPlayer lesson={currentLesson} />
+            <LessonContentPlayer
+              lesson={currentLesson}
+              onQuizPassed={markAsCompleted}
+            />
           </div>
         </main>
       </div>

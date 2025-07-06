@@ -1,4 +1,4 @@
-//src/components/admin/EditLessonDialog.tsx
+// src/components/admin/EditLessonDialog.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,9 +16,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Lesson } from "@/lib/types";
+import { type Lesson } from "@/lib/types";
 import TiptapEditor from "../shared/TiptapEditor";
 import Link from "next/link";
+import CodeEditor from "../shared/CodeEditor";
+import QuizEditor from "./QuizEditor"; // <-- 1. IMPORTAR
 
 interface EditLessonDialogProps {
   lesson: Lesson;
@@ -33,10 +35,16 @@ export default function EditLessonDialog({
   isOpen,
   onOpenChange,
 }: EditLessonDialogProps) {
+  // Estados generales
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
+  // Estados específicos de contenido
   const [file, setFile] = useState<File | null>(null);
   const [contentText, setContentText] = useState("");
+  const [setupCode, setSetupCode] = useState("");
+  const [solutionCode, setSolutionCode] = useState("");
+  const [testCode, setTestCode] = useState("");
 
   const { updateLesson, isUpdatingLesson } = useCourseMutations();
 
@@ -46,20 +54,109 @@ export default function EditLessonDialog({
       setTitle(lesson.title);
       setDescription(lesson.description || "");
       setContentText(lesson.content_text || "");
-      setFile(null); // Resetea la selección de archivo cada vez que se abre
+      setSetupCode(lesson.setup_code || "");
+      setSolutionCode(lesson.solution_code || "");
+      setTestCode(lesson.test_code || "");
+      setFile(null);
     }
   }, [isOpen, lesson]);
 
   const handleUpdate = () => {
+    // A futuro, esta mutación necesitará ser actualizada para guardar los datos del quiz
     updateLesson(
-      { lessonId: lesson.id, courseId, title, description, file, contentText },
+      {
+        lessonId: lesson.id,
+        courseId,
+        title,
+        description,
+        file,
+        contentText,
+        setup_code: setupCode,
+        solution_code: solutionCode,
+        test_code: testCode,
+      },
       { onSuccess: () => onOpenChange(false) }
     );
   };
 
+  // Función para renderizar el editor de contenido correcto según el tipo de lección
+  const renderContentEditor = () => {
+    switch (lesson.lesson_type) {
+      case "quiz":
+        // Si la lección es un quiz, renderizamos nuestro nuevo componente
+        return <QuizEditor lessonId={parseInt(lesson.id)} />;
+
+      case "code":
+        // Renderizamos los editores para una lección de código
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Instrucciones</Label>
+              <TiptapEditor content={contentText} onChange={setContentText} />
+            </div>
+            <div className="space-y-2">
+              <Label>Código de Configuración (Setup)</Label>
+              <CodeEditor value={setupCode} onChange={setSetupCode} />
+            </div>
+            <div className="space-y-2">
+              <Label>Código de Solución</Label>
+              <CodeEditor value={solutionCode} onChange={setSolutionCode} />
+            </div>
+            <div className="space-y-2">
+              <Label>Código de Pruebas (Tests)</Label>
+              <CodeEditor value={testCode} onChange={setTestCode} />
+            </div>
+          </div>
+        );
+
+      case "text":
+        return <TiptapEditor content={contentText} onChange={setContentText} />;
+
+      case "video":
+      case "pdf":
+        return (
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">
+              Contenido actual:
+            </p>
+            {lesson.content_url ? (
+              <Link
+                href={lesson.content_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline break-all block mb-4"
+              >
+                {lesson.content_url}
+              </Link>
+            ) : (
+              <p className="text-sm text-muted-foreground italic mb-4">
+                No hay contenido de archivo asignado.
+              </p>
+            )}
+            <Label htmlFor="edit-file" className="text-sm font-medium">
+              Reemplazar archivo
+            </Label>
+            <Input
+              id="edit-file"
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              accept={
+                lesson.lesson_type === "video" ? "video/*" : "application/pdf"
+              }
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Selecciona un archivo solo si deseas reemplazar el actual.
+            </p>
+          </div>
+        );
+      default:
+        return <p>Tipo de lección no soportado para edición.</p>;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Editar Lección: {lesson.title}</DialogTitle>
           <DialogDescription>
@@ -85,47 +182,10 @@ export default function EditLessonDialog({
           </div>
 
           <div className="space-y-2 border-t pt-4">
-            <Label>Contenido ({lesson.lesson_type})</Label>
-
-            {lesson.lesson_type === "text" ? (
-              <TiptapEditor content={contentText} onChange={setContentText} />
-            ) : (
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Contenido actual:
-                </p>
-                {lesson.content_url ? (
-                  <Link
-                    href={lesson.content_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline break-all block mb-4"
-                  >
-                    {lesson.content_url}
-                  </Link>
-                ) : (
-                  <p className="text-sm text-muted-foreground italic mb-4">
-                    No hay contenido de archivo asignado.
-                  </p>
-                )}
-                <Label htmlFor="edit-file" className="text-sm font-medium">
-                  Reemplazar archivo
-                </Label>
-                <Input
-                  id="edit-file"
-                  type="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  accept={
-                    lesson.lesson_type === "video"
-                      ? "video/*"
-                      : "application/pdf"
-                  }
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Selecciona un archivo solo si deseas reemplazar el actual.
-                </p>
-              </div>
-            )}
+            <Label className="font-semibold">
+              Contenido de la Lección ({lesson.lesson_type})
+            </Label>
+            {renderContentEditor()}
           </div>
         </div>
         <DialogFooter>

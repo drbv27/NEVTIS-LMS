@@ -6,13 +6,16 @@ import ReactPlayer from "react-player/lazy";
 import PdfViewer from "./PdfViewer";
 import { type Lesson } from "@/lib/types";
 import CodeLessonPlayer from "./CodeLessonPlayer";
+import QuizPlayer from "./QuizPlayer";
 
 interface LessonContentPlayerProps {
   lesson: Lesson;
+  onQuizPassed: () => void;
 }
 
 export default function LessonContentPlayer({
   lesson,
+  onQuizPassed,
 }: LessonContentPlayerProps) {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -79,14 +82,11 @@ export default function LessonContentPlayer({
       return <CodeLessonPlayer lesson={lesson} />;
 
     case "quiz":
-      // Placeholder para el futuro componente de quiz
       return (
-        <div className="p-6 bg-gray-100 dark:bg-gray-900 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Espacio para Quiz</h3>
-          <p className="text-muted-foreground">
-            Esta lección contendrá un cuestionario interactivo.
-          </p>
-        </div>
+        <QuizPlayer
+          lessonId={parseInt(lesson.id)}
+          onQuizPassed={onQuizPassed}
+        />
       );
     // --- FIN DE NUEVOS CASOS ---
 

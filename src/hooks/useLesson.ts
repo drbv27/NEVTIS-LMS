@@ -83,7 +83,7 @@ async function fetchLessonData(
     .order("lesson_order", { ascending: true });
   // --- INICIO DE LA DEPURACIÓN ---
   // Vamos a inspeccionar los datos crudos que nos devuelve Supabase
-  console.log("DATOS CRUDOS RECIBIDOS DE LA TABLA 'lessons':", lessonsData);
+  /* console.log("DATOS CRUDOS RECIBIDOS DE LA TABLA 'lessons':", lessonsData); */
   // --- FIN DE LA DEPURACIÓN ---
 
   if (lessonsError)

@@ -14,7 +14,7 @@ export default function LessonPage({
     <Suspense
       fallback={
         <div className="w-full h-screen flex items-center justify-center">
-          <p>Cargando...</p>
+          <p>Cargando lección...</p>
         </div>
       }
     >
