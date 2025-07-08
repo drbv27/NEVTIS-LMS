@@ -1,4 +1,4 @@
-//src/components/layout/Navbar.tsx
+// src/components/layout/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { LogOut, Menu } from "lucide-react";
 import { Button } from "../ui/button";
+import NotificationsBell from "../notifications/NotificationsBell"; // <-- 1. IMPORTAR
 
 export default function Navbar() {
   const { user, isLoading, toggleMainSidebar } = useAuthStore();
@@ -22,8 +23,6 @@ export default function Navbar() {
     <header className="bg-background sticky top-0 z-20 border-b border-border h-16 flex items-center">
       <nav className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
-          {/* --- INICIO DE LA CORRECCIÓN --- */}
-          {/* GRUPO IZQUIERDO: Contiene el botón de menú móvil y el logo en desktop */}
           <div className="flex items-center gap-4">
             <Button
               onClick={toggleMainSidebar}
@@ -33,16 +32,15 @@ export default function Navbar() {
             >
               <Menu className="h-6 w-6" />
             </Button>
-            {/* El logo que se muestra en la barra principal ahora es innecesario aquí, 
-                ya que lo tenemos en la Sidebar. Esto limpia la Navbar. */}
           </div>
 
-          {/* GRUPO DERECHO: Contiene el menú de usuario */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {isLoading ? (
               <div className="h-8 w-24 bg-muted rounded-md animate-pulse"></div>
             ) : user ? (
               <>
+                {/* --- 2. AÑADIR EL COMPONENTE DE LA CAMPANA --- */}
+                <NotificationsBell />
                 <span className="hidden sm:block text-sm font-medium text-muted-foreground">
                   {user.email}
                 </span>
@@ -61,7 +59,6 @@ export default function Navbar() {
               </Link>
             )}
           </div>
-          {/* --- FIN DE LA CORRECCIÓN --- */}
         </div>
       </nav>
     </header>
