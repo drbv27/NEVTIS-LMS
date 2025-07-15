@@ -105,7 +105,7 @@ export default function EditQuestionDialog({
         lessonId,
         questionId: question.id,
         questionText,
-        options: finalOptions as any, // Casteamos porque la firma espera id opcional
+        options: finalOptions,
       },
       {
         onSuccess: () => onOpenChange(false),

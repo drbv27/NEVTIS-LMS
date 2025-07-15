@@ -1,7 +1,9 @@
 // src/hooks/useQuizEditor.ts
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery /* , useMutation, useQueryClient */,
+} from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 

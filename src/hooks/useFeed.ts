@@ -1,4 +1,3 @@
-// src/hooks/useFeed.ts
 "use client";
 
 import {
@@ -15,7 +14,6 @@ import { toast } from "sonner";
 export type FeedType = "global" | "following";
 const POSTS_PER_PAGE = 5;
 
-// Definimos el tipo para el contexto de la mutación optimista
 type LikeMutationContext = {
   previousPosts?: InfiniteData<{
     posts: Post[];
@@ -23,14 +21,17 @@ type LikeMutationContext = {
   }>;
 };
 
-// --- INICIO DE LA CORRECCIÓN ---
-// El payload para crear un post ahora requiere el communityId
 interface CreatePostPayload {
   content: string;
   imageFile: File | null;
   communityId: string;
 }
-// --- FIN DE LA CORRECCIÓN ---
+
+// NUEVO: Definimos el payload para borrar un comentario
+interface DeleteCommentPayload {
+  commentId: number;
+  postId: string; // Necesario para invalidar la caché del post
+}
 
 async function fetchPosts({
   tag,
@@ -43,6 +44,7 @@ async function fetchPosts({
   pageParam: number;
   activeCommunityId: string | null;
 }) {
+  // ... (código de fetchPosts sin cambios)
   if (!activeCommunityId) {
     return { posts: [], nextCursor: undefined };
   }
@@ -86,13 +88,24 @@ async function fetchPosts({
   };
 }
 
+// NUEVO: Función asíncrona para eliminar un comentario
+async function deleteCommentFn({ commentId }: DeleteCommentPayload) {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase
+    .from("comments")
+    .delete()
+    .eq("id", commentId);
+  if (error) {
+    throw new Error(`Error al eliminar el comentario: ${error.message}`);
+  }
+}
+
 export function useFeed(
   tag: string | null = null,
   feedType: FeedType = "global"
 ) {
   const queryClient = useQueryClient();
   const { user, activeCommunityId } = useAuthStore();
-
   const queryKey = ["posts", feedType, tag, activeCommunityId];
 
   const {
@@ -103,6 +116,7 @@ export function useFeed(
     isLoading,
     isFetchingNextPage,
   } = useInfiniteQuery({
+    // ... (código de useInfiniteQuery sin cambios)
     queryKey,
     queryFn: ({ pageParam }) =>
       fetchPosts({ tag, feedType, pageParam, activeCommunityId }),
@@ -113,14 +127,13 @@ export function useFeed(
 
   const posts = data?.pages.flatMap((page) => page.posts) ?? [];
 
-  // --- INICIO DE LA CORRECCIÓN ---
-  // Mutación de 'like' con el tipo de contexto correcto
   const { mutate: toggleLike, isPending: isLiking } = useMutation<
     void,
     Error,
     string,
     LikeMutationContext
   >({
+    // ... (código de toggleLike sin cambios)
     mutationFn: async (postId: string) => {
       if (!user) throw new Error("Debes iniciar sesión.");
       const supabase = createSupabaseBrowserClient();
@@ -172,8 +185,8 @@ export function useFeed(
     },
   });
 
-  // Mutación de 'createPost' que ahora incluye el communityId
   const { mutate: createPost, isPending: isCreatingPost } = useMutation({
+    // ... (código de createPost sin cambios)
     mutationFn: async ({
       content,
       imageFile,
@@ -224,10 +237,9 @@ export function useFeed(
       toast.error(`Error al publicar: ${err.message}`);
     },
   });
-  // --- FIN DE LA CORRECCIÓN ---
 
-  // ... (el resto de las mutaciones no cambian)
   const { mutate: createComment, isPending: isCreatingComment } = useMutation({
+    // ... (código de createComment sin cambios)
     mutationFn: async ({
       postId,
       content,
@@ -253,6 +265,7 @@ export function useFeed(
   });
 
   const { mutate: updatePost, isPending: isUpdatingPost } = useMutation({
+    // ... (código de updatePost sin cambios)
     mutationFn: async ({
       postId,
       content,
@@ -275,6 +288,7 @@ export function useFeed(
   });
 
   const { mutate: deletePost, isPending: isDeletingPost } = useMutation({
+    // ... (código de deletePost sin cambios)
     mutationFn: async (postId: string) => {
       const supabase = createSupabaseBrowserClient();
       const { data: postData } = await supabase
@@ -298,6 +312,24 @@ export function useFeed(
     onError: (err) => toast.error(err.message),
   });
 
+  // NUEVO: Añadimos la mutación para eliminar un comentario
+  const { mutate: deleteComment, isPending: isDeletingComment } = useMutation<
+    void,
+    Error,
+    DeleteCommentPayload
+  >({
+    mutationFn: deleteCommentFn,
+    onSuccess: (_, variables) => {
+      toast.success("Comentario eliminado.");
+      // Invalidamos la query de comentarios y la de posts (para el contador)
+      queryClient.invalidateQueries({
+        queryKey: ["comments", variables.postId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   return {
     posts,
     error,
@@ -315,5 +347,8 @@ export function useFeed(
     isLiking,
     createComment,
     isCreatingComment,
+    // NUEVO: Exportamos las funciones de borrado de comentarios
+    deleteComment,
+    isDeletingComment,
   };
 }

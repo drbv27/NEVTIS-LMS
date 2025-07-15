@@ -50,6 +50,9 @@ export interface Course {
     name: string;
     slug: string;
   } | null;
+  category_id?: number | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CourseDetails extends Course {
@@ -71,12 +74,15 @@ export interface Lesson {
   setup_code?: string | null;
   solution_code?: string | null;
   test_code?: string | null;
+  lesson_order?: number;
+  updated_at?: string;
 }
 
 export interface Module {
   id: string;
   title: string;
   lessons: Lesson[];
+  module_order?: number;
 }
 
 export interface LessonPageData {

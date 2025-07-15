@@ -13,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+//import { toast } from "sonner";
 
 interface DeleteCommunityAlertProps {
   community: Community;
@@ -38,6 +38,7 @@ export default function DeleteCommunityAlert({
           onOpenChange(false); // Cierra la alerta si la eliminación es exitosa
         },
         onError: (error) => {
+          console.log("error", error);
           // El toast de error ya se muestra en el hook, pero podríamos añadir lógica extra aquí si fuera necesario.
         },
       }

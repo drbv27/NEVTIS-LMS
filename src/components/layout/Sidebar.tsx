@@ -12,15 +12,16 @@ import {
   Compass,
   UserCircle,
   ChevronLeft,
-  ChevronsUpDown, // 1. IMPORTAMOS un nuevo ícono
+  ChevronsUpDown,
   X,
   Component,
   ShieldCheck,
   Users2,
+  LayoutGrid,
   Library,
 } from "lucide-react";
 import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // 2. IMPORTAMOS Avatar
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +41,12 @@ const sidebarNavItems = [
 ];
 
 const adminNavItems = [
+  {
+    title: "Gestión de Categorías",
+    href: "/admin/categories",
+    icon: LayoutGrid,
+    requiredRoles: ["admin", "teacher"],
+  },
   {
     title: "Gestión Comunidades",
     href: "/admin/communities",

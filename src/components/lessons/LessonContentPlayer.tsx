@@ -93,7 +93,7 @@ export default function LessonContentPlayer({
     default:
       return (
         <div className="p-6 text-center text-muted-foreground">
-          Tipo de lección '{lesson.lesson_type}' no soportado.
+          Tipo de lección &apos;{lesson.lesson_type}&apos; no soportado.
         </div>
       );
   }

@@ -69,7 +69,7 @@ export default function NotificationItem({
             {notificationText}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            "{notification.post_content_preview}..."
+            &quot;{notification.post_content_preview}...&quot;
           </p>
           <p className="text-xs text-blue-500 mt-2">
             {timeAgo(notification.created_at)}

@@ -56,9 +56,12 @@ interface UpdateLessonPayload {
   description: string | null;
   file?: File | null;
   contentText?: string;
+  setup_code?: string | null;
+  solution_code?: string | null;
+  test_code?: string | null;
 }
 interface DeleteLessonPayload {
-  lesson: Lesson; // Pasamos el objeto lección completo
+  lesson: Lesson;
   courseId: string;
 }
 interface UpdateCourseStatusPayload {
@@ -152,7 +155,7 @@ export function useCourseMutations() {
         imageUrl = supabase.storage.from("course-images").getPublicUrl(filePath)
           .data.publicUrl;
       }
-      const courseUpdateData: { [key: string]: any } = {
+      const courseUpdateData: Partial<Course> = {
         is_free: payload.is_free,
         price: payload.is_free ? null : payload.price,
         stripe_price_id: payload.is_free ? null : payload.stripe_price_id,
@@ -391,10 +394,14 @@ export function useCourseMutations() {
   });
 
   // --- MUTACIÓN PARA ACTUALIZAR UNA LECCIÓN (REESCRITA) ---
-  const { mutate: updateLesson, isPending: isUpdatingLesson } = useMutation({
-    mutationFn: async (payload: any) => {
+  const { mutate: updateLesson, isPending: isUpdatingLesson } = useMutation<
+    void,
+    Error,
+    UpdateLessonPayload
+  >({
+    mutationFn: async (payload: UpdateLessonPayload) => {
       const supabase = createSupabaseBrowserClient();
-      const lessonUpdateData: { [key: string]: any } = {
+      const lessonUpdateData: Partial<Lesson> = {
         title: payload.title,
         description: payload.description,
         content_text: payload.contentText, // Para guardar texto de Tiptap
@@ -442,7 +449,11 @@ export function useCourseMutations() {
   });
 
   // --- MUTACIÓN PARA ELIMINAR LECCIÓN (REESCRITA Y CON DEPURACIÓN) ---
-  const { mutate: deleteLesson, isPending: isDeletingLesson } = useMutation({
+  const { mutate: deleteLesson, isPending: isDeletingLesson } = useMutation<
+    void,
+    Error,
+    DeleteLessonPayload
+  >({
     mutationFn: async (payload: { lesson: Lesson; courseId: string }) => {
       const supabase = createSupabaseBrowserClient();
 
@@ -553,7 +564,11 @@ export function useCourseMutations() {
     },
   });
   // --- NUEVA MUTACIÓN PARA ELIMINAR MÓDULO Y SUS ARCHIVOS ---
-  const { mutate: deleteModule, isPending: isDeletingModule } = useMutation({
+  const { mutate: deleteModule, isPending: isDeletingModule } = useMutation<
+    void,
+    Error,
+    DeleteModulePayload
+  >({
     mutationFn: async (payload: DeleteModulePayload) => {
       const supabase = createSupabaseBrowserClient();
       const { moduleToDelete } = payload;

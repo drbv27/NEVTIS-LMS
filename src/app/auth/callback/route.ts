@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
               try {
                 cookieStore.set(name, value, options);
               } catch (error) {
+                console.log("Error", error);
                 // Ignorar el error si las cabeceras ya se enviaron.
               }
             });

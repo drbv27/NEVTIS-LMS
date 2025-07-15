@@ -1,7 +1,7 @@
 // src/components/feed/FeedList.tsx
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react"; // 1. IMPORTAMOS MÁS HOOKS
+import { useState, useRef, useCallback } from "react"; // 1. IMPORTAMOS MÁS HOOKS
 import { useSearchParams } from "next/navigation";
 import { useFeed, type FeedType } from "@/hooks/useFeed";
 import CreatePostForm from "./CreatePostForm";

@@ -64,7 +64,8 @@ export default function SearchPage() {
   return (
     <div className="max-w-2xl mx-auto py-8">
       <h1 className="text-3xl font-bold tracking-tight mb-6">
-        Resultados para: <span className="text-primary">"{searchTerm}"</span>
+        Resultados para:{" "}
+        <span className="text-primary">&quot;{searchTerm}&quot;</span>
       </h1>
       {/* Suspense es necesario porque el componente de abajo usa useSearchParams */}
       <Suspense fallback={<p>Cargando resultados...</p>}>

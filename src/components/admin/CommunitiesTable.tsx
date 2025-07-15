@@ -25,16 +25,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import EditCommunityDialog from "./EditCommunityDialog";
 import DeleteCommunityAlert from "./DeleteCommunityAlert";
-import TableSkeleton from "../shared/TableSkeleton";
 
-function formatDate(dateString: string | undefined) {
+/* function formatDate(dateString: string | undefined) {
   if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString("es-ES", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-}
+} */
 
 export default function CommunitiesTable() {
   const { data: communities, isLoading, error } = useAdminCommunities();

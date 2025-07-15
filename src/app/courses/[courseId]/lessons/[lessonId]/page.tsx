@@ -1,4 +1,4 @@
-// src/app/(main)/courses/[courseId]/lessons/[lessonId]/page.tsx
+// src/app/courses/[courseId]/lessons/[lessonId]/page.tsx
 import LessonView from "@/components/lessons/LessonView";
 import { Suspense } from "react";
 

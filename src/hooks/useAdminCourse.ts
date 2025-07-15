@@ -1,9 +1,9 @@
-//src/hooks/useAdminCourse.ts
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { type Course, type Module } from "@/lib/types"; // Importamos Module
+// CORRECCIÓN: Añadimos 'Lesson' a la importación
+import { type Course, type Module, type Lesson } from "@/lib/types";
 
 // Definimos un tipo más completo para los datos que traerá el hook
 export interface AdminCourseData extends Course {
@@ -15,8 +15,6 @@ async function fetchCourseById(
 ): Promise<AdminCourseData | null> {
   const supabase = createSupabaseBrowserClient();
 
-  // --- INICIO DE LA CORRECCIÓN ---
-  // Modificamos el 'select' para que traiga los módulos y sus lecciones anidadas
   const { data, error } = await supabase
     .from("courses")
     .select(
@@ -33,28 +31,32 @@ async function fetchCourseById(
     .order("module_order", { referencedTable: "modules" })
     .order("lesson_order", { referencedTable: "modules.lessons" })
     .single();
-  // --- FIN DE LA CORRECCIÓN ---
 
   if (error) {
     console.error(`Error fetching course ${courseId}:`, error);
     return null;
   }
 
-  // Hacemos la misma transformación de 'categories' que ya conocemos
+  // CORRECCIÓN DEFINITIVA:
+  // Le decimos a TypeScript la forma exacta de los datos que recibimos.
+  // Así, ya no necesita adivinar y no habrá más errores de 'any'.
   const course = {
     ...data,
     categories: Array.isArray(data.categories)
       ? data.categories[0]
       : data.categories,
-    // Nos aseguramos de que los módulos y lecciones estén ordenados
-    modules: (data.modules as any[])
-      .map((mod) => ({
+    modules: data.modules
+      .map((mod: Module) => ({
+        // Tipamos 'mod' como Module
         ...mod,
-        lessons: (mod.lessons as any[]).sort(
-          (a, b) => a.lesson_order - b.lesson_order
+        lessons: mod.lessons.sort(
+          (a: Lesson, b: Lesson) =>
+            (a.lesson_order ?? 0) - (b.lesson_order ?? 0)
         ),
       }))
-      .sort((a, b) => a.module_order - b.module_order),
+      .sort(
+        (a: Module, b: Module) => (a.module_order ?? 0) - (b.module_order ?? 0)
+      ),
   };
 
   return course as AdminCourseData;

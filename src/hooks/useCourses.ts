@@ -41,7 +41,7 @@ async function fetchCourses(
 
   // El filtro de categoría sigue funcionando igual que antes
   if (categorySlug) {
-    const { data: categoryData, error: categoryError } = await supabase
+    const { data: categoryData /* , error: categoryError */ } = await supabase
       .from("categories")
       .select("id")
       .eq("slug", categorySlug)

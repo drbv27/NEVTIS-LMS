@@ -35,7 +35,8 @@ import TableSkeleton from "../shared/TableSkeleton";
 export default function CoursesTable() {
   const { data: courses, isLoading, error } = useAdminCourses();
 
-  const { updateCourseStatus, isUpdatingStatus } = useCourseMutations();
+  /* const { updateCourseStatus, isUpdatingStatus } = useCourseMutations(); */
+  const { updateCourseStatus } = useCourseMutations();
 
   // Estado para controlar qué curso se va a eliminar y si el diálogo está abierto
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);

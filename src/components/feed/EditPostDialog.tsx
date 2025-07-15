@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription, // <-- 1. Importamos el componente de descripción
+  DialogDescription,
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
@@ -48,8 +48,8 @@ export default function EditPostDialog({
           {/* --- INICIO DE LA CORRECCIÓN --- */}
           {/* 2. Añadimos una descripción clara para la accesibilidad */}
           <DialogDescription>
-            Realiza los cambios en tu publicación. Haz clic en "Guardar Cambios"
-            cuando termines.
+            Realiza los cambios en tu publicación. Haz clic en &quot;Guardar
+            Cambios&quot; cuando termines.
           </DialogDescription>
           {/* --- FIN DE LA CORRECCIÓN --- */}
         </DialogHeader>

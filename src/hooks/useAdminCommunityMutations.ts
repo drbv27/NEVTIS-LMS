@@ -123,30 +123,15 @@ async function updateCommunityFn(
 
 async function deleteCommunityFn({
   id,
-  image_url,
 }: DeleteCommunityPayload): Promise<void> {
   const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase.functions.invoke("delete-community", {
+    body: { communityId: id },
+  });
 
-  if (image_url) {
-    try {
-      const urlObject = new URL(image_url);
-      const pathSegments = urlObject.pathname.split("/");
-      const bucketIndex = pathSegments.indexOf("community-images");
-      if (bucketIndex > -1 && bucketIndex < pathSegments.length - 1) {
-        const filePath = pathSegments.slice(bucketIndex + 1).join("/");
-        await supabase.storage.from("community-images").remove([filePath]);
-      }
-    } catch (e) {
-      console.error(
-        "No se pudo procesar la URL de la imagen para borrarla. Continuando con el borrado de la base de datos.",
-        e
-      );
-    }
+  if (error) {
+    throw new Error(`Error al eliminar la comunidad: ${error.message}`);
   }
-
-  const { error } = await supabase.from("communities").delete().eq("id", id);
-  if (error)
-    throw new Error(`No se pudo eliminar la comunidad: ${error.message}`);
 }
 
 // --- HOOK PRINCIPAL ---

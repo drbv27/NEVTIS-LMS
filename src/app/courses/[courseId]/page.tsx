@@ -1,4 +1,4 @@
-// src/app/(main)/courses/[courseId]/page.tsx
+// src/app/courses/[courseId]/page.tsx
 "use client";
 
 import { useCourseDetails } from "@/hooks/useCourseDetails";
@@ -50,20 +50,20 @@ export default function CourseDetailPage({
   // 4. ACTUALIZAMOS la función de compra para usar el hook
   const handlePurchaseClick = () => {
     if (!user) {
-      toast.info("Por favor, inicia sesión para comprar un curso.");
+      toast.info("Por favor, inicia sesión para acceder a una comunidad.");
       router.push(`/login?redirect=/courses/${params.courseId}`);
       return;
     }
-    if (!course?.stripe_price_id) {
+    // Verificamos que el curso pertenezca a una comunidad
+    if (!course?.community_id) {
       toast.error(
-        "Este curso no está disponible para la compra en este momento."
+        "Este curso no está asociado a ninguna comunidad y no se puede comprar."
       );
       return;
     }
-    // Llamamos a la mutación desde nuestro hook
+    // Llamamos a la mutación desde nuestro hook con el communityId
     redirectToCheckout({
-      priceId: course.stripe_price_id,
-      courseId: course.id,
+      communityId: course.community_id,
     });
   };
 

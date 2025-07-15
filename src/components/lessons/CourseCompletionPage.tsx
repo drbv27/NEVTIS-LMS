@@ -20,7 +20,7 @@ interface CourseCompletionPageProps {
 }
 
 export default function CourseCompletionPage({
-  courseId,
+  /*  courseId, */
   courseName,
 }: CourseCompletionPageProps) {
   // Estado para las dimensiones de la ventana, necesario para el confeti

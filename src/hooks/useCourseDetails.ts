@@ -6,13 +6,10 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
 import { type CourseDetails, type Module, type Lesson } from "@/lib/types";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
-// --- FUNCIÓN DE FETCHING PRINCIPAL ---
 async function fetchCourseDetails(courseId: string, userId?: string) {
   const supabase = createSupabaseBrowserClient();
 
-  // 1. AÑADIMOS 'price' Y 'stripe_price_id' A LA CONSULTA
   const { data: courseData, error: courseError } = await supabase
     .from("courses")
     .select(
@@ -21,7 +18,7 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
       stripe_price_id, community_id,
       categories ( id, name, slug ),
       profiles ( full_name ),
-      modules ( id, title, lessons ( id, title, lesson_type, lesson_order ) )
+      modules ( id, title, module_order, lessons ( id, title, lesson_type, lesson_order ) )
       `
     )
     .eq("id", courseId)
@@ -29,7 +26,6 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
 
   if (courseError) throw new Error(courseError.message);
 
-  // El resto de la lógica para procesar los datos no cambia
   let isEnrolled = false;
   if (userId) {
     const { count } = await supabase
@@ -40,23 +36,32 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
     isEnrolled = (count ?? 0) > 0;
   }
 
-  const modules = (courseData.modules as any[])
-    .map((mod) => ({
+  const modules = (courseData.modules as Module[])
+    .map((mod: Module) => ({
       ...mod,
-      lessons: mod.lessons.sort(
-        (a: any, b: any) => a.lesson_order - b.lesson_order
+      lessons: (mod.lessons as Lesson[]).sort(
+        (a: Lesson, b: Lesson) => (a.lesson_order ?? 0) - (b.lesson_order ?? 0)
       ),
     }))
-    .sort((a: any, b: any) => a.module_order - b.module_order) as Module[];
+    .sort(
+      (a: Module, b: Module) => (a.module_order ?? 0) - (b.module_order ?? 0)
+    );
 
   const firstLesson = modules?.[0]?.lessons?.[0];
+
+  // SOLUCIÓN DEFINITIVA:
+  // Verificamos si 'profiles' es un array y tomamos el primer elemento.
+  // Esto soluciona el error de conversión de tipos.
+  const teacherProfile = Array.isArray(courseData.profiles)
+    ? courseData.profiles[0]
+    : courseData.profiles;
 
   const details: CourseDetails = {
     ...courseData,
     categories: Array.isArray(courseData.categories)
       ? courseData.categories[0]
       : courseData.categories,
-    teacherName: (courseData.profiles as any)?.full_name || null,
+    teacherName: teacherProfile?.full_name || null,
     modules,
     isEnrolled,
     firstLessonId: firstLesson?.id || null,
@@ -65,11 +70,9 @@ async function fetchCourseDetails(courseId: string, userId?: string) {
   return details;
 }
 
-// --- EL HOOK PERSONALIZADO ---
 export function useCourseDetails(courseId: string) {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const router = useRouter(); // Importamos el router por si lo necesitamos
 
   const {
     data: course,

@@ -31,21 +31,23 @@ async function fetchLessonData(
   }
 
   // Verificación 1: ¿Es miembro activo de la comunidad?
-  const { count: membershipCount, error: membershipError } = await supabase
-    .from("community_memberships")
-    .select("user_id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("community_id", courseData.community_id)
-    .eq("status", "active");
+  const { count: membershipCount /* , error: membershipError */ } =
+    await supabase
+      .from("community_memberships")
+      .select("user_id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("community_id", courseData.community_id)
+      .eq("status", "active");
 
   const isCommunityMember = (membershipCount ?? 0) > 0;
 
   // Verificación 2: ¿Tiene una inscripción directa?
-  const { count: enrollmentCount, error: enrollmentError } = await supabase
-    .from("enrollments")
-    .select("id", { count: "exact", head: true })
-    .eq("student_id", userId)
-    .eq("course_id", courseId);
+  const { count: enrollmentCount /* , error: enrollmentError */ } =
+    await supabase
+      .from("enrollments")
+      .select("id", { count: "exact", head: true })
+      .eq("student_id", userId)
+      .eq("course_id", courseId);
 
   const hasDirectEnrollment = (enrollmentCount ?? 0) > 0;
 

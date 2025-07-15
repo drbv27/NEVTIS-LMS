@@ -21,7 +21,6 @@ interface AddQuestionPayload {
   options: { option_text: string; is_correct: boolean }[];
 }
 
-// --- INICIO DE NUEVOS PAYLOADS Y TIPOS ---
 export interface SubmitQuizPayload {
   quizId: string;
   answers: Record<string, string>;
@@ -32,12 +31,26 @@ export interface QuizResult {
   correctCount: number;
   totalQuestions: number;
 }
-// --- FIN DE NUEVOS PAYLOADS Y TIPOS ---
+
+interface DeleteQuestionPayload {
+  questionId: string;
+  lessonId: number;
+}
+
+interface UpdateQuestionPayload {
+  lessonId: number;
+  questionId: string;
+  questionText: string;
+  options: {
+    id?: string;
+    option_text: string;
+    is_correct: boolean;
+  }[];
+}
 
 // --- FUNCIONES ASÍNCRONAS ---
 
 async function createQuizFn(payload: CreateQuizPayload) {
-  // ... (sin cambios)
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase.from("quizzes").insert({
     lesson_id: payload.lessonId,
@@ -48,7 +61,6 @@ async function createQuizFn(payload: CreateQuizPayload) {
 }
 
 async function addQuestionFn(payload: AddQuestionPayload) {
-  // ... (sin cambios)
   const supabase = createSupabaseBrowserClient();
   const { count, error: countError } = await supabase
     .from("quiz_questions")
@@ -87,7 +99,6 @@ async function addQuestionFn(payload: AddQuestionPayload) {
     );
 }
 
-// --- NUEVA FUNCIÓN PARA ENVIAR EL QUIZ ---
 async function submitQuizFn(payload: SubmitQuizPayload): Promise<QuizResult> {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase.functions.invoke("submit-quiz", {
@@ -103,11 +114,65 @@ async function submitQuizFn(payload: SubmitQuizPayload): Promise<QuizResult> {
   return data;
 }
 
+async function deleteQuestionFn({ questionId }: DeleteQuestionPayload) {
+  const supabase = createSupabaseBrowserClient();
+  const { error } = await supabase
+    .from("quiz_questions")
+    .delete()
+    .eq("id", questionId);
+
+  if (error) {
+    throw new Error(`No se pudo eliminar la pregunta: ${error.message}`);
+  }
+}
+
+async function updateQuestionFn(payload: UpdateQuestionPayload) {
+  const supabase = createSupabaseBrowserClient();
+
+  const { error: questionUpdateError } = await supabase
+    .from("quiz_questions")
+    .update({ question_text: payload.questionText })
+    .eq("id", payload.questionId);
+
+  if (questionUpdateError) {
+    throw new Error(
+      `Error al actualizar el texto de la pregunta: ${questionUpdateError.message}`
+    );
+  }
+
+  const { error: deleteOptionsError } = await supabase
+    .from("question_options")
+    .delete()
+    .eq("question_id", payload.questionId);
+
+  if (deleteOptionsError) {
+    throw new Error(
+      `Error al limpiar las opciones antiguas: ${deleteOptionsError.message}`
+    );
+  }
+
+  const optionsToInsert = payload.options.map((opt, index) => ({
+    question_id: payload.questionId,
+    option_text: opt.option_text,
+    is_correct: opt.is_correct,
+    option_order: index + 1,
+  }));
+
+  const { error: insertOptionsError } = await supabase
+    .from("question_options")
+    .insert(optionsToInsert);
+
+  if (insertOptionsError) {
+    throw new Error(
+      `Error al insertar las nuevas opciones: ${insertOptionsError.message}`
+    );
+  }
+}
+
 export function useQuizMutations() {
   const queryClient = useQueryClient();
 
   const { mutate: createQuiz, isPending: isCreatingQuiz } = useMutation({
-    // ... (sin cambios)
     mutationFn: createQuizFn,
     onSuccess: (_, variables) => {
       toast.success("¡Quiz creado con éxito!");
@@ -115,11 +180,12 @@ export function useQuizMutations() {
         queryKey: ["quiz-editor", variables.lessonId],
       });
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => {
+      toast.error(error.message); // CORRECCIÓN: Se cambió la coma por punto y coma.
+    },
   });
 
   const { mutate: addQuestion, isPending: isAddingQuestion } = useMutation({
-    // ... (sin cambios)
     mutationFn: addQuestionFn,
     onSuccess: (_, variables) => {
       toast.success("Pregunta añadida con éxito.");
@@ -127,19 +193,53 @@ export function useQuizMutations() {
         queryKey: ["quiz-editor", variables.lessonId],
       });
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => {
+      toast.error(error.message); // CORRECCIÓN: Se cambió la coma por punto y coma.
+    },
   });
 
-  // --- NUEVA MUTACIÓN ---
   const { mutate: submitQuiz, isPending: isSubmittingQuiz } = useMutation<
     QuizResult,
     Error,
     SubmitQuizPayload
   >({
     mutationFn: submitQuizFn,
-    // No necesitamos un onSuccess global, lo manejaremos en el componente.
     onError: (error) => {
       toast.error(`Error al enviar el quiz: ${error.message}`);
+    },
+  });
+
+  const { mutate: deleteQuestion, isPending: isDeletingQuestion } = useMutation<
+    void,
+    Error,
+    DeleteQuestionPayload
+  >({
+    mutationFn: deleteQuestionFn,
+    onSuccess: (_, variables) => {
+      toast.success("Pregunta eliminada correctamente.");
+      queryClient.invalidateQueries({
+        queryKey: ["quiz-editor", variables.lessonId],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message); // CORRECCIÓN: Se cambió la coma por punto y coma.
+    },
+  });
+
+  const { mutate: updateQuestion, isPending: isUpdatingQuestion } = useMutation<
+    void,
+    Error,
+    UpdateQuestionPayload
+  >({
+    mutationFn: updateQuestionFn,
+    onSuccess: (_, variables) => {
+      toast.success("Pregunta actualizada con éxito.");
+      queryClient.invalidateQueries({
+        queryKey: ["quiz-editor", variables.lessonId],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
@@ -148,8 +248,11 @@ export function useQuizMutations() {
     isCreatingQuiz,
     addQuestion,
     isAddingQuestion,
-    // Exportamos la nueva mutación
     submitQuiz,
     isSubmittingQuiz,
+    deleteQuestion,
+    isDeletingQuestion,
+    updateQuestion,
+    isUpdatingQuestion,
   };
 }

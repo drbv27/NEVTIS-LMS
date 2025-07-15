@@ -30,7 +30,7 @@ import {
   Check,
   Palette,
   Link as LinkIcon,
-  Unlink,
+  /* Unlink, */
   Pilcrow,
   ChevronDown,
   AlignLeft,
