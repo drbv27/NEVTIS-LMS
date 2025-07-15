@@ -23,13 +23,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import TableSkeleton from "@/components/shared/TableSkeleton";
 import EditCategoryDialog from "./EditCategoryDialog";
-import DeleteCategoryAlert from "./DeleteCategoryAlert"; // 1. IMPORTAMOS la alerta
+import DeleteCategoryAlert from "./DeleteCategoryAlert";
 
 export default function CategoriesTable() {
   const { data: categories, isLoading, error } = useAdminCategories();
 
+  // State to manage which category is being edited
   const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
-  // 2. ACTIVAMOS el estado para la alerta de eliminación
+  // State to manage which category is targeted for deletion
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
     null
   );
@@ -41,7 +42,7 @@ export default function CategoriesTable() {
   if (error) {
     return (
       <p className="text-destructive">
-        Error al cargar categorías: {error.message}
+        Error loading categories: {error.message}
       </p>
     );
   }
@@ -52,9 +53,9 @@ export default function CategoriesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[45%]">Nombre</TableHead>
+              <TableHead className="w-[45%]">Name</TableHead>
               <TableHead className="w-[45%]">Slug</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -70,6 +71,7 @@ export default function CategoriesTable() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
+                        <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -78,16 +80,15 @@ export default function CategoriesTable() {
                         onClick={() => setCategoryToEdit(category)}
                       >
                         <Edit className="mr-2 h-4 w-4" />
-                        <span>Editar</span>
+                        <span>Edit</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      {/* 3. AÑADIMOS la lógica al botón de eliminar */}
                       <DropdownMenuItem
                         onClick={() => setCategoryToDelete(category)}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Eliminar</span>
+                        <span>Delete</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -106,7 +107,7 @@ export default function CategoriesTable() {
         />
       )}
 
-      {/* 4. RENDERIZAMOS la alerta si hay una categoría para eliminar */}
+      {/* Render the delete confirmation alert when a category is selected */}
       {categoryToDelete && (
         <DeleteCategoryAlert
           category={categoryToDelete}

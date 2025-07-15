@@ -13,7 +13,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-//import { toast } from "sonner";
 
 interface DeleteCommunityAlertProps {
   community: Community;
@@ -29,17 +28,17 @@ export default function DeleteCommunityAlert({
   const { deleteCommunity, isDeletingCommunity } = useAdminCommunityMutations();
 
   const handleDelete = () => {
-    // Advertencia: La eliminación en cascada borrará cursos y posts.
-    // Asegurarse de que el usuario entiende esto es crucial.
+    // Warning: Cascading delete will also remove all associated courses and posts.
+    // It's crucial that the user understands this.
     deleteCommunity(
       { id: community.id, image_url: community.image_url },
       {
         onSuccess: () => {
-          onOpenChange(false); // Cierra la alerta si la eliminación es exitosa
+          onOpenChange(false); // Close the alert on successful deletion
         },
         onError: (error) => {
-          console.log("error", error);
-          // El toast de error ya se muestra en el hook, pero podríamos añadir lógica extra aquí si fuera necesario.
+          console.error("Error deleting community:", error);
+          // The error toast is already handled by the hook, but extra logic could be added here if needed.
         },
       }
     );
@@ -49,27 +48,25 @@ export default function DeleteCommunityAlert({
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente la
-            comunidad{" "}
+            This action cannot be undone. This will permanently delete the
+            community{" "}
             <span className="font-semibold text-destructive">
               {community.name}
             </span>
-            . Todos los **cursos y publicaciones** asociados a esta comunidad
-            también serán eliminados.
+            . All associated **courses and posts** will also be permanently
+            deleted.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeletingCommunity}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeletingCommunity
-              ? "Eliminando..."
-              : "Sí, eliminar permanentemente"}
+            {isDeletingCommunity ? "Deleting..." : "Yes, permanently delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

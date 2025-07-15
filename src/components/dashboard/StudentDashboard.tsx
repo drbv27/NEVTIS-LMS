@@ -29,9 +29,9 @@ export default function StudentDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Bienvenido de Nuevo</h1>
+        <h1 className="text-3xl font-bold">Welcome Back</h1>
         <p className="mt-2 text-muted-foreground">
-          Continúa tu camino de aprendizaje donde lo dejaste.
+          Continue your learning journey where you left off.
         </p>
       </div>
 
@@ -39,7 +39,7 @@ export default function StudentDashboard() {
 
       {error && (
         <p className="text-destructive">
-          Error al cargar tus cursos: {error.message}
+          Error loading your courses: {error.message}
         </p>
       )}
 
@@ -54,10 +54,10 @@ export default function StudentDashboard() {
       {courses && courses.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
           <p className="text-xl text-muted-foreground">
-            Aún no te has unido a ninguna comunidad con cursos.
+            You haven&apos;t joined any communities with courses yet.
           </p>
           <Link href="/courses" className="mt-4 inline-block">
-            <Button variant="outline">Explorar Comunidades</Button>
+            <Button variant="outline">Explore Communities</Button>
           </Link>
         </div>
       )}

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { LogOut, Menu } from "lucide-react";
 import { Button } from "../ui/button";
-import NotificationsBell from "../notifications/NotificationsBell"; // <-- 1. IMPORTAR
+import NotificationsBell from "../notifications/NotificationsBell";
 
 export default function Navbar() {
   const { user, isLoading, toggleMainSidebar } = useAuthStore();
@@ -29,6 +29,7 @@ export default function Navbar() {
               variant="ghost"
               size="icon"
               className="sm:hidden"
+              aria-label="Toggle sidebar"
             >
               <Menu className="h-6 w-6" />
             </Button>
@@ -39,7 +40,6 @@ export default function Navbar() {
               <div className="h-8 w-24 bg-muted rounded-md animate-pulse"></div>
             ) : user ? (
               <>
-                {/* --- 2. AÑADIR EL COMPONENTE DE LA CAMPANA --- */}
                 <NotificationsBell />
                 <span className="hidden sm:block text-sm font-medium text-muted-foreground">
                   {user.email}
@@ -48,14 +48,14 @@ export default function Navbar() {
                   onClick={handleSignOut}
                   variant="ghost"
                   size="icon"
-                  aria-label="Cerrar sesión"
+                  aria-label="Sign out"
                 >
                   <LogOut className="h-5 w-5" />
                 </Button>
               </>
             ) : (
               <Link href="/login" passHref>
-                <Button>Iniciar Sesión</Button>
+                <Button>Sign In</Button>
               </Link>
             )}
           </div>

@@ -32,7 +32,7 @@ export default function CreateCategoryDialog({
 
   const handleCreateCategory = () => {
     if (!name.trim() || !slug.trim()) {
-      toast.error("El nombre y el slug son campos requeridos.");
+      toast.error("Name and slug are required fields.");
       return;
     }
 
@@ -40,8 +40,8 @@ export default function CreateCategoryDialog({
       { name, slug },
       {
         onSuccess: () => {
-          onOpenChange(false); // Cierra el diálogo
-          setName(""); // Limpia el formulario
+          onOpenChange(false); // Close the dialog
+          setName(""); // Clear the form
           setSlug("");
         },
       }
@@ -52,20 +52,20 @@ export default function CreateCategoryDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Crear Nueva Categoría</DialogTitle>
+          <DialogTitle>Create New Category</DialogTitle>
           <DialogDescription>
-            Las categorías ayudan a organizar los cursos. El slug es la versión
-            para la URL.
+            Categories help organize courses. The slug is the URL-friendly
+            version of the name.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nombre de la Categoría</Label>
+            <Label htmlFor="name">Category Name</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ej: Desarrollo Web"
+              placeholder="e.g., Web Development"
             />
           </div>
           <div className="space-y-2">
@@ -74,16 +74,16 @@ export default function CreateCategoryDialog({
               id="slug"
               value={slug}
               onChange={(e) => setSlug(e.target.value)}
-              placeholder="Ej: desarrollo-web"
+              placeholder="e.g., web-development"
             />
           </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button onClick={handleCreateCategory} disabled={isCreatingCategory}>
-            {isCreatingCategory ? "Creando..." : "Crear Categoría"}
+            {isCreatingCategory ? "Creating..." : "Create Category"}
           </Button>
         </DialogFooter>
       </DialogContent>

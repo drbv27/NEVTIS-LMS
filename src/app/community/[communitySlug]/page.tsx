@@ -5,8 +5,8 @@ import CourseCatalog from "@/components/courses/CourseCatalog";
 import { Suspense, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { type Community } from "@/lib/types"; // Importamos el tipo Community
-import CommunityHeader from "@/components/communities/CommunityHeader"; // Importaremos nuestro nuevo componente
+import { type Community } from "@/lib/types";
+import CommunityHeader from "@/components/communities/CommunityHeader";
 
 export default function CommunityCoursesPage({
   params,
@@ -22,7 +22,7 @@ export default function CommunityCoursesPage({
       const supabase = createSupabaseBrowserClient();
       const { data, error } = await supabase
         .from("communities")
-        .select("*") // Obtenemos todos los datos de la comunidad
+        .select("*")
         .eq("slug", params.communitySlug)
         .single();
 
@@ -41,23 +41,22 @@ export default function CommunityCoursesPage({
     notFound();
   }
 
-  // Mostramos un esqueleto de carga general mientras se obtienen los datos
+  // Display a loading state while fetching community data
   if (isLoading) {
-    return <p className="text-center py-20">Cargando comunidad...</p>;
+    return <p className="text-center py-20">Loading community...</p>;
   }
 
-  // Si la comunidad no se encuentra después de cargar, mostramos 404
+  // If community is not found after loading, trigger 404
   if (!community) {
     notFound();
   }
 
   return (
     <div>
-      {/* Componente que mostrará el título y el botón de compra */}
       <CommunityHeader community={community} />
 
       <Suspense
-        fallback={<p className="text-center py-10">Cargando cursos...</p>}
+        fallback={<p className="text-center py-10">Loading courses...</p>}
       >
         <CourseCatalog communitySlug={params.communitySlug} />
       </Suspense>

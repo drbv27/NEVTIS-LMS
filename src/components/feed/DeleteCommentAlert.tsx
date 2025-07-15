@@ -29,20 +29,20 @@ export default function DeleteCommentAlert({
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente este
-            comentario.
+            This action cannot be undone. This will permanently delete this
+            comment.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirmDelete}
             disabled={isDeleting}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeleting ? "Eliminando..." : "Sí, eliminar"}
+            {isDeleting ? "Deleting..." : "Yes, delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

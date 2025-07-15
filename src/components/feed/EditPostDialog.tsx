@@ -44,14 +44,11 @@ export default function EditPostDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar Publicación</DialogTitle>
-          {/* --- INICIO DE LA CORRECCIÓN --- */}
-          {/* 2. Añadimos una descripción clara para la accesibilidad */}
+          <DialogTitle>Edit Post</DialogTitle>
           <DialogDescription>
-            Realiza los cambios en tu publicación. Haz clic en &quot;Guardar
-            Cambios&quot; cuando termines.
+            Make changes to your post here. Click &quot;Save Changes&quot; when
+            you&apos;re done.
           </DialogDescription>
-          {/* --- FIN DE LA CORRECCIÓN --- */}
         </DialogHeader>
         <Textarea
           value={content}
@@ -61,10 +58,10 @@ export default function EditPostDialog({
         />
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button onClick={handleUpdate} disabled={isUpdatingPost}>
-            {isUpdatingPost ? "Guardando..." : "Guardar Cambios"}
+            {isUpdatingPost ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

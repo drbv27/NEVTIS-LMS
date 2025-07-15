@@ -20,14 +20,14 @@ interface CourseCompletionPageProps {
 }
 
 export default function CourseCompletionPage({
-  /*  courseId, */
+  /* courseId, */
   courseName,
 }: CourseCompletionPageProps) {
-  // Estado para las dimensiones de la ventana, necesario para el confeti
+  // State for window dimensions, required for the confetti effect
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    // Solo ejecutamos esto en el cliente
+    // Only run this on the client side
     const handleResize = () => {
       setWindowSize({
         width: window.innerWidth,
@@ -35,11 +35,11 @@ export default function CourseCompletionPage({
       });
     };
 
-    // Establecer el tamaño inicial y escuchar cambios
+    // Set initial size and listen for resize events
     handleResize();
     window.addEventListener("resize", handleResize);
 
-    // Limpiar el listener al desmontar el componente
+    // Clean up the listener on component unmount
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -57,35 +57,35 @@ export default function CourseCompletionPage({
           <CardHeader>
             <Award className="mx-auto h-16 w-16 text-yellow-500" />
             <CardTitle className="text-3xl sm:text-4xl font-bold mt-4">
-              ¡Felicidades!
+              Congratulations!
             </CardTitle>
             <CardDescription className="text-lg text-muted-foreground mt-2">
-              Has completado exitosamente el curso: <br />
+              You have successfully completed the course: <br />
               <span className="font-semibold text-primary">{courseName}</span>
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="mb-6">
-              ¡Gran trabajo! Has dado un paso importante en tu camino de
-              aprendizaje. ¿Qué te gustaría hacer ahora?
+              Great job! You&apos;ve taken an important step on your learning
+              path. What would you like to do next?
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button asChild variant="outline">
                 <Link href="/my-courses">
-                  <Book className="mr-2 h-4 w-4" /> Ver todos mis cursos
+                  <Book className="mr-2 h-4 w-4" /> View all my courses
                 </Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/courses">
-                  <Award className="mr-2 h-4 w-4" /> Explorar más cursos
+                  <Award className="mr-2 h-4 w-4" /> Explore more courses
                 </Link>
               </Button>
-              {/* Estos son placeholders para futuras funcionalidades */}
+              {/* These are placeholders for future features */}
               <Button disabled variant="secondary">
-                <Star className="mr-2 h-4 w-4" /> Dejar una reseña
+                <Star className="mr-2 h-4 w-4" /> Leave a review
               </Button>
               <Button disabled variant="secondary">
-                <Home className="mr-2 h-4 w-4" /> Volver al Dashboard
+                <Home className="mr-2 h-4 w-4" /> Back to Dashboard
               </Button>
             </div>
           </CardContent>

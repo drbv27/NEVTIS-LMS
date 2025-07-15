@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import LessonContentPlayer from "./LessonContentPlayer";
 import LessonListSidebar from "./LessonListSidebar";
-import NotFoundOrErrorPage from "../shared/NotFoundOrErrorPage"; // <-- 1. IMPORTAMOS EL COMPONENTE
+import NotFoundOrErrorPage from "../shared/NotFoundOrErrorPage";
 
 export default function LessonView({
   courseId,
@@ -35,44 +35,42 @@ export default function LessonView({
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p>Cargando lección...</p>
+        <p>Loading lesson...</p>
       </div>
     );
   }
 
-  // --- INICIO DEL CAMBIO: LÓGICA DE ERROR MEJORADA ---
   if (error) {
-    // Caso 1: El usuario no ha iniciado sesión
+    // Case 1: User is not logged in
     if (error.message.includes("Debes iniciar sesión")) {
       return (
         <NotFoundOrErrorPage
-          title="Acceso Restringido"
-          description="Para ver esta lección, primero necesitas iniciar sesión en tu cuenta."
-          buttonText="Iniciar Sesión"
-          buttonHref={`/login?redirect=/courses/<span class="math-inline">\{courseId\}/lessons/</span>{lessonId}`}
+          title="Restricted Access"
+          description="To view this lesson, you first need to log in to your account."
+          buttonText="Sign In"
+          buttonHref={`/login?redirect=/courses/${courseId}/lessons/${lessonId}`}
         />
       );
     }
-    // Caso 2: El usuario ha iniciado sesión pero no está inscrito
+    // Case 2: User is logged in but not enrolled
     if (error.message.includes("No estás inscrito")) {
       return (
         <NotFoundOrErrorPage
-          title="Contenido Exclusivo para Miembros"
-          description="Parece que no estás inscrito en este curso. ¡Inscríbete para acceder a esta y todas las demás lecciones!"
-          buttonText="Ver página del curso"
+          title="Exclusive Member Content"
+          description="It looks like you are not enrolled in this course. Enroll now to access this and all other lessons!"
+          buttonText="View Course Page"
           buttonHref={`/courses/${courseId}`}
         />
       );
     }
-    // Caso 3: Cualquier otro error genérico
+    // Case 3: Any other generic error
     return <NotFoundOrErrorPage description={error.message} />;
   }
-  // --- FIN DEL CAMBIO ---
 
   if (!lessonData) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p>No se encontraron datos para esta lección.</p>
+        <p>No data found for this lesson.</p>
       </div>
     );
   }
@@ -102,6 +100,9 @@ export default function LessonView({
               variant="outline"
               size="icon"
               className="hidden lg:flex"
+              aria-label={
+                isLessonSidebarOpen ? "Close sidebar" : "Open sidebar"
+              }
             >
               {isLessonSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
             </Button>
@@ -133,7 +134,7 @@ export default function LessonView({
                     ? `/courses/${courseId}/lessons/${prevLessonId}`
                     : "#"
                 }
-                aria-label="Lección anterior"
+                aria-label="Previous lesson"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Link>
@@ -144,16 +145,16 @@ export default function LessonView({
               variant={currentLesson.is_completed ? "secondary" : "default"}
             >
               {isCompleting ? (
-                "Guardando..."
+                "Saving..."
               ) : currentLesson.is_completed ? (
                 <>
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  Completada
+                  Completed
                 </>
               ) : nextLessonId ? (
-                "Completar y Siguiente"
+                "Complete and Continue"
               ) : (
-                "Finalizar curso"
+                "Finish Course"
               )}
             </Button>
             <Button asChild size="icon" disabled={!nextLessonId}>
@@ -163,7 +164,7 @@ export default function LessonView({
                     ? `/courses/${courseId}/lessons/${nextLessonId}`
                     : "#"
                 }
-                aria-label="Siguiente lección"
+                aria-label="Next lesson"
               >
                 <ChevronRight className="h-4 w-4" />
               </Link>

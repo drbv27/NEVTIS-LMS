@@ -16,8 +16,8 @@ import {
   Trash2,
 } from "lucide-react";
 import AddQuestionForm from "./AddQuestionForm";
-import EditQuestionDialog from "./EditQuestionDialog"; // <-- 1. IMPORTAR
-import DeleteQuestionAlert from "./DeleteQuestionAlert"; // <-- 2. IMPORTAR
+import EditQuestionDialog from "./EditQuestionDialog";
+import DeleteQuestionAlert from "./DeleteQuestionAlert";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +33,6 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
   const { data: quiz, isLoading, error } = useQuizEditor(lessonId);
   const { createQuiz, isCreatingQuiz } = useQuizMutations();
 
-  // --- 3. AÑADIR ESTADOS PARA LOS DIÁLOGOS ---
   const [questionToEdit, setQuestionToEdit] = useState<QuizQuestion | null>(
     null
   );
@@ -44,9 +43,8 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
   const handleCreateQuiz = () => {
     createQuiz({
       lessonId: lessonId,
-      title: "Nuevo Cuestionario",
-      description:
-        "Completa las siguientes preguntas para evaluar tus conocimientos.",
+      title: "New Quiz",
+      description: "Complete the following questions to test your knowledge.",
     });
   };
 
@@ -61,9 +59,7 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
 
   if (error) {
     return (
-      <p className="text-destructive">
-        Error al cargar el quiz: {error.message}
-      </p>
+      <p className="text-destructive">Error loading quiz: {error.message}</p>
     );
   }
 
@@ -71,10 +67,10 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed p-8 text-center bg-muted/50">
         <h3 className="text-lg font-semibold">
-          Esta lección aún no tiene un quiz.
+          This lesson does not have a quiz yet.
         </h3>
         <p className="text-sm text-muted-foreground">
-          Crea un quiz para empezar a añadir preguntas.
+          Create a quiz to start adding questions.
         </p>
         <Button onClick={handleCreateQuiz} disabled={isCreatingQuiz}>
           {isCreatingQuiz ? (
@@ -82,7 +78,7 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
           ) : (
             <PlusCircle className="mr-2 h-4 w-4" />
           )}
-          {isCreatingQuiz ? "Creando..." : "Crear Quiz"}
+          {isCreatingQuiz ? "Creating..." : "Create Quiz"}
         </Button>
       </div>
     );
@@ -94,13 +90,12 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
         <div>
           <h3 className="text-2xl font-bold">{quiz.title}</h3>
           <p className="text-muted-foreground">
-            {quiz.description ||
-              "Edita las preguntas de tu quiz a continuación."}
+            {quiz.description || "Edit your quiz questions below."}
           </p>
         </div>
 
         <div className="space-y-4">
-          <h4 className="text-lg font-semibold">Preguntas del Quiz</h4>
+          <h4 className="text-lg font-semibold">Quiz Questions</h4>
           {quiz.quiz_questions && quiz.quiz_questions.length > 0 ? (
             <ul className="space-y-3">
               {quiz.quiz_questions.map((q) => (
@@ -130,24 +125,24 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
                       ))}
                     </ul>
                   </div>
-                  {/* --- 4. AÑADIR MENÚ DE ACCIONES --- */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <span className="sr-only">Question options</span>
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setQuestionToEdit(q)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Editar
+                        Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => setQuestionToDelete(q)}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
+                        Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -156,7 +151,7 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
             </ul>
           ) : (
             <p className="text-sm text-muted-foreground italic">
-              Este quiz aún no tiene preguntas.
+              This quiz doesn&apos;t have any questions yet.
             </p>
           )}
         </div>
@@ -164,7 +159,6 @@ export default function QuizEditor({ lessonId }: QuizEditorProps) {
         <AddQuestionForm quizId={quiz.id} lessonId={lessonId} />
       </div>
 
-      {/* --- 5. RENDERIZAR DIÁLOGOS CONDICIONALMENTE --- */}
       {questionToEdit && (
         <EditQuestionDialog
           isOpen={!!questionToEdit}

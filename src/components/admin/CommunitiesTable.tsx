@@ -28,7 +28,7 @@ import DeleteCommunityAlert from "./DeleteCommunityAlert";
 
 /* function formatDate(dateString: string | undefined) {
   if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString("es-ES", {
+  return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -38,10 +38,11 @@ import DeleteCommunityAlert from "./DeleteCommunityAlert";
 export default function CommunitiesTable() {
   const { data: communities, isLoading, error } = useAdminCommunities();
 
+  // State to manage which community is being edited
   const [communityToEdit, setCommunityToEdit] = useState<Community | null>(
     null
   );
-
+  // State to manage which community is targeted for deletion
   const [communityToDelete, setCommunityToDelete] = useState<Community | null>(
     null
   );
@@ -60,7 +61,7 @@ export default function CommunitiesTable() {
   if (error) {
     return (
       <p className="text-center text-destructive">
-        Error al cargar comunidades: {error.message}
+        Error loading communities: {error.message}
       </p>
     );
   }
@@ -71,10 +72,10 @@ export default function CommunitiesTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50%]">Nombre</TableHead>
+              <TableHead className="w-[50%]">Name</TableHead>
               <TableHead>Slug</TableHead>
-              <TableHead>ID de Precio (Stripe)</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead>Price ID (Stripe)</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -105,6 +106,7 @@ export default function CommunitiesTable() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
+                        <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -113,16 +115,15 @@ export default function CommunitiesTable() {
                         onClick={() => setCommunityToEdit(community)}
                       >
                         <Edit className="mr-2 h-4 w-4" />
-                        <span>Editar</span>
+                        <span>Edit</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      {/* 3. AÑADIMOS LA OPCIÓN DE ELIMINAR */}
                       <DropdownMenuItem
                         onClick={() => setCommunityToDelete(community)}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Eliminar</span>
+                        <span>Delete</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -133,7 +134,6 @@ export default function CommunitiesTable() {
         </Table>
       </div>
 
-      {/* El diálogo de edición no cambia */}
       {communityToEdit && (
         <EditCommunityDialog
           community={communityToEdit}
@@ -142,7 +142,7 @@ export default function CommunitiesTable() {
         />
       )}
 
-      {/* 4. RENDERIZAMOS LA ALERTA DE FORMA CONDICIONAL */}
+      {/* Render the delete alert conditionally */}
       {communityToDelete && (
         <DeleteCommunityAlert
           community={communityToDelete}

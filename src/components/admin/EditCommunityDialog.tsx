@@ -41,7 +41,6 @@ export default function EditCommunityDialog({
   const { updateCommunity, isUpdatingCommunity } = useAdminCommunityMutations();
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Estados locales
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
@@ -71,7 +70,7 @@ export default function EditCommunityDialog({
 
   const handleUpdateCommunity = () => {
     if (!name.trim() || !slug.trim()) {
-      toast.error("El nombre y el slug son campos requeridos.");
+      toast.error("Name and slug are required fields.");
       return;
     }
 
@@ -97,16 +96,16 @@ export default function EditCommunityDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Editar Comunidad: {community.name}</DialogTitle>
+          <DialogTitle>Edit Community: {community.name}</DialogTitle>
           <DialogDescription>
-            Modifica los detalles de la comunidad.
+            Modify the details of the community.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name-edit">Nombre de la Comunidad</Label>
+              <Label htmlFor="name-edit">Community Name</Label>
               <Input
                 id="name-edit"
                 value={name}
@@ -123,7 +122,7 @@ export default function EditCommunityDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description-edit">Descripción</Label>
+            <Label htmlFor="description-edit">Description</Label>
             <Textarea
               id="description-edit"
               value={description}
@@ -134,7 +133,7 @@ export default function EditCommunityDialog({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="stripePriceId-edit">
-                ID del Precio en Stripe (Opcional)
+                Stripe Price ID (Optional)
               </Label>
               <Input
                 id="stripePriceId-edit"
@@ -143,7 +142,7 @@ export default function EditCommunityDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status-edit">Estado</Label>
+              <Label htmlFor="status-edit">Status</Label>
               <Select
                 onValueChange={(value) =>
                   setStatus(value as Community["status"])
@@ -151,24 +150,22 @@ export default function EditCommunityDialog({
                 value={status}
               >
                 <SelectTrigger id="status-edit">
-                  <SelectValue placeholder="Seleccionar estado..." />
+                  <SelectValue placeholder="Select status..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Borrador (Draft)</SelectItem>
-                  <SelectItem value="published">
-                    Publicado (Published)
-                  </SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="imageFile-edit">Imagen de Portada</Label>
+            <Label htmlFor="imageFile-edit">Cover Image</Label>
             {imagePreview && (
               <div className="w-full aspect-video relative rounded-md overflow-hidden">
                 <Image
                   src={imagePreview}
-                  alt="Vista previa"
+                  alt="Image preview"
                   fill
                   className="object-cover"
                 />
@@ -182,20 +179,20 @@ export default function EditCommunityDialog({
               ref={imageInputRef}
             />
             <p className="text-xs text-muted-foreground">
-              Selecciona un archivo solo si deseas reemplazar la imagen actual.
+              Select a file only if you want to replace the current image.
             </p>
           </div>
         </div>
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button
             onClick={handleUpdateCommunity}
             disabled={isUpdatingCommunity}
           >
-            {isUpdatingCommunity ? "Guardando..." : "Guardar Cambios"}
+            {isUpdatingCommunity ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

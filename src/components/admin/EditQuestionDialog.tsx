@@ -43,9 +43,11 @@ export default function EditQuestionDialog({
   useEffect(() => {
     if (question) {
       setQuestionText(question.question_text);
-      setOptions(question.question_options);
+      setOptions(
+        question.question_options.map((opt) => ({ ...opt, isNew: false }))
+      );
     }
-  }, [question]);
+  }, [question, isOpen]);
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
@@ -84,16 +86,15 @@ export default function EditQuestionDialog({
 
   const handleUpdate = () => {
     if (!questionText.trim()) {
-      return toast.error("El texto de la pregunta no puede estar vacío.");
+      return toast.error("The question text cannot be empty.");
     }
     if (options.some((opt) => !opt.option_text.trim())) {
-      return toast.error("Todas las opciones deben tener texto.");
+      return toast.error("All options must have text.");
     }
     if (!options.some((opt) => opt.is_correct)) {
-      return toast.error("Debes marcar una opción como la correcta.");
+      return toast.error("You must mark one option as correct.");
     }
 
-    // Preparamos el payload para la mutación
     const finalOptions = options.map((opt) => ({
       id: opt.isNew ? undefined : opt.id,
       option_text: opt.option_text,
@@ -117,14 +118,14 @@ export default function EditQuestionDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Editar Pregunta</DialogTitle>
+          <DialogTitle>Edit Question</DialogTitle>
           <DialogDescription>
-            Modifica el texto de la pregunta y sus opciones.
+            Modify the question text and its options.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto pr-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-question-text">Texto de la Pregunta</Label>
+            <Label htmlFor="edit-question-text">Question Text</Label>
             <Input
               id="edit-question-text"
               value={questionText}
@@ -132,7 +133,7 @@ export default function EditQuestionDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Opciones de Respuesta</Label>
+            <Label>Answer Options</Label>
             <div className="space-y-3">
               {options.map((opt, index) => (
                 <div key={opt.id} className="flex items-center gap-2">
@@ -142,7 +143,7 @@ export default function EditQuestionDialog({
                     onCheckedChange={() => handleCorrectChange(index)}
                   />
                   <Input
-                    placeholder={`Opción ${index + 1}`}
+                    placeholder={`Option ${index + 1}`}
                     value={opt.option_text}
                     onChange={(e) => handleOptionChange(index, e.target.value)}
                   />
@@ -151,6 +152,7 @@ export default function EditQuestionDialog({
                     size="icon"
                     onClick={() => removeOption(index)}
                     disabled={options.length <= 2}
+                    aria-label="Remove option"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -165,18 +167,18 @@ export default function EditQuestionDialog({
             disabled={options.length >= 5}
           >
             <PlusCircle className="mr-2 h-4 w-4" />
-            Añadir Opción
+            Add Option
           </Button>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button onClick={handleUpdate} disabled={isUpdatingQuestion}>
             {isUpdatingQuestion && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Guardar Cambios
+            Save Changes
           </Button>
         </DialogFooter>
       </DialogContent>

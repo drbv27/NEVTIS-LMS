@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { type Post, type Comment } from "@/lib/types"; // Importamos Comment
+import { type Post, type Comment } from "@/lib/types";
 import { useComments } from "@/hooks/useComments";
 import { useAuthStore } from "@/store/authStore";
 import { useProfile } from "@/hooks/useProfile";
@@ -18,9 +18,9 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Trash2 } from "lucide-react"; // Importamos el icono de papelera
+import { Send, Trash2 } from "lucide-react";
 import Image from "next/image";
-import DeleteCommentAlert from "./DeleteCommentAlert"; // Importamos nuestra nueva alerta
+import DeleteCommentAlert from "./DeleteCommentAlert";
 
 const renderWithLinksAndHashtags = (text: string) => {
   const regex = /(#\w+|\bhttps?:\/\/\S+|\bwww\.\S+)/g;
@@ -67,13 +67,13 @@ export default function CommentsDialog({
   isOpen,
   onOpenChange,
 }: CommentsDialogProps) {
-  const { user } = useAuthStore(); // <-- Necesitamos el user para comparar IDs
+  const { user } = useAuthStore();
   const { data: comments, isLoading, error } = useComments(post.id);
   const { profile } = useProfile();
   const { createComment, isCreatingComment, deleteComment, isDeletingComment } =
     useFeed();
   const [newComment, setNewComment] = useState("");
-  const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null); // Estado para la alerta
+  const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null);
 
   const handleCommentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -94,7 +94,7 @@ export default function CommentsDialog({
       { commentId: commentToDelete.id, postId: post.id },
       {
         onSuccess: () => {
-          setCommentToDelete(null); // Cerramos la alerta al tener éxito
+          setCommentToDelete(null); // Close the alert on success
         },
       }
     );
@@ -105,9 +105,9 @@ export default function CommentsDialog({
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Publicación de {post.author_full_name}</DialogTitle>
+            <DialogTitle>Post by {post.author_full_name}</DialogTitle>
             <DialogDescription>
-              Viendo comentarios y respondiendo a esta publicación.
+              Viewing comments and responding to this post.
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 flex flex-col overflow-hidden">
@@ -120,23 +120,20 @@ export default function CommentsDialog({
                   <div className="mt-4 relative aspect-video rounded-md overflow-hidden border">
                     <Image
                       src={post.image_url}
-                      alt="Imagen del post"
+                      alt="Post image"
                       fill
                       style={{ objectFit: "cover" }}
                     />
                   </div>
                 )}
               </div>
-              {isLoading && (
-                <p className="text-center">Cargando comentarios...</p>
-              )}
+              {isLoading && <p className="text-center">Loading comments...</p>}
               {error && (
                 <p className="text-center text-destructive">
                   Error: {error.message}
                 </p>
               )}
 
-              {/* --- INICIO DE LA MODIFICACIÓN EN LA LISTA DE COMENTARIOS --- */}
               {comments &&
                 comments.map((comment) => {
                   const isCommentAuthor = user?.id === comment.user_id;
@@ -165,9 +162,9 @@ export default function CommentsDialog({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => setCommentToDelete(comment)}
-                          title="Eliminar comentario"
+                          title="Delete comment"
                         >
                           <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                         </Button>
@@ -175,7 +172,6 @@ export default function CommentsDialog({
                     </div>
                   );
                 })}
-              {/* --- FIN DE LA MODIFICACIÓN --- */}
             </div>
             <div className="p-4 border-t bg-background">
               <form
@@ -189,7 +185,7 @@ export default function CommentsDialog({
                   </AvatarFallback>
                 </Avatar>
                 <Input
-                  placeholder="Escribe un comentario..."
+                  placeholder="Write a comment..."
                   className="flex-1"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
@@ -199,6 +195,7 @@ export default function CommentsDialog({
                   type="submit"
                   size="icon"
                   disabled={!newComment.trim() || isCreatingComment}
+                  aria-label="Send comment"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -208,7 +205,7 @@ export default function CommentsDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Renderizamos la alerta de forma condicional */}
+      {/* Render the delete confirmation alert conditionally */}
       {commentToDelete && (
         <DeleteCommentAlert
           isOpen={!!commentToDelete}

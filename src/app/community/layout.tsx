@@ -32,7 +32,6 @@ export default function CommunityHybridLayout({
     );
   }
 
-  // Si el usuario ESTÁ autenticado, renderiza la app completa con Sidebar
   if (user) {
     return (
       <div className="flex h-screen overflow-hidden bg-background">
@@ -53,7 +52,6 @@ export default function CommunityHybridLayout({
     );
   }
 
-  // Si el usuario NO está autenticado, renderiza la vista pública (solo Navbar)
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />

@@ -15,17 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default function MyCoursesList() {
-  // Usamos nuestro nuevo y específico hook
   const { data: courses, isLoading, error } = useMyCourses();
 
   if (isLoading) {
-    return <p className="text-center py-10">Cargando tus cursos...</p>;
+    return <p className="text-center py-10">Loading your courses...</p>;
   }
 
   if (error) {
     return (
       <p className="text-center text-red-500 py-10">
-        Error al cargar tus cursos: {error.message}
+        Error loading your courses: {error.message}
       </p>
     );
   }
@@ -34,10 +33,10 @@ export default function MyCoursesList() {
     <div className="container mx-auto py-8">
       <div className="mb-12">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Mis Cursos
+          My Courses
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Continúa tu aprendizaje donde lo dejaste.
+          Continue your learning where you left off.
         </p>
       </div>
 
@@ -51,7 +50,7 @@ export default function MyCoursesList() {
               <div className="relative w-full aspect-video">
                 <Image
                   src={course.image_url || "/images/placeholder.png"}
-                  alt={`Imagen de ${course.title}`}
+                  alt={`Image for ${course.title}`}
                   fill
                   className="object-cover"
                   sizes="(max-width: 640px) 100vw, 50vw, 33vw"
@@ -69,13 +68,12 @@ export default function MyCoursesList() {
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-3">
-                  {course.description || "No hay descripción disponible."}
+                  {course.description || "No description available."}
                 </p>
               </CardContent>
               <CardFooter>
-                {/* El botón ahora lleva al curso directamente */}
                 <Link href={`/courses/${course.id}`} className="w-full">
-                  <Button className="w-full">Ir al Curso</Button>
+                  <Button className="w-full">Go to Course</Button>
                 </Link>
               </CardFooter>
             </Card>
@@ -84,10 +82,10 @@ export default function MyCoursesList() {
       ) : (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
           <p className="text-xl text-muted-foreground">
-            Aún no te has inscrito en ningún curso.
+            You haven&apos;t enrolled in any courses yet.
           </p>
           <Link href="/courses" className="mt-4 inline-block">
-            <Button variant="outline">Explorar Cursos</Button>
+            <Button variant="outline">Explore Courses</Button>
           </Link>
         </div>
       )}

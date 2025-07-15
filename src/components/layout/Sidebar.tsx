@@ -29,38 +29,37 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"; // 3. IMPORTAMOS DropdownMenu
+} from "@/components/ui/dropdown-menu";
 
-// Las listas de navegación no cambian
 const sidebarNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: Home },
-  { title: "Mis Cursos", href: "/my-courses", icon: BookMarked },
-  { title: "Comunidad", href: "/feed", icon: Users },
-  { title: "Explorar", href: "/courses", icon: Compass },
-  { title: "Mi Perfil", href: "/profile", icon: UserCircle },
+  { title: "My Courses", href: "/my-courses", icon: BookMarked },
+  { title: "Community", href: "/feed", icon: Users },
+  { title: "Explore", href: "/courses", icon: Compass },
+  { title: "My Profile", href: "/profile", icon: UserCircle },
 ];
 
 const adminNavItems = [
   {
-    title: "Gestión de Categorías",
+    title: "Category Management",
     href: "/admin/categories",
     icon: LayoutGrid,
     requiredRoles: ["admin", "teacher"],
   },
   {
-    title: "Gestión Comunidades",
+    title: "Community Management",
     href: "/admin/communities",
     icon: Library,
     requiredRoles: ["admin"],
   },
   {
-    title: "Gestión Cursos",
+    title: "Course Management",
     href: "/admin/courses",
     icon: ShieldCheck,
     requiredRoles: ["admin", "teacher"],
   },
   {
-    title: "Gestión Usuarios",
+    title: "User Management",
     href: "/admin/users",
     icon: Users2,
     requiredRoles: ["admin"],
@@ -69,7 +68,6 @@ const adminNavItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  // 4. OBTENEMOS LOS NUEVOS ESTADOS Y ACCIONES DEL STORE
   const {
     isMainSidebarOpen,
     toggleMainSidebar,
@@ -80,12 +78,11 @@ export default function Sidebar() {
 
   const { profile, isLoading: isProfileLoading } = useProfile();
 
-  // Lógica para encontrar la comunidad activa actual
+  // Find the currently active community
   const activeCommunity = userMemberships.find(
     (m) => m.community_id === activeCommunityId
   )?.communities;
 
-  // Lógica de filtrado de enlaces (sin cambios)
   const filteredNavItems = sidebarNavItems.filter(() => true);
   const filteredAdminNavItems = adminNavItems.filter((item) => {
     if (isProfileLoading || !profile) return false;
@@ -104,7 +101,6 @@ export default function Sidebar() {
           isMainSidebarOpen ? "w-64" : "sm:w-20"
         }`}
       >
-        {/* Logo (sin cambios) */}
         <div
           className={`h-16 shrink-0 flex items-center ${
             isMainSidebarOpen ? "px-6" : "justify-center"
@@ -125,12 +121,12 @@ export default function Sidebar() {
             variant="ghost"
             size="icon"
             className="ml-auto sm:hidden"
+            aria-label="Close sidebar"
           >
             <X className="h-6 w-6" />
           </Button>
         </div>
 
-        {/* 5. NUEVO SELECTOR DE COMUNIDAD */}
         <div className={`px-4 ${!isMainSidebarOpen && "px-2"}`}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -150,7 +146,7 @@ export default function Sidebar() {
                   <span
                     className={`truncate ${!isMainSidebarOpen && "hidden"}`}
                   >
-                    {activeCommunity?.name || "Seleccionar..."}
+                    {activeCommunity?.name || "Select..."}
                   </span>
                 </div>
                 <ChevronsUpDown
@@ -161,7 +157,7 @@ export default function Sidebar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="start">
-              <DropdownMenuLabel>Tus Comunidades</DropdownMenuLabel>
+              <DropdownMenuLabel>Your Communities</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {userMemberships.map((membership) => (
                 <DropdownMenuItem
@@ -183,7 +179,6 @@ export default function Sidebar() {
           </DropdownMenu>
         </div>
 
-        {/* Navegación principal (sin cambios) */}
         <nav className={`flex-1 px-4 space-y-2`}>
           {allNavItems.map((item) => (
             <Link
@@ -203,13 +198,15 @@ export default function Sidebar() {
           ))}
         </nav>
 
-        {/* Botón de colapsar (sin cambios) */}
         <div className="p-4 mt-auto border-t shrink-0 hidden sm:block">
           <Button
             onClick={toggleMainSidebar}
             variant="outline"
             size="icon"
             className="w-full"
+            aria-label={
+              isMainSidebarOpen ? "Collapse sidebar" : "Expand sidebar"
+            }
           >
             <ChevronLeft
               className={`h-4 w-4 transition-transform duration-300 ${

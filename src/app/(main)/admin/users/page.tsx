@@ -1,14 +1,14 @@
 // src/app/(main)/admin/users/page.tsx
-"use client"; // 1. CONVERTIMOS LA PÁGINA EN UN COMPONENTE DE CLIENTE
+"use client";
 
-import { useState } from "react"; // 2. IMPORTAMOS useState
+import { useState } from "react";
 import UsersTable from "@/components/admin/UsersTable";
-import { Button } from "@/components/ui/button"; // 3. IMPORTAMOS Button
-import { PlusCircle } from "lucide-react"; // 4. IMPORTAMOS un ícono
-import CreateUserDialog from "@/components/admin/CreateUserDialog"; // 5. IMPORTAMOS nuestro nuevo diálogo
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import CreateUserDialog from "@/components/admin/CreateUserDialog";
 
 export default function AdminUsersPage() {
-  // 6. AÑADIMOS ESTADO PARA CONTROLAR LA VISIBILIDAD DEL DIÁLOGO
+  // State to manage the create user dialog visibility
   const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
 
   return (
@@ -16,15 +16,14 @@ export default function AdminUsersPage() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
+            <h1 className="text-3xl font-bold">User Management</h1>
             <p className="text-muted-foreground">
-              Visualiza y administra todos los usuarios de la plataforma.
+              View and manage all users on the platform.
             </p>
           </div>
-          {/* 7. AÑADIMOS EL BOTÓN PARA ABRIR EL DIÁLOGO */}
           <Button onClick={() => setIsCreateUserDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Crear Usuario
+            Create User
           </Button>
         </div>
         <div>
@@ -32,7 +31,6 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* 8. RENDERIZAMOS EL DIÁLOGO Y LE PASAMOS EL ESTADO */}
       <CreateUserDialog
         isOpen={isCreateUserDialogOpen}
         onOpenChange={setIsCreateUserDialogOpen}

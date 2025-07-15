@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileX2 } from "lucide-react"; // Un ícono apropiado para "no encontrado"
+import { FileX2 } from "lucide-react";
 
 interface NotFoundOrErrorPageProps {
   title?: string;
@@ -12,9 +12,9 @@ interface NotFoundOrErrorPageProps {
 }
 
 export default function NotFoundOrErrorPage({
-  title = "Página no encontrada o sin acceso",
-  description = "Lo sentimos, pero el contenido que buscas no existe, ha sido movido o no tienes permiso para verlo.",
-  buttonText = "Volver al catálogo de cursos",
+  title = "Page Not Found or No Access",
+  description = "Sorry, but the content you are looking for does not exist, has been moved, or you do not have permission to view it.",
+  buttonText = "Back to Course Catalog",
   buttonHref = "/courses",
 }: NotFoundOrErrorPageProps) {
   return (

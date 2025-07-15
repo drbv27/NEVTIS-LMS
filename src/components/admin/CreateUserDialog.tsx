@@ -36,13 +36,12 @@ export default function CreateUserDialog({
 }: CreateUserDialogProps) {
   const { createUser, isCreatingUser } = useAdminUserMutations();
 
-  // Estados locales para el formulario
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [selectedRole, setSelectedRole] = useState<Profile["role"]>("student");
 
-  // Función para resetear el formulario
+  // Function to reset the form state
   const resetForm = () => {
     setEmail("");
     setPassword("");
@@ -51,9 +50,8 @@ export default function CreateUserDialog({
   };
 
   const handleCreateUser = () => {
-    // Validaciones simples
     if (!email.trim() || !password.trim() || !fullName.trim()) {
-      toast.error("Por favor, completa todos los campos requeridos.");
+      toast.error("Please fill out all required fields.");
       return;
     }
 
@@ -66,8 +64,8 @@ export default function CreateUserDialog({
       },
       {
         onSuccess: () => {
-          onOpenChange(false); // Cierra el diálogo
-          resetForm(); // Limpia el formulario para la próxima vez
+          onOpenChange(false); // Close the dialog
+          resetForm(); // Clear the form for next use
         },
       }
     );
@@ -77,45 +75,45 @@ export default function CreateUserDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+          <DialogTitle>Create New User</DialogTitle>
           <DialogDescription>
-            Completa los detalles para crear una nueva cuenta en la plataforma.
-            El usuario recibirá un correo para confirmar su cuenta.
+            Complete the details to create a new account on the platform. The
+            user will receive an email to confirm their account.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Nombre Completo</Label>
+            <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Ej: Ada Lovelace"
+              placeholder="e.g., Ada Lovelace"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Correo Electrónico</Label>
+            <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="usuario@ejemplo.com"
+              placeholder="user@example.com"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Contraseña Temporal</Label>
+            <Label htmlFor="password">Temporary Password</Label>
             <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Una contraseña segura"
+              placeholder="A secure password"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role-select">Rol del Usuario</Label>
+            <Label htmlFor="role-select">User Role</Label>
             <Select
               value={selectedRole}
               onValueChange={(value) =>
@@ -123,12 +121,12 @@ export default function CreateUserDialog({
               }
             >
               <SelectTrigger id="role-select">
-                <SelectValue placeholder="Seleccionar un rol" />
+                <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="student">Estudiante</SelectItem>
-                <SelectItem value="teacher">Profesor</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="teacher">Teacher</SelectItem>
+                <SelectItem value="admin">Administrator</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -137,11 +135,11 @@ export default function CreateUserDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost" onClick={resetForm}>
-              Cancelar
+              Cancel
             </Button>
           </DialogClose>
           <Button onClick={handleCreateUser} disabled={isCreatingUser}>
-            {isCreatingUser ? "Creando..." : "Crear Usuario"}
+            {isCreatingUser ? "Creating..." : "Create User"}
           </Button>
         </DialogFooter>
       </DialogContent>

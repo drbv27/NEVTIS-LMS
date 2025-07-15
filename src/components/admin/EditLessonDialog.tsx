@@ -20,7 +20,7 @@ import { type Lesson } from "@/lib/types";
 import TiptapEditor from "../shared/TiptapEditor";
 import Link from "next/link";
 import CodeEditor from "../shared/CodeEditor";
-import QuizEditor from "./QuizEditor"; // <-- 1. IMPORTAR
+import QuizEditor from "./QuizEditor";
 
 interface EditLessonDialogProps {
   lesson: Lesson;
@@ -35,11 +35,11 @@ export default function EditLessonDialog({
   isOpen,
   onOpenChange,
 }: EditLessonDialogProps) {
-  // Estados generales
+  // General states
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  // Estados específicos de contenido
+  // Content-specific states
   const [file, setFile] = useState<File | null>(null);
   const [contentText, setContentText] = useState("");
   const [setupCode, setSetupCode] = useState("");
@@ -48,7 +48,7 @@ export default function EditLessonDialog({
 
   const { updateLesson, isUpdatingLesson } = useCourseMutations();
 
-  // Sincroniza el estado del formulario cada vez que se abre con una nueva lección
+  // Sync form state whenever the dialog is opened with a new lesson
   useEffect(() => {
     if (isOpen && lesson) {
       setTitle(lesson.title);
@@ -57,12 +57,12 @@ export default function EditLessonDialog({
       setSetupCode(lesson.setup_code || "");
       setSolutionCode(lesson.solution_code || "");
       setTestCode(lesson.test_code || "");
-      setFile(null);
+      setFile(null); // Reset file input on open
     }
   }, [isOpen, lesson]);
 
   const handleUpdate = () => {
-    // A futuro, esta mutación necesitará ser actualizada para guardar los datos del quiz
+    // TODO: This mutation will need to be updated to save quiz data
     updateLesson(
       {
         lessonId: lesson.id,
@@ -79,31 +79,29 @@ export default function EditLessonDialog({
     );
   };
 
-  // Función para renderizar el editor de contenido correcto según el tipo de lección
+  // Renders the appropriate content editor based on the lesson type
   const renderContentEditor = () => {
     switch (lesson.lesson_type) {
       case "quiz":
-        // Si la lección es un quiz, renderizamos nuestro nuevo componente
         return <QuizEditor lessonId={parseInt(lesson.id)} />;
 
       case "code":
-        // Renderizamos los editores para una lección de código
         return (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Instrucciones</Label>
+              <Label>Instructions</Label>
               <TiptapEditor content={contentText} onChange={setContentText} />
             </div>
             <div className="space-y-2">
-              <Label>Código de Configuración (Setup)</Label>
+              <Label>Setup Code</Label>
               <CodeEditor value={setupCode} onChange={setSetupCode} />
             </div>
             <div className="space-y-2">
-              <Label>Código de Solución</Label>
+              <Label>Solution Code</Label>
               <CodeEditor value={solutionCode} onChange={setSolutionCode} />
             </div>
             <div className="space-y-2">
-              <Label>Código de Pruebas (Tests)</Label>
+              <Label>Test Code</Label>
               <CodeEditor value={testCode} onChange={setTestCode} />
             </div>
           </div>
@@ -117,7 +115,7 @@ export default function EditLessonDialog({
         return (
           <div>
             <p className="text-sm text-muted-foreground mb-2">
-              Contenido actual:
+              Current content:
             </p>
             {lesson.content_url ? (
               <Link
@@ -130,11 +128,11 @@ export default function EditLessonDialog({
               </Link>
             ) : (
               <p className="text-sm text-muted-foreground italic mb-4">
-                No hay contenido de archivo asignado.
+                No file content assigned.
               </p>
             )}
             <Label htmlFor="edit-file" className="text-sm font-medium">
-              Reemplazar archivo
+              Replace file
             </Label>
             <Input
               id="edit-file"
@@ -145,12 +143,12 @@ export default function EditLessonDialog({
               }
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Selecciona un archivo solo si deseas reemplazar el actual.
+              Select a file only if you want to replace the current one.
             </p>
           </div>
         );
       default:
-        return <p>Tipo de lección no soportado para edición.</p>;
+        return <p>Lesson type not supported for editing.</p>;
     }
   };
 
@@ -158,14 +156,14 @@ export default function EditLessonDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Editar Lección: {lesson.title}</DialogTitle>
+          <DialogTitle>Edit Lesson: {lesson.title}</DialogTitle>
           <DialogDescription>
-            Modifica los detalles y el contenido de esta lección.
+            Modify the details and content of this lesson.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
           <div className="space-y-2">
-            <Label htmlFor="edit-title">Título</Label>
+            <Label htmlFor="edit-title">Title</Label>
             <Input
               id="edit-title"
               value={title}
@@ -173,7 +171,7 @@ export default function EditLessonDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="edit-description">Descripción</Label>
+            <Label htmlFor="edit-description">Description</Label>
             <Textarea
               id="edit-description"
               value={description}
@@ -183,17 +181,17 @@ export default function EditLessonDialog({
 
           <div className="space-y-2 border-t pt-4">
             <Label className="font-semibold">
-              Contenido de la Lección ({lesson.lesson_type})
+              Lesson Content ({lesson.lesson_type})
             </Label>
             {renderContentEditor()}
           </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button onClick={handleUpdate} disabled={isUpdatingLesson}>
-            {isUpdatingLesson ? "Guardando..." : "Guardar Cambios"}
+            {isUpdatingLesson ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

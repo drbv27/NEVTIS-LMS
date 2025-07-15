@@ -1,4 +1,4 @@
-// src/components/auth/SuperAdminProtectedLayout.tsx
+//src/components/auth/SuperAdminProtectedLayout.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -17,30 +17,30 @@ export default function SuperAdminProtectedLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Si la autenticación y la carga del perfil han terminado...
+    // Once authentication and profile loading are complete...
     if (!isAuthLoading && !isProfileLoading) {
-      // Si no hay usuario/perfil, o si el rol NO es 'admin', redirigimos.
+      // If there's no user/profile, or the role is NOT 'admin', redirect.
       if (!user || !profile || profile.role !== "admin") {
-        toast.error("Acceso denegado. Se requieren permisos de administrador.");
+        toast.error("Access denied. Administrator permissions required.");
         router.push("/dashboard");
       }
     }
   }, [user, profile, isAuthLoading, isProfileLoading, router]);
 
-  // Mostramos un loader mientras se realizan las comprobaciones.
+  // Show a loader while checks are in progress.
   if (isAuthLoading || isProfileLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p>Verificando permisos de administrador...</p>
+        <p>Verifying administrator permissions...</p>
       </div>
     );
   }
 
-  // Si todas las comprobaciones son exitosas, mostramos el contenido.
+  // If all checks pass, render the protected content.
   if (user && profile && profile.role === "admin") {
     return <>{children}</>;
   }
 
-  // Un fallback por si la redirección tarda en ejecutarse.
+  // Fallback to prevent content flashing while redirecting.
   return null;
 }

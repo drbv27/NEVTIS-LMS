@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { type Profile } from "@/lib/types";
 import { useAdminUserMutations } from "@/hooks/useAdminUserMutations";
-import { useCourseList } from "@/hooks/useCourseList"; // 1. IMPORTAMOS el nuevo hook
+import { useCourseList } from "@/hooks/useCourseList";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator"; // 2. IMPORTAMOS un separador visual
+import { Separator } from "@/components/ui/separator";
 
 interface EditUserDialogProps {
   user: Profile;
@@ -38,7 +38,6 @@ export default function EditUserDialog({
   isOpen,
   onOpenChange,
 }: EditUserDialogProps) {
-  // 3. OBTENEMOS LAS NUEVAS FUNCIONES Y DATOS
   const { updateUser, isUpdatingUser, enrollUser, isEnrollingUser } =
     useAdminUserMutations();
   const { data: courses, isLoading: isLoadingCourses } = useCourseList();
@@ -46,7 +45,6 @@ export default function EditUserDialog({
   const [fullName, setFullName] = useState("");
   const [bio, setBio] = useState("");
   const [selectedRole, setSelectedRole] = useState<Profile["role"]>("student");
-  // 4. AÑADIMOS ESTADO PARA EL CURSO SELECCIONADO
   const [selectedCourseId, setSelectedCourseId] = useState("");
 
   useEffect(() => {
@@ -59,7 +57,7 @@ export default function EditUserDialog({
 
   const handleSaveChanges = () => {
     if (!fullName.trim()) {
-      alert("El nombre completo no puede estar vacío.");
+      alert("Full name cannot be empty.");
       return;
     }
     updateUser(
@@ -77,10 +75,9 @@ export default function EditUserDialog({
     );
   };
 
-  // 5. NUEVA FUNCIÓN PARA MANEJAR LA INSCRIPCIÓN MANUAL
   const handleEnroll = () => {
     if (!selectedCourseId) {
-      alert("Por favor, selecciona un curso para inscribir.");
+      alert("Please select a course to enroll.");
       return;
     }
     enrollUser({
@@ -93,16 +90,15 @@ export default function EditUserDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>Editar Usuario: {user.full_name}</DialogTitle>
+          <DialogTitle>Edit User: {user.full_name}</DialogTitle>
           <DialogDescription>
-            Modifica la información y los permisos del usuario.
+            Modify the user&apos;s information and permissions.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto pr-4">
-          {/* Sección de Editar Perfil (sin cambios) */}
           <div className="space-y-2">
-            <Label htmlFor="fullName">Nombre Completo</Label>
+            <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
               value={fullName}
@@ -110,17 +106,17 @@ export default function EditUserDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bio">Biografía</Label>
+            <Label htmlFor="bio">Biography</Label>
             <Textarea
               id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="Una breve descripción del usuario..."
+              placeholder="A brief description of the user..."
               rows={3}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="role-select">Rol del Usuario</Label>
+            <Label htmlFor="role-select">User Role</Label>
             <Select
               value={selectedRole}
               onValueChange={(value) =>
@@ -128,22 +124,22 @@ export default function EditUserDialog({
               }
             >
               <SelectTrigger id="role-select">
-                <SelectValue placeholder="Seleccionar un rol" />
+                <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="student">Estudiante</SelectItem>
-                <SelectItem value="teacher">Profesor</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="teacher">Teacher</SelectItem>
+                <SelectItem value="admin">Administrator</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* 6. AÑADIMOS LA NUEVA SECCIÓN DE INSCRIPCIÓN */}
           <Separator className="my-6" />
+
           <div>
-            <h3 className="text-lg font-medium">Inscripción Manual</h3>
+            <h3 className="text-lg font-medium">Manual Enrollment</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Inscribe a este usuario en un curso específico.
+              Enroll this user in a specific course.
             </p>
             <div className="flex items-center gap-2">
               <Select
@@ -152,7 +148,7 @@ export default function EditUserDialog({
                 disabled={isLoadingCourses}
               >
                 <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Selecciona un curso..." />
+                  <SelectValue placeholder="Select a course..." />
                 </SelectTrigger>
                 <SelectContent>
                   {courses?.map((course) => (
@@ -166,7 +162,7 @@ export default function EditUserDialog({
                 onClick={handleEnroll}
                 disabled={!selectedCourseId || isEnrollingUser}
               >
-                {isEnrollingUser ? "Inscribiendo..." : "Inscribir"}
+                {isEnrollingUser ? "Enrolling..." : "Enroll"}
               </Button>
             </div>
           </div>
@@ -174,10 +170,10 @@ export default function EditUserDialog({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button onClick={handleSaveChanges} disabled={isUpdatingUser}>
-            {isUpdatingUser ? "Guardando..." : "Guardar Cambios"}
+            {isUpdatingUser ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

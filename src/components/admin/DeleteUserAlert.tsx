@@ -32,7 +32,7 @@ export default function DeleteUserAlert({
       { userIdToDelete: user.id },
       {
         onSuccess: () => {
-          onOpenChange(false); // Cierra la alerta si la eliminación es exitosa
+          onOpenChange(false); // Close the alert on successful deletion
         },
       }
     );
@@ -42,25 +42,24 @@ export default function DeleteUserAlert({
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente al
-            usuario{" "}
+            This action cannot be undone. This will permanently delete the user{" "}
             <span className="font-semibold text-destructive">
               {user.full_name} ({user.id})
             </span>
-            . Su cuenta de autenticación, su perfil, inscripciones y todo el
-            contenido asociado serán borrados.
+            . Their authentication account, profile, enrollments, and all
+            associated content will be erased.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeletingUser}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeletingUser ? "Eliminando..." : "Sí, eliminar permanentemente"}
+            {isDeletingUser ? "Deleting..." : "Yes, permanently delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

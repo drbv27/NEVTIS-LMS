@@ -1,4 +1,4 @@
-//src/components/admin/DeleteModuleAlert.tsx
+// src/components/admin/DeleteModuleAlert.tsx
 "use client";
 
 import { useCourseMutations } from "@/hooks/useCourseMutations";
@@ -34,25 +34,26 @@ export default function DeleteModuleAlert({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            ¿Estás seguro de que quieres eliminar este módulo?
+            Are you sure you want to delete this module?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente el
-            módulo{" "}
+            This action cannot be undone. This will permanently delete the
+            module{" "}
             <span className="font-semibold text-destructive">
               {module.title}
             </span>
-            , **junto con todas sus lecciones y archivos asociados**.
+            ,{" "}
+            <strong>along with all of its associated lessons and files</strong>.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => deleteModule({ moduleToDelete: module, courseId })}
             disabled={isDeletingModule}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeletingModule ? "Eliminando..." : "Sí, eliminar módulo"}
+            {isDeletingModule ? "Deleting..." : "Yes, delete module"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

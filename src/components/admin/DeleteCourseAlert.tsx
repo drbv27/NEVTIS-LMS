@@ -1,4 +1,4 @@
-//src/components/admin/DeleteCourseAlert.tsx
+// src/components/admin/DeleteCourseAlert.tsx
 "use client";
 
 import { useCourseMutations } from "@/hooks/useCourseMutations";
@@ -31,27 +31,28 @@ export default function DeleteCourseAlert({
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente el
-            curso{" "}
+            This action cannot be undone. This will permanently delete the
+            course{" "}
             <span className="font-semibold text-destructive">
               {course.title}
             </span>
-            , junto con **todos sus módulos, lecciones, archivos y datos de
-            inscripción asociados**.
+            , along with{" "}
+            <strong>
+              all of its associated modules, lessons, files, and enrollment data
+            </strong>
+            .
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => deleteCourse(course)}
             disabled={isDeletingCourse}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeletingCourse
-              ? "Eliminando..."
-              : "Sí, eliminar permanentemente"}
+            {isDeletingCourse ? "Deleting..." : "Yes, permanently delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -16,29 +16,29 @@ export default function AdminProtectedLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Si no está cargando la sesión ni el perfil...
+    // Once auth and profile loading is complete...
     if (!isAuthLoading && !isProfileLoading) {
-      // Y no hay usuario o no hay perfil, lo mandamos a login.
+      // ...if there's no user or profile, redirect to login.
       if (!user || !profile) {
         router.push("/login");
       }
-      // Si hay perfil, pero el rol no es el adecuado, lo mandamos al dashboard principal.
+      // ...if the user role is not sufficient, redirect to the main dashboard.
       else if (profile.role !== "admin" && profile.role !== "teacher") {
         router.push("/dashboard");
       }
     }
   }, [user, profile, isAuthLoading, isProfileLoading, router]);
 
-  // Muestra un loader mientras se verifica la sesión y el perfil.
+  // Display a loader while verifying session and profile.
   if (isAuthLoading || isProfileLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <p>Verificando acceso...</p>
+        <p>Verifying access...</p>
       </div>
     );
   }
 
-  // Si pasa todas las verificaciones, muestra el contenido de la página de admin.
+  // If all checks pass, render the protected admin content.
   if (
     user &&
     profile &&
@@ -47,6 +47,6 @@ export default function AdminProtectedLayout({
     return <>{children}</>;
   }
 
-  // Fallback por si la redirección tarda.
+  // Fallback to prevent content flashing while redirecting.
   return null;
 }

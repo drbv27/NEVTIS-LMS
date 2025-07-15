@@ -2,7 +2,6 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-// El hook ahora necesita el communitySlug
 import { useCourses } from "@/hooks/useCourses";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-// Añadimos la nueva prop
 interface CourseCatalogProps {
   communitySlug: string;
 }
@@ -25,27 +23,27 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
   const searchParams = useSearchParams();
   const selectedCategorySlug = searchParams.get("category");
 
-  // Pasamos ambos slugs al hook
+  // Pass both slugs to the hook
   const { courses, categories, isLoading, error } = useCourses(
     selectedCategorySlug,
     communitySlug
   );
 
   if (isLoading) {
-    return <p className="text-center py-10">Cargando cursos...</p>;
+    return <p className="text-center py-10">Loading courses...</p>;
   }
 
   if (error) {
     return (
       <p className="text-center text-red-500 py-10">
-        Error al cargar: {error.message}
+        Error loading: {error.message}
       </p>
     );
   }
 
   return (
     <div className="container mx-auto py-8">
-      {/* --- Filtros de Categoría (los enlaces ahora deben mantener el slug de la comunidad) --- */}
+      {/* Category Filters (links now preserve the community slug) */}
       <div className="mb-10 flex flex-wrap justify-center items-center gap-3">
         <Link href={`/community/${communitySlug}`}>
           <Button
@@ -53,7 +51,7 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
             size="sm"
             className="rounded-full"
           >
-            Todos
+            All
           </Button>
         </Link>
         {categories.map((category) => (
@@ -74,7 +72,6 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
         ))}
       </div>
 
-      {/* --- Grid de Cursos (sin cambios en la lógica de renderizado) --- */}
       {courses.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {courses.map((course) => (
@@ -85,7 +82,7 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
               <div className="relative w-full aspect-video">
                 <Image
                   src={course.image_url || "/images/placeholder.png"}
-                  alt={`Imagen de ${course.title}`}
+                  alt={`Image for ${course.title}`}
                   fill
                   className="object-cover"
                   sizes="(max-width: 640px) 100vw, 50vw, 33vw"
@@ -94,24 +91,21 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
               <CardHeader>
                 {course.categories && (
                   <Badge variant="secondary" className="w-fit">
-                    {" "}
-                    {course.categories.name}{" "}
+                    {course.categories.name}
                   </Badge>
                 )}
                 <CardTitle className="mt-2 text-lg font-semibold line-clamp-2">
-                  {" "}
-                  {course.title}{" "}
+                  {course.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-gray-600 line-clamp-3">
-                  {" "}
-                  {course.description || "No hay descripción disponible."}{" "}
+                  {course.description || "No description available."}
                 </p>
               </CardContent>
               <CardFooter>
                 <Link href={`/courses/${course.id}`} className="w-full">
-                  <Button className="w-full">Ver Detalles</Button>
+                  <Button className="w-full">View Details</Button>
                 </Link>
               </CardFooter>
             </Card>
@@ -120,7 +114,7 @@ export default function CourseCatalog({ communitySlug }: CourseCatalogProps) {
       ) : (
         <div className="text-center py-12">
           <p className="text-xl text-gray-500">
-            No se encontraron cursos en esta categoría.
+            No courses found in this category.
           </p>
         </div>
       )}

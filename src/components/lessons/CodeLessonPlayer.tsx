@@ -47,14 +47,11 @@ export default function CodeLessonPlayer({ lesson }: CodeLessonPlayerProps) {
     setStudentCode(lesson.setup_code || "");
   };
 
-  // ... (la lógica de outputContent no cambia)
   let outputContent: React.ReactNode = (
-    <p className="text-sm text-gray-400">
-      Ejecuta las pruebas para ver el resultado.
-    </p>
+    <p className="text-sm text-gray-400">Run the tests to see the output.</p>
   );
   if (isLoading) {
-    outputContent = <p className="text-sm text-blue-400">Ejecutando...</p>;
+    outputContent = <p className="text-sm text-blue-400">Running...</p>;
   } else if (result) {
     outputContent = (
       <div
@@ -86,13 +83,14 @@ export default function CodeLessonPlayer({ lesson }: CodeLessonPlayerProps) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-12rem)]">
       <div className="flex flex-col rounded-lg border bg-card overflow-hidden">
         <div className="p-4 border-b shrink-0">
-          <h3 className="text-lg font-semibold">Instrucciones</h3>
+          <h3 className="text-lg font-semibold">Instructions</h3>
         </div>
         <div
           className="prose dark:prose-invert max-w-none p-4 overflow-y-auto"
           dangerouslySetInnerHTML={{
             __html:
-              lesson.content_text || "No hay instrucciones para esta lección.",
+              lesson.content_text ||
+              "No instructions provided for this lesson.",
           }}
         />
       </div>
@@ -100,40 +98,38 @@ export default function CodeLessonPlayer({ lesson }: CodeLessonPlayerProps) {
       <div className="flex flex-col gap-4 min-h-0">
         <div className="flex flex-col rounded-lg border bg-card overflow-hidden flex-grow">
           <div className="flex items-center justify-between p-2 border-b shrink-0">
-            <h3 className="text-lg font-semibold pl-2">Tu Solución</h3>
+            <h3 className="text-lg font-semibold pl-2">Your Solution</h3>
             <div className="flex items-center gap-2">
-              {/* --- INICIO DE LA MODIFICACIÓN --- */}
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <Eye className="mr-2 h-4 w-4" />
-                    Ver Solución
+                    View Solution
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl">
                   <DialogHeader>
-                    <DialogTitle>Código de la Solución</DialogTitle>
+                    <DialogTitle>Solution Code</DialogTitle>
                   </DialogHeader>
                   <div className="mt-4 rounded-md overflow-hidden">
                     <CodeEditor
                       value={
-                        lesson.solution_code || "// No hay solución disponible."
+                        lesson.solution_code || "// No solution available."
                       }
-                      onChange={() => {}} // Hacemos que no sea editable
+                      onChange={() => {}} // Make the solution code non-editable
                       height="400px"
                     />
                   </div>
                 </DialogContent>
               </Dialog>
-              {/* --- FIN DE LA MODIFICACIÓN --- */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleResetCode}
-                title="Resetear Código"
+                title="Reset Code"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
-                Resetear
+                Reset
               </Button>
               <Button size="sm" onClick={handleRunCode} disabled={isLoading}>
                 {isLoading ? (
@@ -141,7 +137,7 @@ export default function CodeLessonPlayer({ lesson }: CodeLessonPlayerProps) {
                 ) : (
                   <Play className="mr-2 h-4 w-4" />
                 )}
-                Ejecutar Pruebas
+                Run Tests
               </Button>
             </div>
           </div>
@@ -159,7 +155,7 @@ export default function CodeLessonPlayer({ lesson }: CodeLessonPlayerProps) {
           <div className="flex items-center gap-2 p-3 border-b border-gray-700 shrink-0">
             <Terminal className="h-4 w-4 text-gray-400" />
             <h3 className="text-sm font-semibold text-gray-300">
-              Consola de Resultados
+              Output Console
             </h3>
           </div>
           <div className="p-4 overflow-y-auto">{outputContent}</div>

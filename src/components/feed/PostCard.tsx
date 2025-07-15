@@ -1,7 +1,6 @@
 // src/components/feed/PostCard.tsx
 "use client";
 
-// 1. IMPORTAMOS forwardRef de React
 import { useState, forwardRef } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useProfile } from "@/hooks/useProfile";
@@ -38,17 +37,33 @@ import CommentsDialog from "./CommentsDialog";
 function timeAgo(dateString: string): string {
   const date = new Date(dateString);
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+
   let interval = seconds / 31536000;
-  if (interval > 1) return `hace ${Math.floor(interval)} años`;
+  if (interval > 1) {
+    const years = Math.floor(interval);
+    return `${years} year${years > 1 ? "s" : ""} ago`;
+  }
   interval = seconds / 2592000;
-  if (interval > 1) return `hace ${Math.floor(interval)} meses`;
+  if (interval > 1) {
+    const months = Math.floor(interval);
+    return `${months} month${months > 1 ? "s" : ""} ago`;
+  }
   interval = seconds / 86400;
-  if (interval > 1) return `hace ${Math.floor(interval)} días`;
+  if (interval > 1) {
+    const days = Math.floor(interval);
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  }
   interval = seconds / 3600;
-  if (interval > 1) return `hace ${Math.floor(interval)} horas`;
+  if (interval > 1) {
+    const hours = Math.floor(interval);
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  }
   interval = seconds / 60;
-  if (interval > 1) return `hace ${Math.floor(interval)} minutos`;
-  return "hace unos segundos";
+  if (interval > 1) {
+    const minutes = Math.floor(interval);
+    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  }
+  return "a few seconds ago";
 }
 
 const renderWithLinksAndHashtags = (text: string) => {
@@ -85,8 +100,7 @@ const renderWithLinksAndHashtags = (text: string) => {
   });
 };
 
-// 2. ENVOLVEMOS EL COMPONENTE CON forwardRef
-// Ahora acepta 'post' y un 'ref' que le pasamos desde fuera
+// Wrap the component with forwardRef to allow passing a ref to the root DOM element.
 const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
   const { user } = useAuthStore();
   const { toggleLike, isLiking } = useFeed();
@@ -108,7 +122,7 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
 
   return (
     <>
-      {/* 3. ASIGNAMOS EL ref AL ELEMENTO DOM RAÍZ DEL COMPONENTE */}
+      {/* Assign the forwarded ref to the root Card element. */}
       <Card ref={ref} className="overflow-hidden shadow-md">
         <CardHeader className="p-4 sm:p-6">
           <div className="flex items-start justify-between">
@@ -125,7 +139,7 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-semibold text-foreground">
-                    {post.author_full_name || "Usuario Anónimo"}
+                    {post.author_full_name || "Anonymous User"}
                   </p>
                   {!isAuthor && (
                     <>
@@ -136,7 +150,7 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
                         onClick={handleFollow}
                         disabled={isFollowing}
                       >
-                        {isFollowedByAuthor ? "Siguiendo" : "Seguir"}
+                        {isFollowedByAuthor ? "Following" : "Follow"}
                       </Button>
                     </>
                   )}
@@ -150,18 +164,19 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
+                    <span className="sr-only">Post options</span>
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
-                    <Edit className="mr-2 h-4 w-4" /> Editar
+                    <Edit className="mr-2 h-4 w-4" /> Edit
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setIsDeleteDialogOpen(true)}
                     className="text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -176,7 +191,7 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
             <div className="mt-4 relative aspect-video rounded-md overflow-hidden border">
               <Image
                 src={post.image_url}
-                alt="Imagen del post"
+                alt="Post image"
                 fill
                 style={{ objectFit: "cover" }}
               />
@@ -197,7 +212,7 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
               className="mr-2 h-4 w-4"
               fill={isLikedByMe ? "#FF8C61" : "none"}
             />
-            ({post.likes_count}) Me gusta
+            ({post.likes_count}) Like
           </Button>
           <Button
             variant="ghost"
@@ -206,14 +221,14 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
             onClick={() => setIsCommentsOpen(true)}
           >
             <MessageCircle className="mr-2 h-4 w-4" /> ({post.comments_count})
-            Comentar
+            Comment
           </Button>
           <Button
             variant="ghost"
             size="sm"
             className="text-muted-foreground hover:text-primary w-full"
           >
-            <Share2 className="mr-2 h-4 w-4" /> Compartir
+            <Share2 className="mr-2 h-4 w-4" /> Share
           </Button>
         </CardFooter>
       </Card>
@@ -240,7 +255,7 @@ const PostCard = forwardRef<HTMLDivElement, { post: Post }>(({ post }, ref) => {
   );
 });
 
-// 4. AÑADIMOS EL displayName PARA FACILITAR LA DEPURACIÓN
+// Add a displayName for easier debugging in React DevTools.
 PostCard.displayName = "PostCard";
 
 export default PostCard;

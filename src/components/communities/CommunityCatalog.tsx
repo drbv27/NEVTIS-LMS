@@ -12,9 +12,9 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; // Importamos Badge
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils"; // Importamos cn para clases condicionales
+import { cn } from "@/lib/utils";
 
 function CommunityCardSkeleton() {
   return (
@@ -47,7 +47,7 @@ export default function CommunityCatalog() {
   if (error) {
     return (
       <p className="text-center text-red-500 py-10">
-        Error al cargar las comunidades: {error.message}
+        Error loading communities: {error.message}
       </p>
     );
   }
@@ -56,11 +56,11 @@ export default function CommunityCatalog() {
     <div className="container mx-auto py-8">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Explora Nuestras Comunidades
+          Explore Our Communities
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Únete a una comunidad para acceder a cursos exclusivos, conectar con
-          otros profesionales y llevar tus habilidades al siguiente nivel.
+          Join a community to access exclusive courses, connect with other
+          professionals, and take your skills to the next level.
         </p>
       </div>
 
@@ -81,7 +81,7 @@ export default function CommunityCatalog() {
                 <div className="relative w-full aspect-video">
                   <Image
                     src={community.image_url || "/images/placeholder.png"}
-                    alt={`Imagen de ${community.name}`}
+                    alt={`Image for ${community.name}`}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 100vw, 50vw, 33vw"
@@ -91,7 +91,7 @@ export default function CommunityCatalog() {
                       variant="secondary"
                       className="absolute top-2 right-2"
                     >
-                      Próximamente
+                      Coming Soon
                     </Badge>
                   )}
                 </div>
@@ -102,7 +102,7 @@ export default function CommunityCatalog() {
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <p className="text-sm text-muted-foreground line-clamp-3">
-                    {community.description || "Explora esta comunidad."}
+                    {community.description || "Explore this community."}
                   </p>
                 </CardContent>
                 <CardFooter>
@@ -111,11 +111,11 @@ export default function CommunityCatalog() {
                       href={`/community/${community.slug}`}
                       className="w-full"
                     >
-                      <Button className="w-full">Ver Comunidad</Button>
+                      <Button className="w-full">View Community</Button>
                     </Link>
                   ) : (
                     <Button className="w-full" disabled>
-                      Próximamente
+                      Coming Soon
                     </Button>
                   )}
                 </CardFooter>
@@ -126,7 +126,7 @@ export default function CommunityCatalog() {
       ) : (
         <div className="text-center py-12">
           <p className="text-xl text-muted-foreground">
-            No hay comunidades disponibles en este momento.
+            No communities available at the moment.
           </p>
         </div>
       )}

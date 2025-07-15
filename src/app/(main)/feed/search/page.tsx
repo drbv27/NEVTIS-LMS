@@ -8,7 +8,7 @@ import SearchResultCard from "@/components/feed/SearchResultCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SearchX } from "lucide-react";
 
-// El componente principal que hace el fetching y renderiza los resultados
+// Main component that fetches and renders the search results
 function SearchResults() {
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("q");
@@ -16,7 +16,6 @@ function SearchResults() {
   const { data: results, isLoading, error } = useSearchResults(searchTerm);
 
   if (isLoading) {
-    // Skeleton loader para la página de resultados
     return (
       <div className="space-y-4">
         <Skeleton className="h-20 w-full" />
@@ -29,7 +28,7 @@ function SearchResults() {
   if (error) {
     return (
       <p className="text-center text-destructive">
-        Error al buscar: {error.message}
+        Error searching: {error.message}
       </p>
     );
   }
@@ -38,8 +37,8 @@ function SearchResults() {
     return (
       <div className="text-center py-12 text-muted-foreground">
         <SearchX className="mx-auto h-12 w-12 mb-4" />
-        <p className="text-lg">No se encontraron resultados.</p>
-        <p className="text-sm">Intenta con un término de búsqueda diferente.</p>
+        <p className="text-lg">No results found.</p>
+        <p className="text-sm">Try using a different search term.</p>
       </div>
     );
   }
@@ -56,7 +55,6 @@ function SearchResults() {
   );
 }
 
-// El componente de la página que exportamos
 export default function SearchPage() {
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("q") || "";
@@ -64,11 +62,11 @@ export default function SearchPage() {
   return (
     <div className="max-w-2xl mx-auto py-8">
       <h1 className="text-3xl font-bold tracking-tight mb-6">
-        Resultados para:{" "}
+        Results for:{" "}
         <span className="text-primary">&quot;{searchTerm}&quot;</span>
       </h1>
-      {/* Suspense es necesario porque el componente de abajo usa useSearchParams */}
-      <Suspense fallback={<p>Cargando resultados...</p>}>
+      {/* Suspense is required here because SearchResults uses the useSearchParams hook. */}
+      <Suspense fallback={<p>Loading results...</p>}>
         <SearchResults />
       </Suspense>
     </div>

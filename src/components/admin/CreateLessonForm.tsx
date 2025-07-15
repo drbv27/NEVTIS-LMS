@@ -17,7 +17,7 @@ import { Textarea } from "../ui/textarea";
 import { PlusCircle } from "lucide-react";
 import { Lesson } from "@/lib/types";
 import TiptapEditor from "../shared/TiptapEditor";
-import CodeEditor from "../shared/CodeEditor"; // <-- 1. IMPORTAMOS NUESTRO EDITOR
+import CodeEditor from "../shared/CodeEditor";
 import { toast } from "sonner";
 
 interface CreateLessonFormProps {
@@ -31,24 +31,24 @@ export default function CreateLessonForm({
 }: CreateLessonFormProps) {
   const { createLesson, isCreatingLesson } = useCourseMutations();
 
-  // Estados generales
+  // General states
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [lessonType, setLessonType] = useState<Lesson["lesson_type"] | "">("");
 
-  // Estados específicos de contenido
+  // Content-specific states
   const [file, setFile] = useState<File | null>(null);
   const [contentText, setContentText] = useState("");
 
-  // --- 2. NUEVOS ESTADOS PARA LA LECCIÓN DE CÓDIGO ---
+  // States for 'code' lesson type
   const [setupCode, setSetupCode] = useState(
-    "function miFuncion() {\n  // Tu código aquí\n}"
+    "function myFunction() {\n  // Your code here\n}"
   );
   const [solutionCode, setSolutionCode] = useState(
-    "function miFuncion() {\n  return true;\n}"
+    "function myFunction() {\n  return true;\n}"
   );
   const [testCode, setTestCode] = useState(
-    "const assert = require('assert');\nassert.strictEqual(miFuncion(), true, 'El resultado debe ser true');"
+    "const assert = require('assert');\nassert.strictEqual(myFunction(), true, 'The result must be true');"
   );
 
   const resetForm = () => {
@@ -57,30 +57,28 @@ export default function CreateLessonForm({
     setLessonType("");
     setFile(null);
     setContentText("");
-    // Limpiamos los inputs de archivo y código
+    // Also clear file and code inputs
     const fileInput = document.getElementById(
       `file-input-${moduleId}`
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
-    setSetupCode("function miFuncion() {\n  // Tu código aquí\n}");
-    setSolutionCode("function miFuncion() {\n  return true;\n}");
+    setSetupCode("function myFunction() {\n  // Your code here\n}");
+    setSolutionCode("function myFunction() {\n  return true;\n}");
     setTestCode(
-      "const assert = require('assert');\nassert.strictEqual(miFuncion(), true, 'El resultado debe ser true');"
+      "const assert = require('assert');\nassert.strictEqual(myFunction(), true, 'The result must be true');"
     );
   };
 
   const handleAddLesson = () => {
     if (!title || !lessonType) return;
 
-    // ... (Validaciones para video, pdf y texto no cambian)
     if ((lessonType === "video" || lessonType === "pdf") && !file) {
-      return toast.error("Por favor, selecciona un archivo para subir.");
+      return toast.error("Please select a file to upload.");
     }
     if (lessonType === "text" && !contentText.trim()) {
-      return toast.error("El contenido de texto no puede estar vacío.");
+      return toast.error("Text content cannot be empty.");
     }
 
-    // Pasamos todos los campos de código a la mutación
     createLesson(
       {
         title,
@@ -100,23 +98,22 @@ export default function CreateLessonForm({
 
   return (
     <div className="p-4 bg-muted/50 border-t mt-4 space-y-4">
-      <h5 className="text-sm font-semibold">Añadir Nueva Lección</h5>
-      {/* ... (Inputs de título, descripción y tipo no cambian) ... */}
+      <h5 className="text-sm font-semibold">Add New Lesson</h5>
       <div className="space-y-2">
-        <Label htmlFor={`title-${moduleId}`}>Título de la lección</Label>
+        <Label htmlFor={`title-${moduleId}`}>Lesson Title</Label>
         <Input
           id={`title-${moduleId}`}
-          placeholder="Ej: ¿Qué es una variable?"
+          placeholder="e.g., What is a variable?"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           disabled={isCreatingLesson}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor={`desc-${moduleId}`}>Descripción corta</Label>
+        <Label htmlFor={`desc-${moduleId}`}>Short Description</Label>
         <Textarea
           id={`desc-${moduleId}`}
-          placeholder="Una breve introducción a la lección..."
+          placeholder="A brief introduction to the lesson..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           disabled={isCreatingLesson}
@@ -124,7 +121,7 @@ export default function CreateLessonForm({
         />
       </div>
       <div className="space-y-2">
-        <Label>Tipo de Contenido</Label>
+        <Label>Content Type</Label>
         <Select
           onValueChange={(value) =>
             setLessonType(value as Lesson["lesson_type"])
@@ -133,28 +130,27 @@ export default function CreateLessonForm({
           disabled={isCreatingLesson}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Selecciona un tipo" />
+            <SelectValue placeholder="Select a type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="video">📹 Video</SelectItem>
             <SelectItem value="pdf">📄 PDF</SelectItem>
-            <SelectItem value="text">📝 Texto Enriquecido</SelectItem>
-            <SelectItem value="quiz">🧠 Quiz (próximamente)</SelectItem>
-            <SelectItem value="code">💻 Código</SelectItem>
+            <SelectItem value="text">📝 Rich Text</SelectItem>
+            <SelectItem value="quiz">🧠 Quiz (coming soon)</SelectItem>
+            <SelectItem value="code">💻 Code</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* --- 3. RENDERIZADO CONDICIONAL DE CAMPOS --- */}
       {lessonType === "text" && (
         <div className="space-y-2">
-          <Label>Contenido del Texto</Label>
+          <Label>Text Content</Label>
           <TiptapEditor content={contentText} onChange={setContentText} />
         </div>
       )}
       {(lessonType === "video" || lessonType === "pdf") && (
         <div className="space-y-2">
-          <Label>Subir Archivo</Label>
+          <Label>Upload File</Label>
           <Input
             id={`file-input-${moduleId}`}
             type="file"
@@ -167,19 +163,19 @@ export default function CreateLessonForm({
       {lessonType === "code" && (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Instrucciones (Usando el editor de texto enriquecido)</Label>
+            <Label>Instructions (using the rich text editor)</Label>
             <TiptapEditor content={contentText} onChange={setContentText} />
           </div>
           <div className="space-y-2">
-            <Label>Código de Configuración (Setup)</Label>
+            <Label>Setup Code</Label>
             <CodeEditor value={setupCode} onChange={setSetupCode} />
           </div>
           <div className="space-y-2">
-            <Label>Código de Solución</Label>
+            <Label>Solution Code</Label>
             <CodeEditor value={solutionCode} onChange={setSolutionCode} />
           </div>
           <div className="space-y-2">
-            <Label>Código de Pruebas (Tests)</Label>
+            <Label>Test Code</Label>
             <CodeEditor value={testCode} onChange={setTestCode} />
           </div>
         </div>
@@ -192,7 +188,7 @@ export default function CreateLessonForm({
           disabled={isCreatingLesson || !title || !lessonType}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
-          {isCreatingLesson ? "Añadiendo..." : "Añadir Lección"}
+          {isCreatingLesson ? "Adding..." : "Add Lesson"}
         </Button>
       </div>
     </div>

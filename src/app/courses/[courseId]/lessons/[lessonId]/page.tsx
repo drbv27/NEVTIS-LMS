@@ -7,14 +7,14 @@ export default function LessonPage({
 }: {
   params: { courseId: string; lessonId: string };
 }) {
-  // Ocultaremos el layout principal (Navbar/Sidebar) para esta ruta específica.
-  // Esto se puede hacer con un layout específico para esta ruta o ajustando el layout padre.
-  // Por ahora, el componente LessonView ocupa toda la pantalla.
+  // Note: This page uses a distinct layout where the main Navbar/Sidebar are hidden.
+  // The LessonView component is designed to occupy the full screen for an
+  // immersive learning experience.
   return (
     <Suspense
       fallback={
         <div className="w-full h-screen flex items-center justify-center">
-          <p>Cargando lección...</p>
+          <p>Loading lesson...</p>
         </div>
       }
     >

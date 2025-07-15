@@ -17,11 +17,11 @@ export default function FeedSearchInput() {
     const trimmedTerm = searchTerm.trim();
 
     if (!trimmedTerm) {
-      toast.info("Por favor, introduce un término para buscar.");
+      toast.info("Please enter a term to search.");
       return;
     }
 
-    // Redirigimos a una página de resultados dedicada, pasando el término como un query param
+    // Redirect to a dedicated results page, passing the term as a query parameter
     router.push(`/feed/search?q=${encodeURIComponent(trimmedTerm)}`);
   };
 
@@ -32,13 +32,13 @@ export default function FeedSearchInput() {
     >
       <Input
         type="text"
-        placeholder="Buscar usuarios, posts o #hashtags..."
+        placeholder="Search for users, posts, or #hashtags..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="flex-1"
       />
       <Button type="submit">
-        <Search className="mr-2 h-4 w-4" /> Buscar
+        <Search className="mr-2 h-4 w-4" /> Search
       </Button>
     </form>
   );

@@ -1,10 +1,10 @@
-//src/components/admin/CourseTable.tsx
+// src/components/admin/CourseTable.tsx
 "use client";
 
-import { useState } from "react"; // Importamos useState
+import { useState } from "react";
 import { useAdminCourses } from "@/hooks/useAdminCourses";
 import { useCourseMutations } from "@/hooks/useCourseMutations";
-import { type Course } from "@/lib/types"; // Importamos el tipo
+import { type Course } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -34,11 +34,9 @@ import TableSkeleton from "../shared/TableSkeleton";
 
 export default function CoursesTable() {
   const { data: courses, isLoading, error } = useAdminCourses();
-
-  /* const { updateCourseStatus, isUpdatingStatus } = useCourseMutations(); */
   const { updateCourseStatus } = useCourseMutations();
 
-  // Estado para controlar qué curso se va a eliminar y si el diálogo está abierto
+  // State to manage which course is targeted for deletion, triggering the alert dialog.
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
 
   if (isLoading) return <TableSkeleton columns={5} />;
@@ -49,14 +47,14 @@ export default function CoursesTable() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Gestión de Cursos</h1>
+            <h1 className="text-3xl font-bold">Course Management</h1>
             <p className="text-muted-foreground">
-              Crea, edita y gestiona todos los cursos de la plataforma.
+              Create, edit, and manage all courses on the platform.
             </p>
           </div>
           <Link href="/admin/courses/new">
             <Button>
-              <PlusCircle className="mr-2 h-4 w-4" /> Crear Nuevo Curso
+              <PlusCircle className="mr-2 h-4 w-4" /> Create New Course
             </Button>
           </Link>
         </div>
@@ -64,11 +62,11 @@ export default function CoursesTable() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Título</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Precio</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead className="w-[40%]">Title</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -78,7 +76,7 @@ export default function CoursesTable() {
                   <TableCell>{course.categories?.name || "N/A"}</TableCell>
                   <TableCell>
                     <Badge variant={course.is_free ? "default" : "secondary"}>
-                      {course.is_free ? "Gratis" : "De Pago"}
+                      {course.is_free ? "Free" : "Paid"}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -94,23 +92,23 @@ export default function CoursesTable() {
                           : ""
                       }
                     >
-                      {course.status === "published" ? "Publicado" : "Borrador"}
+                      {course.status === "published" ? "Published" : "Draft"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
                           <Link href={`/admin/courses/${course.id}/edit`}>
-                            Editar
+                            Edit
                           </Link>
                         </DropdownMenuItem>
-                        {/* --- INICIO DE LA NUEVA LÓGICA --- */}
                         <DropdownMenuItem
                           onClick={() =>
                             updateCourseStatus({
@@ -125,23 +123,21 @@ export default function CoursesTable() {
                           {course.status === "published" ? (
                             <>
                               <ToggleLeft className="mr-2 h-4 w-4" />
-                              Pasar a borrador
+                              Set to Draft
                             </>
                           ) : (
                             <>
                               <ToggleRight className="mr-2 h-4 w-4" />
-                              Publicar curso
+                              Publish Course
                             </>
                           )}
                         </DropdownMenuItem>
-                        {/* --- FIN DE LA NUEVA LÓGICA --- */}
                         <DropdownMenuSeparator />
-                        {/* Al hacer clic, establecemos el curso a borrar y abrimos el diálogo */}
                         <DropdownMenuItem
                           onClick={() => setCourseToDelete(course)}
                           className="text-destructive focus:text-destructive"
                         >
-                          Eliminar
+                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -152,7 +148,8 @@ export default function CoursesTable() {
           </Table>
         </div>
       </div>
-      {/* El diálogo de alerta. Solo se muestra si hay un 'courseToDelete' */}
+
+      {/* The alert dialog is only rendered when a 'courseToDelete' is set */}
       {courseToDelete && (
         <DeleteCourseAlert
           isOpen={!!courseToDelete}

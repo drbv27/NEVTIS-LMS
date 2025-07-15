@@ -25,14 +25,14 @@ export default function LessonContentPlayer({
   if (!isClient) {
     return (
       <div className="p-4 text-center text-muted-foreground">
-        Cargando reproductor...
+        Loading player...
       </div>
     );
   }
 
-  // Comprobación más robusta
   const hasContent = lesson.content_url || lesson.content_text;
-  // Permitimos que los tipos 'code' y 'quiz' pasen aunque no tengan contenido inicial
+  // Allow 'code' and 'quiz' types to proceed even without initial content,
+  // as their content is managed within their respective components.
   if (
     !hasContent &&
     lesson.lesson_type !== "code" &&
@@ -40,7 +40,7 @@ export default function LessonContentPlayer({
   ) {
     return (
       <div className="p-6 text-center text-muted-foreground">
-        Contenido no disponible para esta lección.
+        Content not available for this lesson.
       </div>
     );
   }
@@ -64,21 +64,18 @@ export default function LessonContentPlayer({
     case "pdf":
       return <PdfViewer pdfUrl={lesson.content_url!} />;
 
-    // --- INICIO DE NUEVOS CASOS ---
     case "text":
-      if (!lesson.content_text) return <p>Contenido de texto no disponible.</p>;
+      if (!lesson.content_text) return <p>Text content not available.</p>;
       return (
-        // --- INICIO DE LA CORRECCIÓN ---
-        // La clase 'prose' de Tailwind Typography dará estilo a los h2, ul, li, etc.
+        // The 'prose' class from Tailwind Typography will style the rendered HTML.
         <div
           className="prose dark:prose-invert max-w-none p-4"
           dangerouslySetInnerHTML={{ __html: lesson.content_text }}
         />
-        // --- FIN DE LA CORRECCIÓN ---
       );
 
     case "code":
-      // Placeholder para el futuro editor de código
+      // Renders the interactive code editor component
       return <CodeLessonPlayer lesson={lesson} />;
 
     case "quiz":
@@ -88,12 +85,11 @@ export default function LessonContentPlayer({
           onQuizPassed={onQuizPassed}
         />
       );
-    // --- FIN DE NUEVOS CASOS ---
 
     default:
       return (
         <div className="p-6 text-center text-muted-foreground">
-          Tipo de lección &apos;{lesson.lesson_type}&apos; no soportado.
+          Lesson type &apos;{lesson.lesson_type}&apos; not supported.
         </div>
       );
   }

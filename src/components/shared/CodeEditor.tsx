@@ -21,7 +21,7 @@ export default function CodeEditor({
       height={height}
       extensions={[javascript({ jsx: true, typescript: true })]}
       onChange={onChange}
-      theme="dark" // Puedes cambiar el tema a 'light' o explorar otros
+      theme="dark"
       style={{
         fontSize: "14px",
         border: "1px solid hsl(var(--border))",

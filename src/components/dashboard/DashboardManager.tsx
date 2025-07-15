@@ -27,6 +27,6 @@ export default function DashboardManager() {
     case "student":
       return <StudentDashboard />;
     default:
-      return <p>Rol de usuario no reconocido. Contacta a soporte.</p>;
+      return <p>User role not recognized. Please contact support.</p>;
   }
 }

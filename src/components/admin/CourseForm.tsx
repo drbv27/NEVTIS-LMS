@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { type Course } from "@/lib/types";
 import Image from "next/image";
-import { Switch } from "@/components/ui/switch"; // 1. IMPORTAMOS EL SWITCH
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 interface CourseFormProps {
@@ -41,7 +41,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   const { createCourse, isCreatingCourse, updateCourse, isUpdatingCourse } =
     useCourseMutations();
 
-  // 2. AÑADIMOS ESTADOS PARA LOS NUEVOS CAMPOS
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -80,11 +79,10 @@ export default function CourseForm({ initialData }: CourseFormProps) {
     event.preventDefault();
 
     if (!communityId) {
-      toast.error("Debes asignar el curso a una comunidad.");
+      toast.error("You must assign the course to a community.");
       return;
     }
 
-    // 3. AÑADIMOS LOS NUEVOS DATOS AL PAYLOAD
     const payload = {
       title,
       description,
@@ -104,7 +102,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
       });
     } else {
       if (!title || !categoryId || !imageFile)
-        return alert("Completa todos los campos");
+        return alert("Please fill out all required fields");
       createCourse({
         ...payload,
         imageFile,
@@ -115,19 +113,17 @@ export default function CourseForm({ initialData }: CourseFormProps) {
   return (
     <Card className="max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle>
-          {isEditing ? "Editar Curso" : "Crear Nuevo Curso"}
-        </CardTitle>
+        <CardTitle>{isEditing ? "Edit Course" : "Create New Course"}</CardTitle>
         <CardDescription>
           {isEditing
-            ? "Modifica los detalles de tu curso."
-            : "Completa los detalles para crear un nuevo curso."}
+            ? "Modify the details of your course."
+            : "Complete the details to create a new course."}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title">Título del Curso</Label>
+            <Label htmlFor="title">Course Title</Label>
             <Input
               id="title"
               value={title}
@@ -136,7 +132,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={description}
@@ -144,10 +140,10 @@ export default function CourseForm({ initialData }: CourseFormProps) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="community">Comunidad</Label>
+            <Label htmlFor="community">Community</Label>
             <Select onValueChange={setCommunityId} value={communityId} required>
               <SelectTrigger id="community" disabled={isLoadingCommunities}>
-                <SelectValue placeholder="Asigna este curso a una comunidad..." />
+                <SelectValue placeholder="Assign this course to a community..." />
               </SelectTrigger>
               <SelectContent>
                 {communities?.map((community) => (
@@ -159,10 +155,10 @@ export default function CourseForm({ initialData }: CourseFormProps) {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="category">Categoría</Label>
+            <Label htmlFor="category">Category</Label>
             <Select onValueChange={setCategoryId} value={categoryId} required>
               <SelectTrigger disabled={isLoadingCategories}>
-                <SelectValue placeholder="..." />
+                <SelectValue placeholder="Select a category..." />
               </SelectTrigger>
               <SelectContent>
                 {categories?.map((cat) => (
@@ -174,9 +170,8 @@ export default function CourseForm({ initialData }: CourseFormProps) {
             </Select>
           </div>
 
-          {/* 4. AÑADIMOS LOS NUEVOS CAMPOS AL FORMULARIO */}
           <div className="space-y-2">
-            <Label>Precio del Curso</Label>
+            <Label>Course Price</Label>
             <div className="flex items-center space-x-2">
               <Switch
                 id="is-free-switch"
@@ -184,7 +179,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
                 onCheckedChange={setIsFree}
               />
               <Label htmlFor="is-free-switch">
-                {isFree ? "Este curso es Gratuito" : "Este curso es de Pago"}
+                {isFree ? "This course is Free" : "This course is Paid"}
               </Label>
             </div>
           </div>
@@ -192,21 +187,21 @@ export default function CourseForm({ initialData }: CourseFormProps) {
           {!isFree && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="price">Precio (USD)</Label>
+                <Label htmlFor="price">Price (USD)</Label>
                 <Input
                   id="price"
                   type="number"
                   step="0.01"
-                  placeholder="Ej: 99.99"
+                  placeholder="e.g., 99.99"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="stripePriceId">ID del Precio en Stripe</Label>
+                <Label htmlFor="stripePriceId">Stripe Price ID</Label>
                 <Input
                   id="stripePriceId"
-                  placeholder="Ej: price_1P6..."
+                  placeholder="e.g., price_1P6..."
                   value={stripePriceId}
                   onChange={(e) => setStripePriceId(e.target.value)}
                 />
@@ -215,11 +210,11 @@ export default function CourseForm({ initialData }: CourseFormProps) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="imageFile">Imagen de Portada</Label>
+            <Label htmlFor="imageFile">Cover Image</Label>
             {imagePreview && (
               <Image
                 src={imagePreview}
-                alt="Vista previa"
+                alt="Image preview"
                 width={200}
                 height={112}
                 className="rounded-md object-cover"
@@ -236,16 +231,16 @@ export default function CourseForm({ initialData }: CourseFormProps) {
 
           <div className="flex justify-end gap-4">
             <Button type="button" variant="ghost" onClick={() => router.back()}>
-              Cancelar
+              Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
                 ? isEditing
-                  ? "Guardando..."
-                  : "Creando..."
+                  ? "Saving..."
+                  : "Creating..."
                 : isEditing
-                ? "Guardar Cambios"
-                : "Crear Curso"}
+                ? "Save Changes"
+                : "Create Course"}
             </Button>
           </div>
         </form>

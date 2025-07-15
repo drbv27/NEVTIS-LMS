@@ -2,12 +2,12 @@
 "use client";
 
 import { useCourseDetails } from "@/hooks/useCourseDetails";
-import { useStripeCheckout } from "@/hooks/useStripeCheckout"; // 1. IMPORTAMOS nuestro nuevo hook
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookCopy, DollarSign, Loader2 } from "lucide-react"; // 2. IMPORTAMOS Loader2
+import { BookCopy, DollarSign, Loader2 } from "lucide-react";
 import { Module, Lesson } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
@@ -15,10 +15,10 @@ import NotFoundOrErrorPage from "@/components/shared/NotFoundOrErrorPage";
 import LessonTypeIcon from "@/components/lessons/LessonTypeIcon";
 import { toast } from "sonner";
 
-// El helper para formatear el precio no cambia
+// Helper function to format the price
 function formatPrice(price: number | null) {
   if (price === null || price === 0) {
-    return "Gratis";
+    return "Free";
   }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -36,7 +36,6 @@ export default function CourseDetailPage({
   const { course, isLoading, error, enrollInCourse, isEnrolling } =
     useCourseDetails(params.courseId);
 
-  // 3. USAMOS el hook de Stripe
   const { redirectToCheckout, isRedirecting } = useStripeCheckout();
 
   const handleEnrollClick = () => {
@@ -47,30 +46,26 @@ export default function CourseDetailPage({
     }
   };
 
-  // 4. ACTUALIZAMOS la función de compra para usar el hook
   const handlePurchaseClick = () => {
     if (!user) {
-      toast.info("Por favor, inicia sesión para acceder a una comunidad.");
+      toast.info("Please log in to purchase access.");
       router.push(`/login?redirect=/courses/${params.courseId}`);
       return;
     }
-    // Verificamos que el curso pertenezca a una comunidad
+    // A course must be associated with a community to be purchased
     if (!course?.community_id) {
       toast.error(
-        "Este curso no está asociado a ninguna comunidad y no se puede comprar."
+        "This course is not associated with any community and cannot be purchased."
       );
       return;
     }
-    // Llamamos a la mutación desde nuestro hook con el communityId
     redirectToCheckout({
       communityId: course.community_id,
     });
   };
 
   if (isLoading) {
-    return (
-      <div className="text-center py-10">Cargando detalles del curso...</div>
-    );
+    return <div className="text-center py-10">Loading course details...</div>;
   }
 
   if (error || !course) {
@@ -88,7 +83,7 @@ export default function CourseDetailPage({
         }
       >
         <Button size="lg" className="w-full mt-6 text-lg">
-          Ir al Curso / Continuar
+          Go to Course / Continue
         </Button>
       </Link>
     );
@@ -100,17 +95,16 @@ export default function CourseDetailPage({
         onClick={handleEnrollClick}
         disabled={isEnrolling}
       >
-        {isEnrolling ? "Inscribiendo..." : "Inscribirse Gratis"}
+        {isEnrolling ? "Enrolling..." : "Enroll for Free"}
       </Button>
     );
   } else {
-    // 5. ACTUALIZAMOS el botón para mostrar un estado de carga
     actionButton = (
       <Button
         size="lg"
         className="w-full mt-6 text-lg"
         onClick={handlePurchaseClick}
-        disabled={isRedirecting} // El botón se deshabilita mientras redirige
+        disabled={isRedirecting}
       >
         {isRedirecting ? (
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -119,8 +113,8 @@ export default function CourseDetailPage({
         )}
         <span>
           {isRedirecting
-            ? "Redirigiendo a pago..."
-            : `Comprar Curso por ${formatPrice(course.price)}`}
+            ? "Redirecting to payment..."
+            : `Buy Course for ${formatPrice(course.price)}`}
         </span>
       </Button>
     );
@@ -133,7 +127,7 @@ export default function CourseDetailPage({
           <div className="relative w-full aspect-video rounded-lg overflow-hidden shadow-lg mb-6">
             <Image
               src={course.image_url || "/images/placeholder.png"}
-              alt={`Imagen de ${course.title}`}
+              alt={`Cover image for ${course.title}`}
               fill
               className="object-cover"
             />
@@ -146,12 +140,12 @@ export default function CourseDetailPage({
             )}
             {course.categories && (
               <div className="flex items-center gap-2">
-                <strong>Categoría:</strong>{" "}
+                <strong>Category:</strong>{" "}
                 <Badge variant="secondary">{course.categories.name}</Badge>
               </div>
             )}
             <div className="flex items-center gap-2">
-              <strong>Precio:</strong>{" "}
+              <strong>Price:</strong>{" "}
               <Badge
                 className={
                   course.is_free
@@ -172,7 +166,7 @@ export default function CourseDetailPage({
           </h1>
           <p className="text-lg text-gray-600 mb-6">{course.description}</p>
           <div className="mt-10 pt-8 border-t">
-            <h2 className="text-2xl font-semibold mb-6">Contenido del Curso</h2>
+            <h2 className="text-2xl font-semibold mb-6">Course Content</h2>
             <div className="space-y-6">
               {course.modules.map((module: Module) => (
                 <div

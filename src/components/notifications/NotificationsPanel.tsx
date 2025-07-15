@@ -29,7 +29,7 @@ export default function NotificationsPanel() {
   return (
     <div>
       <div className="flex items-center justify-between p-3 border-b">
-        <h3 className="font-semibold">Notificaciones</h3>
+        <h3 className="font-semibold">Notifications</h3>
         {unreadCount > 0 && (
           <Button
             variant="link"
@@ -39,7 +39,7 @@ export default function NotificationsPanel() {
             disabled={isMarkingAsRead}
           >
             <CheckCheck className="mr-1 h-3 w-3" />
-            Marcar todas como leídas
+            Mark all as read
           </Button>
         )}
       </div>
@@ -51,7 +51,7 @@ export default function NotificationsPanel() {
         ) : (
           <div className="text-center text-sm text-muted-foreground p-8">
             <BellRing className="mx-auto h-8 w-8 mb-2" />
-            <p>No tienes notificaciones.</p>
+            <p>You have no notifications.</p>
           </div>
         )}
       </div>

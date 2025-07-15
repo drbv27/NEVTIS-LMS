@@ -25,7 +25,8 @@ export default function QuizResultDisplay({
   onContinue,
 }: QuizResultProps) {
   const score = parseFloat(result.score);
-  const isSuccess = score >= 70; // Definimos 70 como la nota para aprobar
+  // Define 70 as the passing score
+  const isSuccess = score >= 70;
 
   return (
     <div className="max-w-2xl mx-auto py-8">
@@ -37,10 +38,10 @@ export default function QuizResultDisplay({
             }`}
           />
           <CardTitle className="text-3xl font-bold mt-4">
-            {isSuccess ? "¡Felicidades!" : "Sigue Intentando"}
+            {isSuccess ? "Congratulations!" : "Keep Trying"}
           </CardTitle>
           <CardDescription className="text-lg">
-            Has completado el cuestionario.
+            You have completed the quiz.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -48,17 +49,17 @@ export default function QuizResultDisplay({
             <p className="text-5xl font-bold">{result.score}%</p>
             <Progress value={score} className="h-3" />
             <p className="text-muted-foreground">
-              Respondiste correctamente {result.correctCount} de{" "}
-              {result.totalQuestions} preguntas.
+              You answered {result.correctCount} out of {result.totalQuestions}{" "}
+              questions correctly.
             </p>
           </div>
           <div className="flex justify-center gap-4">
             <Button variant="outline" onClick={onRetry}>
               <RotateCcw className="mr-2 h-4 w-4" />
-              Reintentar Quiz
+              Retry Quiz
             </Button>
             <Button onClick={onContinue} disabled={!isSuccess}>
-              Continuar con la Siguiente Lección
+              Continue to Next Lesson
             </Button>
           </div>
         </CardContent>

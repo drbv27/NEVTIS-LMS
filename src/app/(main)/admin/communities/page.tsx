@@ -1,14 +1,14 @@
 // src/app/(main)/admin/communities/page.tsx
-"use client"; // 1. CONVERTIMOS LA PÁGINA EN UN COMPONENTE DE CLIENTE
+"use client";
 
-import { useState } from "react"; // 2. IMPORTAMOS useState
+import { useState } from "react";
 import CommunitiesTable from "@/components/admin/CommunitiesTable";
-import { Button } from "@/components/ui/button"; // 3. IMPORTAMOS Button
-import { PlusCircle } from "lucide-react"; // 4. IMPORTAMOS un ícono
-import CreateCommunityDialog from "@/components/admin/CreateCommunityDialog"; // 5. IMPORTAMOS nuestro nuevo diálogo
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
+import CreateCommunityDialog from "@/components/admin/CreateCommunityDialog";
 
 export default function AdminCommunitiesPage() {
-  // 6. AÑADIMOS ESTADO PARA CONTROLAR LA VISIBILIDAD DEL DIÁLOGO
+  // State to manage the create community dialog visibility
   const [isCreateCommunityDialogOpen, setIsCreateCommunityDialogOpen] =
     useState(false);
 
@@ -17,15 +17,14 @@ export default function AdminCommunitiesPage() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Gestión de Comunidades</h1>
+            <h1 className="text-3xl font-bold">Community Management</h1>
             <p className="text-muted-foreground">
-              Crea, edita y administra todas las comunidades de la plataforma.
+              Create, edit, and manage all communities on the platform.
             </p>
           </div>
-          {/* 7. AÑADIMOS EL BOTÓN PARA ABRIR EL DIÁLOGO */}
           <Button onClick={() => setIsCreateCommunityDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Crear Comunidad
+            Create Community
           </Button>
         </div>
         <div>
@@ -33,7 +32,6 @@ export default function AdminCommunitiesPage() {
         </div>
       </div>
 
-      {/* 8. RENDERIZAMOS EL DIÁLOGO Y LE PASAMOS EL ESTADO */}
       <CreateCommunityDialog
         isOpen={isCreateCommunityDialogOpen}
         onOpenChange={setIsCreateCommunityDialogOpen}

@@ -39,7 +39,6 @@ export default function CreateCommunityDialog({
   const { createCommunity, isCreatingCommunity } = useAdminCommunityMutations();
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Estados locales para el formulario
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
@@ -48,7 +47,7 @@ export default function CreateCommunityDialog({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Función para resetear el formulario
+  // Function to reset the form state
   const resetForm = () => {
     setName("");
     setSlug("");
@@ -72,7 +71,7 @@ export default function CreateCommunityDialog({
 
   const handleCreateCommunity = () => {
     if (!name.trim() || !slug.trim() || !imageFile) {
-      toast.error("El nombre, el slug y la imagen son campos requeridos.");
+      toast.error("Name, slug, and image are required fields.");
       return;
     }
 
@@ -98,16 +97,16 @@ export default function CreateCommunityDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Crear Nueva Comunidad</DialogTitle>
+          <DialogTitle>Create New Community</DialogTitle>
           <DialogDescription>
-            Completa los detalles para crear una nueva comunidad.
+            Complete the details to create a new community.
           </DialogDescription>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre de la Comunidad</Label>
+              <Label htmlFor="name">Community Name</Label>
               <Input
                 id="name"
                 value={name}
@@ -124,7 +123,7 @@ export default function CreateCommunityDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               value={description}
@@ -134,9 +133,7 @@ export default function CreateCommunityDialog({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="stripePriceId">
-                ID del Precio en Stripe (Opcional)
-              </Label>
+              <Label htmlFor="stripePriceId">Stripe Price ID (Optional)</Label>
               <Input
                 id="stripePriceId"
                 value={stripePriceId}
@@ -144,7 +141,7 @@ export default function CreateCommunityDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">Estado</Label>
+              <Label htmlFor="status">Status</Label>
               <Select
                 onValueChange={(value) =>
                   setStatus(value as Community["status"])
@@ -152,24 +149,22 @@ export default function CreateCommunityDialog({
                 value={status}
               >
                 <SelectTrigger id="status">
-                  <SelectValue placeholder="Seleccionar estado..." />
+                  <SelectValue placeholder="Select status..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Borrador (Draft)</SelectItem>
-                  <SelectItem value="published">
-                    Publicado (Published)
-                  </SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="imageFile">Imagen de Portada</Label>
+            <Label htmlFor="imageFile">Cover Image</Label>
             {imagePreview && (
               <div className="w-full aspect-video relative rounded-md overflow-hidden">
                 <Image
                   src={imagePreview}
-                  alt="Vista previa"
+                  alt="Image preview"
                   fill
                   className="object-cover"
                 />
@@ -188,14 +183,14 @@ export default function CreateCommunityDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="ghost" onClick={resetForm}>
-              Cancelar
+              Cancel
             </Button>
           </DialogClose>
           <Button
             onClick={handleCreateCommunity}
             disabled={isCreatingCommunity}
           >
-            {isCreatingCommunity ? "Creando..." : "Crear Comunidad"}
+            {isCreatingCommunity ? "Creating..." : "Create Community"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -39,15 +39,15 @@ export default function TeacherDashboard() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Panel del Profesor</h1>
+          <h1 className="text-3xl font-bold">Teacher Dashboard</h1>
           <p className="mt-2 text-muted-foreground">
-            Gestiona tus cursos y revisa su rendimiento.
+            Manage your courses and review their performance.
           </p>
         </div>
         <Link href="/admin/courses/new">
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Crear Nuevo Curso
+            Create New Course
           </Button>
         </Link>
       </div>
@@ -56,7 +56,7 @@ export default function TeacherDashboard() {
 
       {error && (
         <p className="text-destructive">
-          Error al cargar tus cursos: {error.message}
+          Error loading your courses: {error.message}
         </p>
       )}
 
@@ -67,7 +67,7 @@ export default function TeacherDashboard() {
               <CardHeader className="p-0 relative h-48 w-full">
                 <Image
                   src={course.image_url || "/images/placeholder.png"}
-                  alt={`Portada de ${course.title}`}
+                  alt={`Cover image for ${course.title}`}
                   fill
                   className="object-cover"
                 />
@@ -77,7 +77,7 @@ export default function TeacherDashboard() {
                     course.status === "published" ? "default" : "secondary"
                   }
                 >
-                  {course.status === "published" ? "Publicado" : "Borrador"}
+                  {course.status === "published" ? "Published" : "Draft"}
                 </Badge>
               </CardHeader>
               <CardContent className="p-4 flex-grow">
@@ -86,7 +86,7 @@ export default function TeacherDashboard() {
                 </CardTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
                   <Users className="h-4 w-4" />
-                  <span>{course.student_count} Estudiantes</span>
+                  <span>{course.student_count} Students</span>
                 </div>
               </CardContent>
               <CardFooter className="p-4 pt-0">
@@ -95,7 +95,7 @@ export default function TeacherDashboard() {
                   className="w-full"
                 >
                   <Button variant="outline" className="w-full">
-                    Gestionar Curso
+                    Manage Course
                   </Button>
                 </Link>
               </CardFooter>
@@ -107,10 +107,10 @@ export default function TeacherDashboard() {
       {courses && courses.length === 0 && !isLoading && (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
           <p className="text-xl text-muted-foreground">
-            Aún no has creado ningún curso.
+            You haven&apos;t created any courses yet.
           </p>
           <Link href="/admin/courses/new" className="mt-4 inline-block">
-            <Button>¡Crea tu primer curso!</Button>
+            <Button>Create your first course!</Button>
           </Link>
         </div>
       )}

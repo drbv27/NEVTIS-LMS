@@ -26,7 +26,7 @@ import EditLessonDialog from "./EditLessonDialog";
 import DeleteLessonAlert from "./DeleteLessonAlert";
 import EditModuleDialog from "./EditModuleDialog";
 import DeleteModuleAlert from "./DeleteModuleAlert";
-import LessonTypeIcon from "../lessons/LessonTypeIcon"; // <-- 1. IMPORTAMOS EL COMPONENTE DE ICONOS
+import LessonTypeIcon from "../lessons/LessonTypeIcon";
 
 interface ModuleListProps {
   modules: Module[];
@@ -58,9 +58,9 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
     <>
       <Card className="max-w-3xl mx-auto mt-8">
         <CardHeader>
-          <CardTitle>Contenido del Curso</CardTitle>
+          <CardTitle>Course Content</CardTitle>
           <CardDescription>
-            Visualiza, edita y organiza los módulos y lecciones de tu curso.
+            View, edit, and organize your course&apos;s modules and lessons.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -86,6 +86,7 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
+                      aria-label="Edit module"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -94,6 +95,7 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
+                      aria-label="Delete module"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -105,18 +107,17 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                           key={lesson.id}
                           className="flex items-center justify-between p-2 rounded-md border bg-muted/30"
                         >
-                          {/* --- INICIO DEL CAMBIO --- */}
                           <div className="flex items-center gap-2">
                             <LessonTypeIcon type={lesson.lesson_type} />
                             <span className="text-sm">{lesson.title}</span>
                           </div>
-                          {/* --- FIN DEL CAMBIO --- */}
                           <div className="flex items-center gap-2">
                             <Button
                               onClick={() => setLessonToEdit(lesson)}
                               variant="outline"
                               size="icon"
                               className="h-7 w-7"
+                              aria-label="Edit lesson"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -125,6 +126,7 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                               variant="destructive"
                               size="icon"
                               className="h-7 w-7"
+                              aria-label="Delete lesson"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -133,7 +135,7 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                       ))}
                       {module.lessons.length === 0 && (
                         <p className="text-sm text-muted-foreground italic px-2 py-4 text-center">
-                          Este módulo no tiene lecciones.
+                          This module has no lessons.
                         </p>
                       )}
                     </ul>
@@ -147,16 +149,16 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
             </Accordion>
           ) : (
             <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-              <p>Este curso aún no tiene módulos.</p>
+              <p>This course doesn&apos;t have any modules yet.</p>
             </div>
           )}
         </CardContent>
         <CardFooter className="border-t pt-6">
           <div className="w-full space-y-2">
-            <h4 className="text-sm font-semibold">Añadir Nuevo Módulo</h4>
+            <h4 className="text-sm font-semibold">Add New Module</h4>
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Ej: Introducción al curso"
+                placeholder="e.g., Introduction to the course"
                 value={newModuleTitle}
                 onChange={(e) => setNewModuleTitle(e.target.value)}
                 disabled={isCreatingModule}
@@ -166,7 +168,7 @@ export default function ModuleList({ modules, courseId }: ModuleListProps) {
                 disabled={isCreatingModule || !newModuleTitle.trim()}
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
-                {isCreatingModule ? "Añadiendo..." : "Añadir"}
+                {isCreatingModule ? "Adding..." : "Add"}
               </Button>
             </div>
           </div>

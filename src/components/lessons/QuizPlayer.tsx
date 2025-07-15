@@ -37,9 +37,7 @@ export default function QuizPlayer({
 
   const handleSubmitQuiz = () => {
     if (Object.keys(answers).length !== quiz?.quiz_questions.length) {
-      return toast.info(
-        "Por favor, responde todas las preguntas antes de enviar."
-      );
+      return toast.info("Please answer all questions before submitting.");
     }
 
     submitQuiz(
@@ -76,7 +74,7 @@ export default function QuizPlayer({
   if (error) {
     return (
       <p className="text-destructive text-center">
-        Error al cargar el quiz: {error.message}
+        Error loading quiz: {error.message}
       </p>
     );
   }
@@ -84,12 +82,12 @@ export default function QuizPlayer({
   if (!quiz) {
     return (
       <p className="text-muted-foreground text-center">
-        Este quiz aún no está disponible.
+        This quiz is not available yet.
       </p>
     );
   }
 
-  // Si ya tenemos un resultado, mostramos la pantalla de resultados
+  // If we have a result, display the results screen.
   if (quizResult) {
     return (
       <QuizResultDisplay
@@ -100,7 +98,7 @@ export default function QuizPlayer({
     );
   }
 
-  // Si no, mostramos las preguntas del quiz
+  // Otherwise, display the quiz questions.
   return (
     <div className="max-w-2xl mx-auto py-8">
       <div className="text-center mb-8">
@@ -113,7 +111,7 @@ export default function QuizPlayer({
           <Card key={question.id}>
             <CardHeader>
               <CardTitle>
-                Pregunta {index + 1}: {question.question_text}
+                Question {index + 1}: {question.question_text}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -152,7 +150,7 @@ export default function QuizPlayer({
           {isSubmittingQuiz && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           )}
-          Enviar Cuestionario
+          Submit Quiz
         </Button>
       </div>
     </div>

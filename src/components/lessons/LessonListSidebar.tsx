@@ -23,16 +23,17 @@ export default function LessonListSidebar({
   courseId,
   currentLessonId,
 }: LessonListSidebarProps) {
+  // Find the module containing the current lesson to set it as the default open accordion item.
   const defaultModuleId = modules.find((m) =>
     m.lessons.some((l) => l.id === currentLessonId)
   )?.id;
 
   return (
-    // Se eliminan todas las clases de posicionamiento y transición.
-    // Ahora es un componente simple que ocupa el espacio que le asigne su padre.
+    // Note: This component is designed to be simple and occupy the space assigned
+    // by its parent container, with positioning and transition classes removed.
     <aside className="h-full flex-col border-r bg-card flex overflow-hidden">
       <div className="p-4 border-b shrink-0">
-        <h3 className="text-lg font-semibold truncate">Contenido del Curso</h3>
+        <h3 className="text-lg font-semibold truncate">Course Content</h3>
       </div>
       <div className="flex-1 overflow-y-auto">
         <Accordion

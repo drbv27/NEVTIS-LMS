@@ -35,22 +35,22 @@ export default function AddQuestionForm({
   const handleCorrectChange = (index: number) => {
     const newOptions = options.map((opt, i) => ({
       ...opt,
-      // Para opción única, solo una puede ser correcta
+      // For single-choice questions, only one option can be correct.
       is_correct: i === index,
     }));
     setOptions(newOptions);
   };
 
   const addOption = () => {
+    // Limit to a maximum of 5 options per question.
     if (options.length < 5) {
-      // Limitamos a 5 opciones por pregunta
       setOptions([...options, { option_text: "", is_correct: false }]);
     }
   };
 
   const removeOption = (index: number) => {
+    // Maintain a minimum of 2 options.
     if (options.length > 2) {
-      // Mantenemos un mínimo de 2 opciones
       const newOptions = options.filter((_, i) => i !== index);
       setOptions(newOptions);
     }
@@ -66,13 +66,13 @@ export default function AddQuestionForm({
 
   const handleSubmit = () => {
     if (!questionText.trim()) {
-      return toast.error("El texto de la pregunta no puede estar vacío.");
+      return toast.error("The question text cannot be empty.");
     }
     if (options.some((opt) => !opt.option_text.trim())) {
-      return toast.error("Todas las opciones deben tener texto.");
+      return toast.error("All options must have text.");
     }
     if (!options.some((opt) => opt.is_correct)) {
-      return toast.error("Debes marcar una opción como la correcta.");
+      return toast.error("You must mark one option as correct.");
     }
 
     addQuestion(
@@ -91,19 +91,19 @@ export default function AddQuestionForm({
 
   return (
     <div className="mt-6 border-t pt-6">
-      <h4 className="text-lg font-semibold mb-4">Añadir Nueva Pregunta</h4>
+      <h4 className="text-lg font-semibold mb-4">Add New Question</h4>
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="question-text">Texto de la Pregunta</Label>
+          <Label htmlFor="question-text">Question Text</Label>
           <Input
             id="question-text"
             value={questionText}
             onChange={(e) => setQuestionText(e.target.value)}
-            placeholder="Ej: ¿Cuál de estos no es un framework de JavaScript?"
+            placeholder="e.g., Which of these is not a JavaScript framework?"
           />
         </div>
         <div className="space-y-2">
-          <Label>Opciones de Respuesta (marca la correcta)</Label>
+          <Label>Answer Options (check the correct one)</Label>
           <div className="space-y-3">
             {options.map((opt, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export default function AddQuestionForm({
                   onCheckedChange={() => handleCorrectChange(index)}
                 />
                 <Input
-                  placeholder={`Opción ${index + 1}`}
+                  placeholder={`Option ${index + 1}`}
                   value={opt.option_text}
                   onChange={(e) => handleOptionChange(index, e.target.value)}
                 />
@@ -122,6 +122,7 @@ export default function AddQuestionForm({
                   size="icon"
                   onClick={() => removeOption(index)}
                   disabled={options.length <= 2}
+                  aria-label="Remove option"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -136,13 +137,13 @@ export default function AddQuestionForm({
             disabled={options.length >= 5}
           >
             <PlusCircle className="mr-2 h-4 w-4" />
-            Añadir Opción
+            Add Option
           </Button>
           <Button onClick={handleSubmit} disabled={isAddingQuestion}>
             {isAddingQuestion && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Guardar Pregunta
+            Save Question
           </Button>
         </div>
       </div>

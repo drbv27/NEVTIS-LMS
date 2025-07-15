@@ -8,7 +8,5 @@ export default function AdminUsersLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Este layout simplemente envuelve a sus hijos (la página de usuarios)
-  // con nuestro nuevo y más estricto guardián de seguridad.
   return <SuperAdminProtectedLayout>{children}</SuperAdminProtectedLayout>;
 }

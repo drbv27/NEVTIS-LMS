@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { User, Hash, MessageSquare } from "lucide-react";
 
-// Un pequeño componente de ayuda para el ícono del tipo de entidad
+// A small helper component for the entity type icon
 const EntityIcon = ({ type }: { type: SearchResult["entity_type"] }) => {
   switch (type) {
     case "profile":
@@ -22,16 +22,16 @@ const EntityIcon = ({ type }: { type: SearchResult["entity_type"] }) => {
 };
 
 export default function SearchResultCard({ result }: { result: SearchResult }) {
-  // Determinamos a dónde debe enlazar la tarjeta según el tipo de entidad
+  // Determine the card's link destination based on the entity type
   const getHref = () => {
     switch (result.entity_type) {
       case "profile":
-        // A futuro, podríamos tener una página de perfil pública
+        // TODO: This could link to a public profile page in the future
         return `/profile?userId=${result.entity_id}`;
       case "hashtag":
         return `/feed?tag=${result.entity_id}`;
       case "post":
-        // A futuro, podríamos enlazar directamente al post si tenemos un diálogo para ello
+        // TODO: This could link directly to the post (e.g., open a dialog)
         return `/feed`;
       default:
         return "#";
@@ -42,7 +42,6 @@ export default function SearchResultCard({ result }: { result: SearchResult }) {
     <Link href={getHref()}>
       <Card className="p-4 hover:bg-muted/50 transition-colors">
         <div className="flex items-center gap-4">
-          {/* Avatar o Ícono */}
           <Avatar className="h-12 w-12 border">
             {result.image_url && <AvatarImage src={result.image_url} />}
             <AvatarFallback>
@@ -50,7 +49,6 @@ export default function SearchResultCard({ result }: { result: SearchResult }) {
             </AvatarFallback>
           </Avatar>
 
-          {/* Contenido de texto */}
           <div className="flex-1">
             <p className="font-semibold text-foreground line-clamp-1">
               {result.title}

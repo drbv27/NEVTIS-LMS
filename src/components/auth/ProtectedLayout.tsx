@@ -14,23 +14,23 @@ export default function ProtectedLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Si la carga ha terminado y no hay usuario, redirige a login
+    // If loading is finished and there's no user, redirect to login.
     if (!isLoading && !user) {
       router.push("/login");
     }
   }, [user, isLoading, router]);
 
-  // Mientras carga, muestra un loader para evitar parpadeos
+  // While loading or if there's no user (before redirect), show a loader to prevent flicker.
   if (isLoading || !user) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
         <div className="text-center">
-          <p className="text-lg font-semibold text-gray-700">Cargando...</p>
+          <p className="text-lg font-semibold text-gray-700">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Si el usuario está autenticado, renderiza el contenido protegido.
+  // If the user is authenticated, render the protected content.
   return <>{children}</>;
 }

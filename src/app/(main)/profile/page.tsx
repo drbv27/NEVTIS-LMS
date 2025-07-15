@@ -3,7 +3,7 @@
 
 import { useEffect, useState, FormEvent } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { useProfile } from "@/hooks/useProfile"; // <-- Nuestro nuevo hook
+import { useProfile } from "@/hooks/useProfile";
 import {
   Card,
   CardHeader,
@@ -18,7 +18,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
-  // Usamos nuestro hook para obtener datos, estado de carga y la función de actualización
   const { profile, isLoading, isUpdating, updateProfile } = useProfile();
 
   const [formData, setFormData] = useState({
@@ -30,7 +29,7 @@ export default function ProfilePage() {
     githubUrl: "",
   });
 
-  // useEffect solo para rellenar el formulario cuando los datos del perfil llegan
+  // Populate the form once the profile data is loaded
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -53,7 +52,6 @@ export default function ProfilePage() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // La lógica de la mutación está ahora en el hook
     updateProfile({
       full_name: formData.fullName,
       phone_number: formData.phoneNumber,
@@ -68,21 +66,21 @@ export default function ProfilePage() {
   };
 
   if (isLoading) {
-    return <div>Cargando perfil...</div>;
+    return <div>Loading profile...</div>;
   }
 
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl">Tu Perfil</CardTitle>
+        <CardTitle className="text-2xl">Your Profile</CardTitle>
         <CardDescription>
-          Actualiza tu información personal y profesional.
+          Update your personal and professional information.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email">Correo Electrónico</Label>
+            <Label htmlFor="email">Email Address</Label>
             <Input
               id="email"
               type="email"
@@ -92,7 +90,7 @@ export default function ProfilePage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="fullName">Nombre Completo</Label>
+            <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
               name="fullName"
@@ -100,9 +98,8 @@ export default function ProfilePage() {
               onChange={handleInputChange}
             />
           </div>
-          {/* ... Resto de los inputs ... */}
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Número de Teléfono</Label>
+            <Label htmlFor="phoneNumber">Phone Number</Label>
             <Input
               id="phoneNumber"
               name="phoneNumber"
@@ -111,7 +108,7 @@ export default function ProfilePage() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="bio">Biografía</Label>
+            <Label htmlFor="bio">Bio</Label>
             <Textarea
               id="bio"
               name="bio"
@@ -120,14 +117,14 @@ export default function ProfilePage() {
               className="min-h-[100px]"
             />
           </div>
-          <h3 className="text-lg font-medium border-t pt-6">Redes Sociales</h3>
+          <h3 className="text-lg font-medium border-t pt-6">Social Links</h3>
           <div className="space-y-2">
             <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
             <Input
               id="linkedinUrl"
               name="linkedinUrl"
               type="url"
-              placeholder="https://linkedin.com/in/tuperfil"
+              placeholder="https://linkedin.com/in/yourprofile"
               value={formData.linkedinUrl}
               onChange={handleInputChange}
             />
@@ -138,7 +135,7 @@ export default function ProfilePage() {
               id="twitterUrl"
               name="twitterUrl"
               type="url"
-              placeholder="https://x.com/tuusuario"
+              placeholder="https://x.com/yourusername"
               value={formData.twitterUrl}
               onChange={handleInputChange}
             />
@@ -149,14 +146,14 @@ export default function ProfilePage() {
               id="githubUrl"
               name="githubUrl"
               type="url"
-              placeholder="https://github.com/tuusuario"
+              placeholder="https://github.com/yourusername"
               value={formData.githubUrl}
               onChange={handleInputChange}
             />
           </div>
 
           <Button type="submit" className="w-full" disabled={isUpdating}>
-            {isUpdating ? "Guardando..." : "Guardar Cambios"}
+            {isUpdating ? "Saving..." : "Save Changes"}
           </Button>
         </form>
       </CardContent>

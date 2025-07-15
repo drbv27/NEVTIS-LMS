@@ -1,13 +1,13 @@
 // src/components/feed/FeedList.tsx
 "use client";
 
-import { useState, useRef, useCallback } from "react"; // 1. IMPORTAMOS MÁS HOOKS
+import { useState, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useFeed, type FeedType } from "@/hooks/useFeed";
 import CreatePostForm from "./CreatePostForm";
 import PostCard from "./PostCard";
 import { Button } from "@/components/ui/button";
-import { Loader2, Newspaper, Rss, Tag } from "lucide-react"; // 2. IMPORTAMOS Loader2
+import { Loader2, Newspaper, Rss, Tag } from "lucide-react";
 import PostCardSkeleton from "./PostCardSkeleton";
 import FeedSearchInput from "./FeedSearchInput";
 
@@ -16,7 +16,6 @@ export default function FeedList() {
   const tag = searchParams.get("tag");
   const [feedType, setFeedType] = useState<FeedType>("global");
 
-  // 3. OBTENEMOS LAS NUEVAS PROPIEDADES DEL HOOK useFeed
   const {
     posts,
     isLoading,
@@ -28,8 +27,7 @@ export default function FeedList() {
 
   const activeFeedType = tag ? "global" : feedType;
 
-  // 4. LÓGICA PARA DETECTAR EL SCROLL
-  // Usamos un observer para detectar cuando el último elemento es visible
+  // Logic for infinite scroll: setup an intersection observer to detect when the last post is visible.
   const observer = useRef<IntersectionObserver>();
   const lastPostRef = useCallback(
     (node: HTMLElement | null) => {
@@ -58,7 +56,7 @@ export default function FeedList() {
   if (error) {
     return (
       <p className="text-center text-destructive py-10">
-        Error al cargar el feed: {error.message}
+        Error loading feed: {error.message}
       </p>
     );
   }
@@ -77,8 +75,8 @@ export default function FeedList() {
                 onChange={(e) => setFeedType(e.target.value as FeedType)}
                 value={activeFeedType}
               >
-                <option value="global">Comunidad</option>
-                <option value="following">Siguiendo</option>
+                <option value="global">Community</option>
+                <option value="following">Following</option>
               </select>
             </div>
             <div className="hidden sm:block">
@@ -93,7 +91,7 @@ export default function FeedList() {
                     }`}
                   >
                     <Newspaper className="mr-2 h-5 w-5" />
-                    <span>Comunidad</span>
+                    <span>Community</span>
                   </button>
                   <button
                     onClick={() => setFeedType("following")}
@@ -104,7 +102,7 @@ export default function FeedList() {
                     }`}
                   >
                     <Rss className="mr-2 h-5 w-5" />
-                    <span>Siguiendo</span>
+                    <span>Following</span>
                   </button>
                 </nav>
               </div>
@@ -116,7 +114,7 @@ export default function FeedList() {
         <div className="mb-8 p-4 border rounded-lg bg-muted/50">
           <h2 className="text-2xl font-bold flex items-center">
             <Tag className="mr-3 h-6 w-6 text-primary" />
-            Mostrando posts con #{tag}
+            Showing posts with #{tag}
           </h2>
         </div>
       )}
@@ -125,7 +123,7 @@ export default function FeedList() {
         {posts.length > 0 ? (
           <div className="space-y-6">
             {posts.map((post, index) => {
-              // 5. ASIGNAMOS LA REFERENCIA AL ÚLTIMO ELEMENTO
+              // Assign the ref to the last post element to trigger the observer.
               if (posts.length === index + 1) {
                 return <PostCard ref={lastPostRef} key={post.id} post={post} />;
               }
@@ -135,30 +133,29 @@ export default function FeedList() {
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <Newspaper className="mx-auto h-12 w-12 mb-4" />
-            <p className="text-lg">Aún no hay publicaciones.</p>
+            <p className="text-lg">No posts yet.</p>
             <p className="text-sm">
               {tag
-                ? `Nadie ha hablado de #${tag} todavía.`
+                ? `No one has talked about #${tag} yet.`
                 : activeFeedType === "following"
-                ? "Sigue a otros usuarios para ver sus publicaciones aquí."
-                : "¡Sé el primero en compartir algo!"}
+                ? "Follow other users to see their posts here."
+                : "Be the first to share something!"}
             </p>
           </div>
         )}
       </div>
 
-      {/* 6. INDICADOR DE CARGA Y BOTÓN PARA CARGAR MÁS */}
       <div className="flex justify-center py-6">
         {isFetchingNextPage ? (
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         ) : hasNextPage ? (
           <Button onClick={() => fetchNextPage()} variant="outline">
-            Cargar más publicaciones
+            Load more posts
           </Button>
         ) : (
           posts.length > 0 && (
             <p className="text-sm text-muted-foreground">
-              Has llegado al final.
+              You&apos;ve reached the end.
             </p>
           )
         )}

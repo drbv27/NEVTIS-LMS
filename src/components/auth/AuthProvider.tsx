@@ -6,8 +6,8 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore, type Membership } from "@/store/authStore";
 import { Session } from "@supabase/supabase-js";
 
-// 1. CREAMOS UNA FUNCIÓN ASÍNCRONA SEPARADA PARA OBTENER LAS MEMBRESÍAS
-// Esto aísla la lógica asíncrona del listener principal.
+// Create a separate async function to fetch memberships.
+// This isolates the async logic from the main auth state listener.
 async function fetchUserMemberships(userId: string): Promise<Membership[]> {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase
@@ -27,10 +27,10 @@ async function fetchUserMemberships(userId: string): Promise<Membership[]> {
 
   if (error) {
     console.error("Error fetching user memberships:", error);
-    return []; // En caso de error, devolvemos un array vacío.
+    return []; // Return an empty array on error.
   }
 
-  // Transformamos los datos para que coincidan con nuestro tipo Membership.
+  // Transform the data to match the Membership type.
   const transformedMemberships = data.map((m) => ({
     ...m,
     communities: Array.isArray(m.communities)
@@ -53,25 +53,25 @@ export default function AuthProvider({
   useEffect(() => {
     setLoading(true);
 
-    // 2. EL LISTENER YA NO ES ASÍNCRONO
+    // The onAuthStateChange listener is no longer async.
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session: Session | null) => {
-        // Primero, actualizamos la sesión del usuario de forma síncrona.
-        // Esto es rápido y desbloquea el estado de carga principal.
+        // First, update the user session synchronously.
+        // This is fast and resolves the main loading state quickly.
         setUserSession(session?.user ?? null, session);
 
-        // Luego, disparamos la lógica asíncrona.
+        // Then, trigger the asynchronous logic.
         if (event === "SIGNED_IN" && session?.user) {
-          // Llamamos a nuestra función separada para obtener y establecer las membresías.
+          // Call our separate function to fetch and set the user's memberships.
           fetchUserMemberships(session.user.id).then((memberships) => {
             setUserMemberships(memberships);
           });
         } else if (event === "SIGNED_OUT") {
-          // Si el usuario cierra sesión, limpiamos las membresías.
+          // If the user signs out, clear their memberships.
           setUserMemberships([]);
         }
 
-        // El estado de carga principal se resuelve inmediatamente.
+        // The primary loading state is resolved immediately after the session update.
         setLoading(false);
       }
     );

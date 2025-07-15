@@ -33,7 +33,7 @@ export default function EditCategoryDialog({
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
 
-  // Usamos useEffect para rellenar el formulario cuando el diálogo se abre con una categoría
+  // Populate the form with the category data when the dialog opens
   useEffect(() => {
     if (category) {
       setName(category.name);
@@ -43,7 +43,7 @@ export default function EditCategoryDialog({
 
   const handleUpdateCategory = () => {
     if (!name.trim() || !slug.trim()) {
-      toast.error("El nombre y el slug son campos requeridos.");
+      toast.error("Name and slug are required fields.");
       return;
     }
 
@@ -51,7 +51,7 @@ export default function EditCategoryDialog({
       { id: category.id, name, slug },
       {
         onSuccess: () => {
-          onOpenChange(false); // Cierra el diálogo
+          onOpenChange(false); // Close the dialog
         },
       }
     );
@@ -61,14 +61,14 @@ export default function EditCategoryDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar Categoría</DialogTitle>
+          <DialogTitle>Edit Category</DialogTitle>
           <DialogDescription>
-            Realiza los cambios necesarios en la categoría.
+            Make the necessary changes to the category.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name-edit">Nombre de la Categoría</Label>
+            <Label htmlFor="name-edit">Category Name</Label>
             <Input
               id="name-edit"
               value={name}
@@ -86,10 +86,10 @@ export default function EditCategoryDialog({
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button onClick={handleUpdateCategory} disabled={isUpdatingCategory}>
-            {isUpdatingCategory ? "Guardando..." : "Guardar Cambios"}
+            {isUpdatingCategory ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

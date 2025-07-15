@@ -13,24 +13,25 @@ export default function CoursesHybridLayout({
   const { user, isLoading, isMainSidebarOpen, toggleMainSidebar } =
     useAuthStore();
 
-  // Mientras se determina el estado de autenticación, mostramos un loader
+  // While determining auth status, display a loader
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p>Cargando...</p>
+        <p>Loading...</p>
       </div>
     );
   }
 
-  // Si el usuario ESTÁ autenticado, renderiza la app completa con Sidebar
+  // If the user IS authenticated, render the full app layout with the Sidebar
   if (user) {
     return (
       <div className="flex h-screen overflow-hidden bg-background">
-        {/* Overlay para móvil */}
+        {/* Mobile overlay for the sidebar */}
         {isMainSidebarOpen && (
           <div
             onClick={toggleMainSidebar}
             className="fixed inset-0 bg-black/50 z-40 sm:hidden"
+            aria-hidden="true"
           />
         )}
         <Sidebar />
@@ -44,7 +45,7 @@ export default function CoursesHybridLayout({
     );
   }
 
-  // Si el usuario NO está autenticado, renderiza la vista pública
+  // If the user IS NOT authenticated, render the public-facing layout
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />

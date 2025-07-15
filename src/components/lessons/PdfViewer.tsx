@@ -1,4 +1,4 @@
-// src/components/lessons/PdfViewer.tsx
+//src/components/lessons/PdfViewer.tsx
 "use client";
 
 import { useState, useCallback } from "react";
@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// ¡LA CLAVE ESTÁ AQUÍ! Usamos la ruta a tu archivo local en la carpeta /public.
-// Esto soluciona el error "Failed to load PDF file".
+// The key to fixing "Failed to load PDF file" errors is using the path
+// to the local worker file in the /public folder.
 pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 
 interface PdfViewerProps {
@@ -38,8 +38,8 @@ export default function PdfViewer({ pdfUrl }: PdfViewerProps) {
   );
 
   const onDocumentLoadError = useCallback((error: Error) => {
-    console.error("Error al cargar el documento PDF:", error);
-    toast.error(`Error al cargar PDF: ${error.message}`);
+    console.error("Error loading PDF document:", error);
+    toast.error(`Error loading PDF: ${error.message}`);
   }, []);
 
   const goToPrevPage = () => setPageNumber((p) => Math.max(p - 1, 1));
@@ -51,56 +51,59 @@ export default function PdfViewer({ pdfUrl }: PdfViewerProps) {
 
   return (
     <div className="w-full h-full flex flex-col items-center bg-muted/30">
-      {/* Controles */}
       <div className="w-full p-2 bg-background border-b shadow-sm flex items-center justify-center space-x-2 flex-wrap sticky top-0 z-10">
         <Button
           variant="outline"
           size="icon"
           onClick={goToPrevPage}
           disabled={pageNumber <= 1}
+          aria-label="Previous Page"
         >
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <span className="text-sm text-muted-foreground">
-          Página {pageNumber} de {numPages || "..."}
+          Page {pageNumber} of {numPages || "..."}
         </span>
         <Button
           variant="outline"
           size="icon"
           onClick={goToNextPage}
           disabled={pageNumber >= (numPages || 0)}
+          aria-label="Next Page"
         >
           <ChevronRight className="h-5 w-5" />
         </Button>
         <span className="mx-2 border-l h-6"></span>
-        <Button variant="outline" size="icon" title="Alejar" onClick={zoomOut}>
+        <Button
+          variant="outline"
+          size="icon"
+          title="Zoom Out"
+          onClick={zoomOut}
+        >
           <ZoomOut className="h-5 w-5" />
         </Button>
-        <Button variant="outline" size="icon" title="Acercar" onClick={zoomIn}>
+        <Button variant="outline" size="icon" title="Zoom In" onClick={zoomIn}>
           <ZoomIn className="h-5 w-5" />
         </Button>
-        <Button variant="outline" size="icon" title="Rotar" onClick={rotate}>
+        <Button variant="outline" size="icon" title="Rotate" onClick={rotate}>
           <RotateCcw className="h-5 w-5" />
         </Button>
         <span className="mx-2 border-l h-6"></span>
-        <Button variant="ghost" size="icon" title="Descargar PDF" asChild>
+        <Button variant="ghost" size="icon" title="Download PDF" asChild>
           <a href={pdfUrl} download>
             <Download className="h-5 w-5" />
           </a>
         </Button>
       </div>
 
-      {/* Visor */}
       <div className="flex-1 w-full overflow-auto flex justify-center p-4">
         <Document
           file={pdfUrl}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
-          loading={<p>Cargando PDF...</p>}
+          loading={<p>Loading PDF...</p>}
           error={
-            <p className="text-destructive">
-              Error al cargar el documento PDF.
-            </p>
+            <p className="text-destructive">Failed to load PDF document.</p>
           }
         >
           <Page

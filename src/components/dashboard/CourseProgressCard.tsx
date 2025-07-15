@@ -15,13 +15,13 @@ interface CourseProgressCardProps {
 export default function CourseProgressCard({
   course,
 }: CourseProgressCardProps) {
-  // Calculamos el porcentaje de progreso
+  // Calculate the progress percentage
   const progressPercentage =
     course.total_lessons > 0
       ? (course.completed_lessons / course.total_lessons) * 100
       : 0;
 
-  // Determinamos a dónde debe ir el botón "Continuar"
+  // Determine the link for the 'Continue' button
   const continueLink = course.first_lesson_id
     ? `/courses/${course.id}/lessons/${course.first_lesson_id}`
     : `/community/${course.community_slug}`;
@@ -31,7 +31,7 @@ export default function CourseProgressCard({
       <div className="relative w-full aspect-video">
         <Image
           src={course.image_url || "/images/placeholder.png"}
-          alt={`Portada de ${course.title}`}
+          alt={`Cover image for ${course.title}`}
           fill
           className="object-cover"
         />
@@ -41,14 +41,14 @@ export default function CourseProgressCard({
         <div className="space-y-1">
           <Progress value={progressPercentage} className="h-2" />
           <p className="text-xs text-muted-foreground">
-            {Math.round(progressPercentage)}% completado (
-            {course.completed_lessons} de {course.total_lessons} lecciones)
+            {Math.round(progressPercentage)}% complete (
+            {course.completed_lessons} of {course.total_lessons} lessons)
           </p>
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0">
         <Link href={continueLink} className="w-full">
-          <Button className="w-full">Continuar Aprendiendo</Button>
+          <Button className="w-full">Continue Learning</Button>
         </Link>
       </CardFooter>
     </Card>

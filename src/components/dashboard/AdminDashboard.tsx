@@ -12,9 +12,8 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
-//import { Button } from "../ui/button";
 
-// Un componente reutilizable para nuestras tarjetas de estadísticas
+// A reusable component for our stat cards
 const StatCard = ({
   title,
   value,
@@ -57,41 +56,38 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Panel de Administración</h1>
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <p className="mt-2 text-muted-foreground">
-          Una vista general del estado de la plataforma.
+          An overview of the platform&apos;s status.
         </p>
       </div>
 
       {error && (
-        <p className="text-destructive">
-          Error al cargar estadísticas: {error.message}
-        </p>
+        <p className="text-destructive">Error loading stats: {error.message}</p>
       )}
 
-      {/* Sección de Estadísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total de Usuarios"
+          title="Total Users"
           value={stats?.total_users ?? 0}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
           isLoading={isLoading}
         />
         <StatCard
-          title="Total de Comunidades"
+          title="Total Communities"
           value={stats?.total_communities ?? 0}
           icon={<Library className="h-4 w-4 text-muted-foreground" />}
           isLoading={isLoading}
         />
         <StatCard
-          title="Total de Cursos"
+          title="Total Courses"
           value={stats?.total_courses ?? 0}
           icon={<Component className="h-4 w-4 text-muted-foreground" />}
           isLoading={isLoading}
         />
         <StatCard
-          title="Cursos Publicados"
-          value={`${stats?.total_published_courses ?? 0} de ${
+          title="Published Courses"
+          value={`${stats?.total_published_courses ?? 0} of ${
             stats?.total_courses ?? 0
           }`}
           icon={<ShieldCheck className="h-4 w-4 text-muted-foreground" />}
@@ -99,14 +95,13 @@ export default function AdminDashboard() {
         />
       </div>
 
-      {/* Sección de Accesos Directos */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Accesos Directos</h2>
+        <h2 className="text-xl font-semibold">Quick Links</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <Link href="/admin/users">
             <Card className="hover:bg-muted/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Gestionar Usuarios</CardTitle>
+                <CardTitle>Manage Users</CardTitle>
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
             </Card>
@@ -114,7 +109,7 @@ export default function AdminDashboard() {
           <Link href="/admin/communities">
             <Card className="hover:bg-muted/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Gestionar Comunidades</CardTitle>
+                <CardTitle>Manage Communities</CardTitle>
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
             </Card>
@@ -122,7 +117,7 @@ export default function AdminDashboard() {
           <Link href="/admin/courses">
             <Card className="hover:bg-muted/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Gestionar Cursos</CardTitle>
+                <CardTitle>Manage Courses</CardTitle>
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground" />
               </CardHeader>
             </Card>

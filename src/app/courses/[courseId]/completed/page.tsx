@@ -9,14 +9,13 @@ export default function CourseCompletedPage({
 }: {
   params: { courseId: string };
 }) {
-  // Usamos nuestro nuevo hook para obtener los datos del lado del cliente
+  // Fetch completion data on the client using a custom hook
   const { data, isLoading, error } = useCourseCompletion(params.courseId);
 
-  // Manejamos los estados de carga y error
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p>Verificando tu logro...</p>
+        <p>Verifying your achievement...</p>
       </div>
     );
   }
@@ -29,7 +28,6 @@ export default function CourseCompletedPage({
     );
   }
 
-  // Si todo está bien, renderizamos el componente visual con los datos
   return (
     <CourseCompletionPage
       courseId={params.courseId}

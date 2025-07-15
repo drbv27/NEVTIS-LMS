@@ -30,7 +30,7 @@ export default function DeleteCategoryAlert({
   const handleDelete = () => {
     deleteCategory(category.id, {
       onSuccess: () => {
-        onOpenChange(false); // Cierra la alerta si la eliminación es exitosa
+        onOpenChange(false); // Close the alert on successful deletion
       },
     });
   };
@@ -39,27 +39,25 @@ export default function DeleteCategoryAlert({
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente la
-            categoría{" "}
+            This action cannot be undone. This will permanently delete the
+            category{" "}
             <span className="font-semibold text-destructive">
               {category.name}
             </span>
-            . Los cursos asociados a esta categoría no se eliminarán, pero
-            quedarán sin categoría.
+            . Courses associated with this category will not be deleted, but
+            they will become uncategorized.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeletingCategory}
             className="bg-destructive hover:bg-destructive/90"
           >
-            {isDeletingCategory
-              ? "Eliminando..."
-              : "Sí, eliminar permanentemente"}
+            {isDeletingCategory ? "Deleting..." : "Yes, permanently delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

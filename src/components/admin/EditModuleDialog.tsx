@@ -49,13 +49,13 @@ export default function EditModuleDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar Módulo</DialogTitle>
+          <DialogTitle>Edit Module</DialogTitle>
           <DialogDescription>
-            Cambia el nombre de tu módulo aquí.
+            Change the name of your module here.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <Label htmlFor="module-title">Título del Módulo</Label>
+          <Label htmlFor="module-title">Module Title</Label>
           <Input
             id="module-title"
             value={title}
@@ -64,10 +64,10 @@ export default function EditModuleDialog({
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="ghost">Cancelar</Button>
+            <Button variant="ghost">Cancel</Button>
           </DialogClose>
           <Button onClick={handleUpdate} disabled={isUpdatingModule}>
-            {isUpdatingModule ? "Guardando..." : "Guardar Cambios"}
+            {isUpdatingModule ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

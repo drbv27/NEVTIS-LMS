@@ -29,7 +29,7 @@ import DeleteUserAlert from "./DeleteUserAlert";
 
 function formatDate(dateString: string | undefined) {
   if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString("es-ES", {
+  return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -40,7 +40,6 @@ export default function UsersTable() {
   const { data: users, isLoading, error } = useAdminUsers();
 
   const [userToEdit, setUserToEdit] = useState<Profile | null>(null);
-
   const [userToDelete, setUserToDelete] = useState<Profile | null>(null);
 
   if (isLoading) {
@@ -58,7 +57,7 @@ export default function UsersTable() {
   if (error) {
     return (
       <p className="text-center text-destructive">
-        Error al cargar usuarios: {error.message}
+        Error loading users: {error.message}
       </p>
     );
   }
@@ -69,10 +68,10 @@ export default function UsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40%]">Nombre</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead>Miembro desde</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className="w-[40%]">Name</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Member Since</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -107,22 +106,22 @@ export default function UsersTable() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
+                        <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => setUserToEdit(user)}>
                         <Edit className="mr-2 h-4 w-4" />
-                        <span>Editar</span>
+                        <span>Edit</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      {/* 5. AÑADIMOS LA OPCIÓN DE ELIMINAR */}
                       <DropdownMenuItem
                         onClick={() => setUserToDelete(user)}
                         className="text-destructive focus:text-destructive"
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Eliminar</span>
+                        <span>Delete</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -133,7 +132,6 @@ export default function UsersTable() {
         </Table>
       </div>
 
-      {/* El diálogo de edición no cambia */}
       {userToEdit && (
         <EditUserDialog
           user={userToEdit}
@@ -142,7 +140,7 @@ export default function UsersTable() {
         />
       )}
 
-      {/* 6. RENDERIZAMOS LA ALERTA DE FORMA CONDICIONAL */}
+      {/* Render the delete alert conditionally */}
       {userToDelete && (
         <DeleteUserAlert
           user={userToDelete}

@@ -13,14 +13,11 @@ import { toast } from "sonner";
 import { Send, Image as ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 
-const MAX_FILE_SIZE = 3 * 1024 * 1024;
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
 export default function CreatePostForm() {
-  // --- INICIO DE LA CORRECCIÓN ---
-  // Obtenemos el ID de la comunidad activa desde el store
+  // Get the active community ID from the store
   const { user, activeCommunityId } = useAuthStore();
-  // --- FIN DE LA CORRECCIÓN ---
-
   const { profile } = useProfile();
   const { createPost, isCreatingPost } = useFeed();
   const [content, setContent] = useState("");
@@ -32,7 +29,7 @@ export default function CreatePostForm() {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > MAX_FILE_SIZE) {
-        toast.error("La imagen es demasiado grande. El máximo es 3MB.");
+        toast.error("Image is too large. The maximum size is 3MB.");
         if (imageInputRef.current) {
           imageInputRef.current.value = "";
         }
@@ -46,19 +43,17 @@ export default function CreatePostForm() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!content.trim() && !imageFile) {
-      toast.error("El post debe tener contenido o una imagen.");
+      toast.error("Post must have content or an image.");
       return;
     }
-    // --- INICIO DE LA CORRECCIÓN ---
-    // Nos aseguramos de que haya una comunidad activa antes de publicar
+    // Ensure an active community is selected before posting
     if (!activeCommunityId) {
-      toast.error("Debes seleccionar una comunidad para poder publicar.");
+      toast.error("You must select a community to post.");
       return;
     }
-    // Pasamos el communityId a la mutación
+    // Pass the communityId to the mutation
     createPost(
       { content: content.trim(), imageFile, communityId: activeCommunityId },
-      // --- FIN DE LA CORRECCIÓN ---
       {
         onSuccess: () => {
           setContent("");
@@ -67,7 +62,7 @@ export default function CreatePostForm() {
           if (imageInputRef.current) {
             imageInputRef.current.value = "";
           }
-          toast.success("¡Publicación creada con éxito!");
+          toast.success("Post created successfully!");
         },
       }
     );
@@ -94,8 +89,8 @@ export default function CreatePostForm() {
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder={`¿Qué estás pensando, ${
-                profile.full_name?.split(" ")[0] || "crack"
+              placeholder={`What's on your mind, ${
+                profile.full_name?.split(" ")[0] || "friend"
               }?`}
               rows={3}
               className="mb-2 focus-visible:ring-primary w-full"
@@ -107,7 +102,7 @@ export default function CreatePostForm() {
             <div className="mt-4 relative w-48 h-48">
               <Image
                 src={imagePreview}
-                alt="Previsualización del post"
+                alt="Post preview"
                 fill
                 className="rounded-lg object-cover"
               />
@@ -121,6 +116,7 @@ export default function CreatePostForm() {
                   setImagePreview(null);
                   if (imageInputRef.current) imageInputRef.current.value = "";
                 }}
+                aria-label="Remove image"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -140,6 +136,7 @@ export default function CreatePostForm() {
               variant="ghost"
               size="icon"
               onClick={() => imageInputRef.current?.click()}
+              aria-label="Add image"
             >
               <ImageIcon className="h-5 w-5 text-muted-foreground" />
             </Button>
@@ -147,7 +144,7 @@ export default function CreatePostForm() {
               type="submit"
               disabled={isCreatingPost || (!content.trim() && !imageFile)}
             >
-              {isCreatingPost ? "Publicando..." : "Publicar"}{" "}
+              {isCreatingPost ? "Posting..." : "Post"}
               <Send className="ml-2 h-4 w-4" />
             </Button>
           </div>

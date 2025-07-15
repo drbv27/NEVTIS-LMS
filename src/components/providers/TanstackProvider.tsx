@@ -9,7 +9,6 @@ export default function TanstackProvider({
 }: {
   children: React.ReactNode;
 }) {
-  // Creamos una única instancia del QueryClient
   const [queryClient] = useState(() => new QueryClient());
 
   return (

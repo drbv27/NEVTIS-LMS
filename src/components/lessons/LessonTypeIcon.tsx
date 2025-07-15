@@ -17,7 +17,6 @@ export default function LessonTypeIcon({
   type,
   className = "h-5 w-5 shrink-0",
 }: LessonTypeIconProps) {
-  // Añadimos los nuevos casos al switch
   switch (type) {
     case "video":
       return <MonitorPlay className={className} />;

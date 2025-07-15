@@ -20,7 +20,6 @@ const FeatureCard = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  // ... (el código del FeatureCard no cambia)
   <div className="bg-card p-6 rounded-lg shadow-sm">
     <div className="flex items-center gap-4 mb-3">
       {icon}
@@ -31,41 +30,39 @@ const FeatureCard = ({
 );
 
 export default function LandingPage() {
-  // --- INICIO DE LA LÓGICA DE REDIRECCIÓN ---
+  // --- REDIRECTION LOGIC ---
+  // If the user is already logged in, redirect to the dashboard.
   const { user, isLoading } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    // Si la carga inicial del estado de autenticación ha terminado Y hay un usuario...
     if (!isLoading && user) {
-      // ...lo redirigimos al dashboard.
       router.push("/dashboard");
     }
   }, [user, isLoading, router]);
-  // --- FIN DE LA LÓGICA DE REDIRECCIÓN ---
 
-  // Mientras carga, o si el usuario existe y está a punto de ser redirigido,
-  // podemos mostrar un loader para evitar que la landing page "parpadee".
+  // To prevent a "flash" of the landing page, show a loader
+  // while checking auth status or during the redirect.
   if (isLoading || user) {
     return <FullPageLoader />;
   }
 
-  // Si no está cargando Y no hay usuario, mostramos la landing page.
+  // If not loading and no user is found, display the landing page.
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <main className="flex-grow">
         <section className="container mx-auto px-4 py-20 text-center flex flex-col items-center">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground mb-4">
-            Tu Ecosistema de Aprendizaje y Colaboración
+            Your Learning and Collaboration Ecosystem
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Únete a comunidades de expertos, accede a cursos de alta calidad y
-            lleva tus habilidades al siguiente nivel.
+            Join expert communities, access high-quality courses, and take your
+            skills to the next level.
           </p>
           <Link href="/courses">
             <Button size="lg">
-              Explorar Comunidades <ArrowRight className="ml-2 h-5 w-5" />
+              Explore Communities <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
         </section>
@@ -75,37 +72,37 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <FeatureCard
                 icon={<BookOpen className="h-8 w-8 text-primary" />}
-                title="Cursos de Expertos"
+                title="Expert-Led Courses"
               >
-                Aprende con contenido curado y diseñado por profesionales
-                líderes en su campo.
+                Learn with content curated and designed by leading professionals
+                in their field.
               </FeatureCard>
               <FeatureCard
                 icon={<Users className="h-8 w-8 text-primary" />}
-                title="Comunidad Activa"
+                title="Active Community"
               >
-                Conecta, colabora y resuelve dudas con otros miembros y mentores
-                apasionados.
+                Connect, collaborate, and solve problems with other passionate
+                members and mentors.
               </FeatureCard>
               <FeatureCard
                 icon={<Code className="h-8 w-8 text-primary" />}
-                title="Aprendizaje Aplicado"
+                title="Applied Learning"
               >
-                Pon a prueba tus conocimientos con proyectos prácticos, quizzes
-                y retos interactivos.
+                Test your knowledge with hands-on projects, quizzes, and
+                interactive challenges.
               </FeatureCard>
             </div>
           </div>
         </section>
 
         <section className="container mx-auto px-4 py-20 text-center">
-          <h2 className="text-3xl font-bold mb-4">¿Listo para empezar?</h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
           <p className="text-muted-foreground mb-8">
-            Crea tu cuenta hoy mismo y únete a la comunidad.
+            Create your account today and join the community.
           </p>
           <Link href="/login">
             <Button size="lg" variant="outline">
-              Crear mi Cuenta
+              Create My Account
             </Button>
           </Link>
         </section>

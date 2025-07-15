@@ -43,21 +43,21 @@ export default function DeleteQuestionAlert({
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción no se puede deshacer. Se eliminará permanentemente esta
-            pregunta y todas sus opciones.
+            This action cannot be undone. This will permanently delete this
+            question and all of its options.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeletingQuestion}
             asChild
           >
             <Button variant="destructive">
-              {isDeletingQuestion ? "Eliminando..." : "Sí, eliminar"}
+              {isDeletingQuestion ? "Deleting..." : "Yes, delete"}
             </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
