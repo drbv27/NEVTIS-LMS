@@ -7,9 +7,6 @@ import PdfViewer from "./PdfViewer";
 import { type Lesson } from "@/lib/types";
 import CodeLessonPlayer from "./CodeLessonPlayer";
 import QuizPlayer from "./QuizPlayer";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Video } from "lucide-react";
 
 interface LessonContentPlayerProps {
   lesson: Lesson;
@@ -33,8 +30,7 @@ export default function LessonContentPlayer({
     );
   }
 
-  const hasContent =
-    lesson.content_url || lesson.content_text || lesson.live_session_room_name;
+  const hasContent = lesson.content_url || lesson.content_text;
   // Allow 'code' and 'quiz' types to proceed even without initial content,
   // as their content is managed within their respective components.
   if (
@@ -88,40 +84,6 @@ export default function LessonContentPlayer({
           lessonId={parseInt(lesson.id)}
           onQuizPassed={onQuizPassed}
         />
-      );
-
-    case "live_session":
-      if (!lesson.live_session_room_name) {
-        return (
-          <div className="p-6 text-center text-muted-foreground">
-            Nombre de sala de sesión en vivo no configurado para esta lección.
-          </div>
-        );
-      }
-      return (
-        <div className="flex flex-col items-center justify-center h-full p-4 text-center">
-          <Video className="h-20 w-20 text-primary mb-4" />
-          <h2 className="text-2xl font-bold mb-2">
-            Sesión en Vivo: {lesson.title}
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Haz clic en el botón para unirte a la sala de Jitsi en una nueva
-            pestaña:
-            <span className="font-semibold text-primary block mt-1">
-              {lesson.live_session_room_name}
-            </span>
-          </p>
-          <Link
-            href={`https://meet.jit.si/${lesson.live_session_room_name}`}
-            target="_blank" // Abre en una nueva pestaña
-            rel="noopener noreferrer" // Seguridad recomendada para target="_blank"
-          >
-            <Button size="lg">Unirse a la Sesión en Vivo</Button>
-          </Link>
-          <p className="text-sm text-muted-foreground mt-4">
-            Asegúrate de tener un micrófono y cámara configurados.
-          </p>
-        </div>
       );
 
     default:

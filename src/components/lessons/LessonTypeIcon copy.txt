@@ -5,7 +5,6 @@ import {
   Type,
   Code,
   ClipboardCheck,
-  Video, // Importar el icono de Video para Live Session
 } from "lucide-react";
 import { Lesson } from "@/lib/types";
 
@@ -29,9 +28,6 @@ export default function LessonTypeIcon({
       return <Code className={className} />;
     case "quiz":
       return <ClipboardCheck className={className} />;
-    // NUEVO CASE: Para lecciones de tipo Live Session
-    case "live_session":
-      return <Video className={className} />;
     default:
       return null;
   }

@@ -66,7 +66,7 @@ export interface Lesson {
   id: string;
   title: string;
   description: string | null;
-  lesson_type: "video" | "pdf" | "text" | "code" | "quiz";
+  lesson_type: "video" | "pdf" | "text" | "code" | "quiz" | "live_session";
   content_url: string | null;
   content_text: string | null;
   module_id: string;
@@ -74,6 +74,7 @@ export interface Lesson {
   setup_code?: string | null;
   solution_code?: string | null;
   test_code?: string | null;
+  live_session_room_name?: string | null;
   lesson_order?: number;
   updated_at?: string;
 }

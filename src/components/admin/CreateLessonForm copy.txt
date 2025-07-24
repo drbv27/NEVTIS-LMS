@@ -15,7 +15,7 @@ import {
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { PlusCircle } from "lucide-react";
-import { Lesson } from "@/lib/types"; // Asegúrate que Lesson esté correctamente importado
+import { Lesson } from "@/lib/types";
 import TiptapEditor from "../shared/TiptapEditor";
 import CodeEditor from "../shared/CodeEditor";
 import { toast } from "sonner";
@@ -31,25 +31,25 @@ export default function CreateLessonForm({
 }: CreateLessonFormProps) {
   const { createLesson, isCreatingLesson } = useCourseMutations();
 
+  // General states
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [lessonType, setLessonType] = useState<Lesson["lesson_type"] | "">("");
 
+  // Content-specific states
   const [file, setFile] = useState<File | null>(null);
   const [contentText, setContentText] = useState("");
 
+  // States for 'code' lesson type
   const [setupCode, setSetupCode] = useState(
-    "function myFunction() {\n  // Your code here\n}"
+    "function myFunction() {\n  // Your code here\n}"
   );
   const [solutionCode, setSolutionCode] = useState(
-    "function myFunction() {\n  return true;\n}"
+    "function myFunction() {\n  return true;\n}"
   );
   const [testCode, setTestCode] = useState(
     "const assert = require('assert');\nassert.strictEqual(myFunction(), true, 'The result must be true');"
   );
-
-  // NUEVO ESTADO para el nombre de la sala de Live Session
-  const [liveSessionRoomName, setLiveSessionRoomName] = useState("");
 
   const resetForm = () => {
     setTitle("");
@@ -57,36 +57,26 @@ export default function CreateLessonForm({
     setLessonType("");
     setFile(null);
     setContentText("");
+    // Also clear file and code inputs
     const fileInput = document.getElementById(
       `file-input-${moduleId}`
     ) as HTMLInputElement;
     if (fileInput) fileInput.value = "";
-    setSetupCode("function myFunction() {\n  // Your code here\n}");
-    setSolutionCode("function myFunction() {\n  return true;\n}");
+    setSetupCode("function myFunction() {\n  // Your code here\n}");
+    setSolutionCode("function myFunction() {\n  return true;\n}");
     setTestCode(
       "const assert = require('assert');\nassert.strictEqual(myFunction(), true, 'The result must be true');"
     );
-    // Resetear el campo de la sala de Live Session
-    setLiveSessionRoomName("");
   };
 
   const handleAddLesson = () => {
-    if (!title.trim() || !lessonType) {
-      return toast.error("Please fill out all required fields.");
-    }
+    if (!title || !lessonType) return;
 
     if ((lessonType === "video" || lessonType === "pdf") && !file) {
       return toast.error("Please select a file to upload.");
     }
     if (lessonType === "text" && !contentText.trim()) {
       return toast.error("Text content cannot be empty.");
-    }
-
-    // Validaciones específicas para Live Session
-    if (lessonType === "live_session") {
-      if (!liveSessionRoomName.trim()) {
-        return toast.error("Live session requires a room name.");
-      }
     }
 
     createLesson(
@@ -96,14 +86,11 @@ export default function CreateLessonForm({
         moduleId,
         courseId,
         lessonType,
-        file: lessonType === "video" || lessonType === "pdf" ? file : null,
-        contentText:
-          lessonType === "text" || lessonType === "code" ? contentText : null,
+        file,
+        contentText,
         setup_code: lessonType === "code" ? setupCode : null,
         solution_code: lessonType === "code" ? solutionCode : null,
         test_code: lessonType === "code" ? testCode : null,
-        live_session_room_name:
-          lessonType === "live_session" ? liveSessionRoomName : null, // Pasamos el nombre de la sala
       },
       { onSuccess: resetForm }
     );
@@ -136,16 +123,9 @@ export default function CreateLessonForm({
       <div className="space-y-2">
         <Label>Content Type</Label>
         <Select
-          onValueChange={(value) => {
-            setLessonType(value as Lesson["lesson_type"]);
-            // Resetear campos específicos al cambiar el tipo de lección
-            setFile(null);
-            setContentText("");
-            setSetupCode("");
-            setSolutionCode("");
-            setTestCode("");
-            setLiveSessionRoomName(""); // Resetear nombre de sala
-          }}
+          onValueChange={(value) =>
+            setLessonType(value as Lesson["lesson_type"])
+          }
           value={lessonType}
           disabled={isCreatingLesson}
         >
@@ -158,8 +138,6 @@ export default function CreateLessonForm({
             <SelectItem value="text">📝 Rich Text</SelectItem>
             <SelectItem value="quiz">🧠 Quiz (coming soon)</SelectItem>
             <SelectItem value="code">💻 Code</SelectItem>
-            {/* AÑADIDO: Opción para Live Session */}
-            <SelectItem value="live_session">🔴 Live Session</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -202,38 +180,15 @@ export default function CreateLessonForm({
           </div>
         </div>
       )}
-      {/* NUEVA SECCIÓN: Para lecciones Live Session */}
-      {lessonType === "live_session" && (
-        <div className="space-y-2">
-          <Label htmlFor={`jitsi-room-${moduleId}`}>Room Name</Label>
-          <Input
-            id={`jitsi-room-${moduleId}`}
-            placeholder="e.g., MiClaseGenialDeJitsi"
-            value={liveSessionRoomName}
-            onChange={(e) => setLiveSessionRoomName(e.target.value)}
-            disabled={isCreatingLesson}
-          />
-          <p className="text-xs text-muted-foreground">
-            Este será el nombre único para la sala de la reunión en Jitsi Meet.
-          </p>
-        </div>
-      )}
 
       <div className="flex justify-end">
         <Button
           onClick={handleAddLesson}
           size="sm"
-          disabled={
-            isCreatingLesson ||
-            !title.trim() ||
-            !lessonType ||
-            (lessonType === "live_session" && !liveSessionRoomName.trim()) || // Validación para Live Session
-            ((lessonType === "video" || lessonType === "pdf") && !file) ||
-            (lessonType === "text" && !contentText.trim())
-          }
+          disabled={isCreatingLesson || !title || !lessonType}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
-          {isCreatingLesson ? "Añadiendo..." : "Añadir Lección"}
+          {isCreatingLesson ? "Adding..." : "Add Lesson"}
         </Button>
       </div>
     </div>

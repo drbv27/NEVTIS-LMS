@@ -42,12 +42,11 @@ interface CreateLessonPayload {
   courseId: string;
   lessonType: Lesson["lesson_type"];
   file?: File | null;
-  contentText?: string;
-  // --- INICIO DE LA MODIFICACIÓN ---
+  contentText?: string | null;
   setup_code?: string | null;
   solution_code?: string | null;
   test_code?: string | null;
-  // --- FIN DE LA MODIFICACIÓN ---
+  live_session_room_name?: string | null;
 }
 interface UpdateLessonPayload {
   lessonId: string;
@@ -55,10 +54,11 @@ interface UpdateLessonPayload {
   title: string;
   description: string | null;
   file?: File | null;
-  contentText?: string;
+  contentText?: string | null;
   setup_code?: string | null;
   solution_code?: string | null;
   test_code?: string | null;
+  live_session_room_name?: string | null;
 }
 interface DeleteLessonPayload {
   lesson: Lesson;
@@ -377,6 +377,7 @@ export function useCourseMutations() {
         setup_code: payload.setup_code,
         solution_code: payload.solution_code,
         test_code: payload.test_code,
+        live_session_room_name: payload.live_session_room_name,
       });
 
       if (insertError)
@@ -404,7 +405,11 @@ export function useCourseMutations() {
       const lessonUpdateData: Partial<Lesson> = {
         title: payload.title,
         description: payload.description,
-        content_text: payload.contentText, // Para guardar texto de Tiptap
+        content_text: payload.contentText,
+        setup_code: payload.setup_code,
+        solution_code: payload.solution_code,
+        test_code: payload.test_code,
+        live_session_room_name: payload.live_session_room_name,
         updated_at: new Date().toISOString(),
       };
 

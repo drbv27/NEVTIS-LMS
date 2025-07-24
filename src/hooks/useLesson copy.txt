@@ -1,4 +1,4 @@
-// src/hooks/useLesson.ts
+//src/hooks/useLesson.ts
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,21 +29,23 @@ async function fetchLessonData(
   }
 
   // Verificación 1: ¿Es miembro activo de la comunidad?
-  const { count: membershipCount } = await supabase
-    .from("community_memberships")
-    .select("user_id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("community_id", courseData.community_id)
-    .eq("status", "active");
+  const { count: membershipCount /* , error: membershipError */ } =
+    await supabase
+      .from("community_memberships")
+      .select("user_id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("community_id", courseData.community_id)
+      .eq("status", "active");
 
   const isCommunityMember = (membershipCount ?? 0) > 0;
 
   // Verificación 2: ¿Tiene una inscripción directa?
-  const { count: enrollmentCount } = await supabase
-    .from("enrollments")
-    .select("id", { count: "exact", head: true })
-    .eq("student_id", userId)
-    .eq("course_id", courseId);
+  const { count: enrollmentCount /* , error: enrollmentError */ } =
+    await supabase
+      .from("enrollments")
+      .select("id", { count: "exact", head: true })
+      .eq("student_id", userId)
+      .eq("course_id", courseId);
 
   const hasDirectEnrollment = (enrollmentCount ?? 0) > 0;
 
@@ -53,6 +55,8 @@ async function fetchLessonData(
       "Acceso denegado: No eres miembro de la comunidad ni estás inscrito en este curso."
     );
   }
+
+  // Si pasa la verificación, la función continúa como antes...
 
   const { data: courseInfo, error: courseInfoError } = await supabase
     .from("courses")
@@ -73,13 +77,14 @@ async function fetchLessonData(
   const { data: lessonsData, error: lessonsError } = await supabase
     .from("lessons")
     .select(
-      `
-      id, title, description, lesson_type, content_url, content_text, 
-      lesson_order, module_id, setup_code, solution_code, test_code,
-      live_session_room_name` // AÑADIDO ESTE CAMPO
+      "id, title, description, lesson_type, content_url, content_text, lesson_order, module_id, setup_code, solution_code, test_code"
     )
     .in("module_id", moduleIds)
     .order("lesson_order", { ascending: true });
+  // --- INICIO DE LA DEPURACIÓN ---
+  // Vamos a inspeccionar los datos crudos que nos devuelve Supabase
+  /* console.log("DATOS CRUDOS RECIBIDOS DE LA TABLA 'lessons':", lessonsData); */
+  // --- FIN DE LA DEPURACIÓN ---
 
   if (lessonsError)
     throw new Error(`Error al cargar las lecciones: ${lessonsError.message}`);
@@ -115,10 +120,13 @@ async function fetchLessonData(
 
   const currentLesson = flatLessons[currentIndex];
 
+  // --- INICIO DE LA MODIFICACIÓN IMPORTANTE ---
+  // Si la lección tiene un archivo (PDF o Video), generamos una URL segura y temporal
   if (
     currentLesson.content_url &&
     currentLesson.content_url.includes("supabase.co")
   ) {
+    // Extraemos el nombre del bucket y la ruta del archivo de la URL guardada
     const regex = /storage\/v1\/object\/public\/([^/]+)\/(.+)/;
     const matches = currentLesson.content_url.match(regex);
 
@@ -126,6 +134,7 @@ async function fetchLessonData(
       const bucketName = matches[1];
       const filePath = matches[2];
 
+      // Pedimos a Supabase una URL firmada que expira en 1 hora (3600 segundos)
       const { data: signedUrlData, error: signedUrlError } =
         await supabase.storage.from(bucketName).createSignedUrl(filePath, 3600);
 
@@ -134,9 +143,11 @@ async function fetchLessonData(
         throw new Error("No se pudo obtener acceso seguro al contenido.");
       }
 
+      // Reemplazamos la URL permanente por la temporal y segura
       currentLesson.content_url = signedUrlData.signedUrl;
     }
   }
+  // --- FIN DE LA MODIFICACIÓN ---
 
   const prevLessonId =
     currentIndex > 0 ? String(flatLessons[currentIndex - 1].id) : null;
