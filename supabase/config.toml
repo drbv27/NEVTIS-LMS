@@ -70,3 +70,9 @@ entrypoint = "./functions/delete-community/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/delete-community/*.html" ]
+
+[functions.create-partner-stripe-account]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-partner-stripe-account/deno.json"
+entrypoint = "./functions/create-partner-stripe-account/index.ts"

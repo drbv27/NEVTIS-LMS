@@ -127,7 +127,6 @@ export default function CreateUserDialog({
                 <SelectItem value="student">Student</SelectItem>
                 <SelectItem value="teacher">Teacher</SelectItem>
                 <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="partner">Partner</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -15,9 +15,10 @@ export interface Profile {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
-  role: "student" | "teacher" | "admin";
+  role: "student" | "teacher" | "admin" | "partner";
   bio: string | null;
   phone_number: string | null;
+  is_phone_public: boolean;
   social_links: {
     linkedin?: string;
     twitter?: string;
@@ -27,6 +28,8 @@ export interface Profile {
   updated_at?: string;
   followers_count: number;
   following_count: number;
+  stripe_customer_id: string | null;
+  stripe_account_id?: string | null;
 }
 
 export interface Category {

@@ -4,7 +4,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/store/authStore";
-import { type Profile } from "@/lib/types"; // Asegúrate que Profile esté importado
+import { type Profile } from "@/lib/types";
 import { toast } from "sonner";
 
 export function useProfile() {
@@ -23,7 +23,7 @@ export function useProfile() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select(`*`)
         .eq("id", user.id)
         .single();
       if (error) {

@@ -4,8 +4,11 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@12.12.0?target=deno";
 
-// REVERTIDO: corsHeaders declarado dentro del serve
-// const corsHeaders = { ... } (ELIMINADO DE AQUÍ)
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   httpClient: Stripe.createFetchHttpClient(),
@@ -14,13 +17,6 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
 const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
 serve(async (req) => {
-  // REVERTIDO: corsHeaders declarado aquí
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type",
-  };
-
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -123,15 +119,18 @@ serve(async (req) => {
         `Attempting to insert membership for User: ${userId}, Community: ${communityId}`
       );
 
+      // --- NUEVOS LOGS DE DEPURACIÓN AQUÍ ---
       console.log("Subscription ID to insert:", subscription.id);
       console.log(
         "Current Period End (Unix):",
         subscription.current_period_end
       );
+      // Convertir el timestamp Unix a milisegundos para Date
       const currentPeriodEndDate = new Date(
         subscription.current_period_end * 1000
       ).toISOString();
       console.log("Current Period End (ISO String):", currentPeriodEndDate);
+      // --- FIN NUEVOS LOGS ---
 
       const adminClient = createClient(
         Deno.env.get("PROJECT_URL") ?? "",
@@ -145,9 +144,9 @@ serve(async (req) => {
         .insert({
           user_id: userId,
           community_id: communityId,
-          stripe_subscription_id: subscription.id,
+          stripe_subscription_id: subscription.id, // Valor que se inserta
           status: "active",
-          current_period_end: currentPeriodEndDate,
+          current_period_end: currentPeriodEndDate, // Valor que se inserta
         });
 
       if (insertError) {
