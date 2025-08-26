@@ -2,6 +2,8 @@
 import { create } from "zustand";
 import type { User, Session } from "@supabase/supabase-js";
 
+// 1. DEFINIMOS UN TIPO PARA LAS MEMBRESÍAS
+// Esto nos ayudará a mantener el tipado correcto en el store.
 export interface Membership {
   community_id: string;
   communities: {
@@ -17,22 +19,21 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
 
+  // Estados de la UI para las sidebars
   isMainSidebarOpen: boolean;
   isLessonSidebarOpen: boolean;
   toggleMainSidebar: () => void;
   toggleLessonSidebar: () => void;
 
-  userMemberships: Membership[];
-  activeCommunityId: string | null;
+  // 2. NUEVOS ESTADOS PARA COMUNIDADES
+  userMemberships: Membership[]; // Lista de comunidades a las que pertenece el usuario
+  activeCommunityId: string | null; // La comunidad que el usuario está viendo actualmente
 
-  // --- INICIO DEL NUEVO CÓDIGO ---
-  pendingApprovalsCount: number; // Para el badge de notificación
-  setPendingApprovalsCount: (count: number) => void;
-  // --- FIN DEL NUEVO CÓDIGO ---
-
+  // 3. NUEVAS ACCIONES PARA GESTIONAR EL ESTADO DE COMUNIDADES
   setUserMemberships: (memberships: Membership[]) => void;
   setActiveCommunityId: (communityId: string | null) => void;
 
+  // Acciones existentes
   setUserSession: (user: User | null, session: Session | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -45,21 +46,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
   isMainSidebarOpen: true,
   isLessonSidebarOpen: true,
-  userMemberships: [],
-  activeCommunityId: null,
-  pendingApprovalsCount: 0, // Valor inicial
+  userMemberships: [], // Valor inicial
+  activeCommunityId: null, // Valor inicial
 
   toggleMainSidebar: () =>
     set((state) => ({ isMainSidebarOpen: !state.isMainSidebarOpen })),
   toggleLessonSidebar: () =>
     set((state) => ({ isLessonSidebarOpen: !state.isLessonSidebarOpen })),
 
-  // --- INICIO DEL NUEVO CÓDIGO ---
-  setPendingApprovalsCount: (count) => set({ pendingApprovalsCount: count }),
-  // --- FIN DEL NUEVO CÓDIGO ---
-
+  // Implementación de las nuevas acciones
   setUserMemberships: (memberships) => {
     set((state) => {
+      // Lógica inteligente: Si el usuario tiene membresías,
+      // establecemos la primera como la activa por defecto.
+      // Si no tiene, la activa se queda en null.
       const newActiveCommunityId =
         state.activeCommunityId &&
         memberships.some((m) => m.community_id === state.activeCommunityId)
@@ -76,6 +76,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   setActiveCommunityId: (communityId) =>
     set({ activeCommunityId: communityId }),
 
+  // Implementación de las acciones existentes
   setUserSession: (user, session) =>
     set({ user, session, isLoading: false, error: null }),
   setLoading: (loading) => set({ isLoading: loading }),

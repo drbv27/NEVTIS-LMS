@@ -5,9 +5,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { type Community } from "@/lib/types";
-import { useAuthStore } from "@/store/authStore"; // <--- 1. Importamos el store
 
-// ... (Las interfaces no cambian)
+// Definimos la forma de los datos que necesitan nuestras funciones
 interface CreateCommunityPayload {
   name: string;
   slug: string;
@@ -32,11 +31,10 @@ interface DeleteCommunityPayload {
   image_url: string | null;
 }
 
-// --- LÓGICA DE LAS FUNCIONES (AQUÍ ESTÁ EL CAMBIO) ---
+// --- LÓGICA DE LAS FUNCIONES ---
 
 async function createCommunityFn(
-  payload: CreateCommunityPayload,
-  userId: string // <--- 2. Aceptamos el userId como argumento
+  payload: CreateCommunityPayload
 ): Promise<void> {
   const supabase = createSupabaseBrowserClient();
   const { data: newCommunity, error: insertError } = await supabase
@@ -47,16 +45,15 @@ async function createCommunityFn(
       description: payload.description,
       stripe_price_id: payload.stripe_price_id,
       status: payload.status,
-      creator_id: userId, // <--- 3. Añadimos el creator_id a la inserción
     })
     .select("id")
     .single();
 
   if (insertError) {
     if (insertError.message.includes("duplicate key value")) {
-      throw new Error("The 'slug' is already in use. Please choose another.");
+      throw new Error("El 'slug' ya está en uso. Por favor, elige otro.");
     }
-    throw new Error(`Error creating community: ${insertError.message}`);
+    throw new Error(`Error al crear la comunidad: ${insertError.message}`);
   }
 
   const fileExt = payload.imageFile.name.split(".").pop();
@@ -67,7 +64,7 @@ async function createCommunityFn(
     .upload(filePath, payload.imageFile);
 
   if (uploadError)
-    throw new Error(`Error uploading image: ${uploadError.message}`);
+    throw new Error(`Error al subir la imagen: ${uploadError.message}`);
 
   const { data: urlData } = supabase.storage
     .from("community-images")
@@ -81,10 +78,11 @@ async function createCommunityFn(
     .eq("id", newCommunity.id);
 
   if (updateError)
-    throw new Error(`Error updating image URL: ${updateError.message}`);
+    throw new Error(
+      `Error al actualizar la URL de la imagen: ${updateError.message}`
+    );
 }
 
-// La función de update no necesita cambios, ya que no modifica el creator_id
 async function updateCommunityFn(
   payload: UpdateCommunityPayload
 ): Promise<void> {
@@ -102,7 +100,7 @@ async function updateCommunityFn(
       .upload(filePath, imageFile, { upsert: true });
 
     if (uploadError)
-      throw new Error(`Error uploading new image: ${uploadError.message}`);
+      throw new Error(`Error al subir la nueva imagen: ${uploadError.message}`);
 
     const { data: urlData } = supabase.storage
       .from("community-images")
@@ -117,9 +115,9 @@ async function updateCommunityFn(
 
   if (error) {
     if (error.message.includes("duplicate key value")) {
-      throw new Error("The 'slug' is already in use. Please choose another.");
+      throw new Error("El 'slug' ya está en uso. Por favor, elige otro.");
     }
-    throw new Error(`Error updating community: ${error.message}`);
+    throw new Error(`Error al actualizar la comunidad: ${error.message}`);
   }
 }
 
@@ -132,39 +130,31 @@ async function deleteCommunityFn({
   });
 
   if (error) {
-    throw new Error(`Error deleting community: ${error.message}`);
+    throw new Error(`Error al eliminar la comunidad: ${error.message}`);
   }
 }
 
-// --- HOOK PRINCIPAL (AQUÍ ESTÁ EL CAMBIO) ---
+// --- HOOK PRINCIPAL ---
 
 export function useAdminCommunityMutations() {
   const queryClient = useQueryClient();
-  const { user } = useAuthStore();
 
   const { mutate: createCommunity, isPending: isCreatingCommunity } =
     useMutation({
-      mutationFn: (payload: CreateCommunityPayload) => {
-        if (!user) throw new Error("Administrator not authenticated.");
-        return createCommunityFn(payload, user.id); // <--- 5. Pasamos el ID del usuario
-      },
+      mutationFn: createCommunityFn,
       onSuccess: () => {
-        toast.success("Community created successfully!");
+        toast.success("¡Comunidad creada con éxito!");
         queryClient.invalidateQueries({ queryKey: ["admin-communities"] });
         queryClient.invalidateQueries({ queryKey: ["public-communities"] });
-        queryClient.invalidateQueries({
-          queryKey: ["user-memberships", user?.id],
-        });
       },
       onError: (error) => toast.error(error.message),
     });
 
-  // El resto del hook no cambia
   const { mutate: updateCommunity, isPending: isUpdatingCommunity } =
     useMutation({
       mutationFn: updateCommunityFn,
       onSuccess: () => {
-        toast.success("Community updated successfully!");
+        toast.success("¡Comunidad actualizada con éxito!");
         queryClient.invalidateQueries({ queryKey: ["admin-communities"] });
         queryClient.invalidateQueries({ queryKey: ["public-communities"] });
       },
@@ -175,7 +165,7 @@ export function useAdminCommunityMutations() {
     useMutation({
       mutationFn: deleteCommunityFn,
       onSuccess: () => {
-        toast.success("Community deleted successfully.");
+        toast.success("Comunidad eliminada con éxito.");
         queryClient.invalidateQueries({ queryKey: ["admin-communities"] });
         queryClient.invalidateQueries({ queryKey: ["public-communities"] });
       },

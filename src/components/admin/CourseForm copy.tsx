@@ -2,11 +2,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useProfile } from "@/hooks/useProfile";
 import { useCategories } from "@/hooks/useCategories";
 import { useCourseMutations } from "@/hooks/useCourseMutations";
 import { useAdminCommunities } from "@/hooks/useAdminCommunities";
-import { usePartnerCommunities } from "@/hooks/usePartnerCommunities";
 import {
   Card,
   CardContent,
@@ -37,23 +35,9 @@ interface CourseFormProps {
 
 export default function CourseForm({ initialData }: CourseFormProps) {
   const router = useRouter();
-  const { profile } = useProfile();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
-
-  // CORRECCIÓN: La lógica 'enabled' se maneja dentro de cada hook, no aquí.
-  // Aquí simplemente llamamos a los hooks. La RLS y la lógica interna se encargarán del resto.
-  const { data: adminCommunities, isLoading: isLoadingAdminCommunities } =
+  const { data: communities, isLoading: isLoadingCommunities } =
     useAdminCommunities();
-  const { data: partnerCommunities, isLoading: isLoadingPartnerCommunities } =
-    usePartnerCommunities();
-
-  const isAdminOrTeacher =
-    profile?.role === "admin" || profile?.role === "teacher";
-  const communities = isAdminOrTeacher ? adminCommunities : partnerCommunities;
-  const isLoadingCommunities = isAdminOrTeacher
-    ? isLoadingAdminCommunities
-    : isLoadingPartnerCommunities;
-
   const { createCourse, isCreatingCourse, updateCourse, isUpdatingCourse } =
     useCourseMutations();
 
@@ -82,17 +66,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
       setStripePriceId(initialData.stripe_price_id || "");
     }
   }, [isEditing, initialData]);
-
-  useEffect(() => {
-    if (
-      profile?.role === "partner" &&
-      communities &&
-      communities.length === 1 &&
-      !isEditing
-    ) {
-      setCommunityId(communities[0].id);
-    }
-  }, [profile?.role, communities, isEditing]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -128,10 +101,8 @@ export default function CourseForm({ initialData }: CourseFormProps) {
         imageFile,
       });
     } else {
-      if (!title || !categoryId || !imageFile) {
-        toast.error("Title, Category, and Cover Image are required fields.");
-        return;
-      }
+      if (!title || !categoryId || !imageFile)
+        return alert("Please fill out all required fields");
       createCourse({
         ...payload,
         imageFile,
@@ -182,11 +153,6 @@ export default function CourseForm({ initialData }: CourseFormProps) {
                 ))}
               </SelectContent>
             </Select>
-            {profile?.role === "partner" && (
-              <p className="text-xs text-muted-foreground pt-1">
-                Only your communities are shown here.
-              </p>
-            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
@@ -264,11 +230,7 @@ export default function CourseForm({ initialData }: CourseFormProps) {
           </div>
 
           <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => router.push("/admin/courses")}
-            >
+            <Button type="button" variant="ghost" onClick={() => router.back()}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

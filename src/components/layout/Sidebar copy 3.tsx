@@ -1,12 +1,10 @@
 // src/components/layout/Sidebar.tsx
 "use client";
 
-import { useEffect } from "react"; // 1. Importamos useEffect
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useProfile } from "@/hooks/useProfile";
-import { usePendingApprovals } from "@/hooks/usePendingApprovals"; // 2. Importamos el hook
 import {
   Home,
   BookMarked,
@@ -34,9 +32,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 
-// ... (las listas de items de navegación no cambian)
 const sidebarNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: Home },
   { title: "My Courses", href: "/my-courses", icon: BookMarked },
@@ -44,6 +40,7 @@ const sidebarNavItems = [
   { title: "Explore", href: "/courses", icon: Compass },
   { title: "My Profile", href: "/profile", icon: UserCircle },
 ];
+
 const partnerNavItems = [
   {
     title: "My Communities",
@@ -58,6 +55,7 @@ const partnerNavItems = [
     requiredRoles: ["partner", "admin"],
   },
 ];
+
 const adminNavItems = [
   {
     title: "Category Management",
@@ -75,6 +73,7 @@ const adminNavItems = [
     title: "Course Management",
     href: "/admin/courses",
     icon: ShieldCheck,
+    // CORRECCIÓN: Añadimos 'partner' aquí
     requiredRoles: ["admin", "teacher", "partner"],
   },
   {
@@ -93,42 +92,35 @@ export default function Sidebar() {
     userMemberships,
     activeCommunityId,
     setActiveCommunityId,
-    pendingApprovalsCount,
-    setPendingApprovalsCount, // 3. Obtenemos la función para actualizar el contador
   } = useAuthStore();
   const { profile, isLoading: isProfileLoading } = useProfile();
-
-  // 4. Llamamos al hook de aprobaciones aquí. Se activará solo si el usuario es admin.
-  const { data: approvalsData } = usePendingApprovals();
-
-  // 5. Usamos useEffect para sincronizar los datos con el store global
-  useEffect(() => {
-    if (approvalsData) {
-      setPendingApprovalsCount(approvalsData.count);
-    }
-  }, [approvalsData, setPendingApprovalsCount]);
 
   const activeCommunity = userMemberships.find(
     (m) => m.community_id === activeCommunityId
   )?.communities;
 
-  // ... (el resto de la lógica para filtrar items no cambia)
   const filteredNavItems = sidebarNavItems.filter(() => true);
+
   const filteredPartnerNavItems = partnerNavItems.filter((item) => {
     if (isProfileLoading || !profile) return false;
     return item.requiredRoles.includes(profile.role);
   });
+
   const filteredAdminNavItems = adminNavItems.filter((item) => {
     if (isProfileLoading || !profile) return false;
+    // Un partner NO debe ver los links de admin, a menos que ya estén en partnerNavItems o sea Course Management
     if (profile.role === "partner" && !item.requiredRoles.includes("partner"))
       return false;
     return item.requiredRoles.includes(profile.role);
   });
+
   const allNavItems = [
     ...filteredNavItems,
     ...filteredPartnerNavItems,
     ...filteredAdminNavItems,
   ];
+
+  // Eliminamos duplicados por si acaso, aunque la lógica actual lo previene
   const uniqueNavItems = allNavItems.filter(
     (item, index, self) => index === self.findIndex((t) => t.href === item.href)
   );
@@ -144,7 +136,6 @@ export default function Sidebar() {
           isMainSidebarOpen ? "w-64" : "sm:w-20"
         }`}
       >
-        {/* El resto del JSX no cambia, ya lee 'pendingApprovalsCount' del store */}
         <div
           className={`h-16 shrink-0 flex items-center ${
             isMainSidebarOpen ? "px-6" : "justify-center"
@@ -170,6 +161,7 @@ export default function Sidebar() {
             <X className="h-6 w-6" />
           </Button>
         </div>
+
         <div className={`px-4 ${!isMainSidebarOpen && "px-2"}`}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -221,6 +213,7 @@ export default function Sidebar() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
         <nav className={`flex-1 px-4 space-y-2`}>
           {uniqueNavItems.map((item) => (
             <Link
@@ -233,19 +226,13 @@ export default function Sidebar() {
               } ${!isMainSidebarOpen && "justify-center"}`}
             >
               <item.icon className="h-5 w-5 shrink-0" />
-              <div
-                className={`flex-1 flex justify-between items-center ${
-                  !isMainSidebarOpen && "hidden"
-                }`}
-              >
-                <span>{item.title}</span>
-                {item.href === "/admin/users" && pendingApprovalsCount > 0 && (
-                  <Badge className="h-5">{pendingApprovalsCount}</Badge>
-                )}
-              </div>
+              <span className={`${!isMainSidebarOpen && "hidden"}`}>
+                {item.title}
+              </span>
             </Link>
           ))}
         </nav>
+
         <div className="p-4 mt-auto border-t shrink-0 hidden sm:block">
           <Button
             onClick={toggleMainSidebar}

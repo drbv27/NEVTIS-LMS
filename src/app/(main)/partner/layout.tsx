@@ -18,28 +18,30 @@ export default function PartnerProtectedLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // Una vez que la autenticación y la carga del perfil se completan...
+    // Cuando la carga de autenticación y perfil haya terminado...
     if (!isAuthLoading && !isProfileLoading) {
-      // Si no hay usuario o perfil, redirigir al login.
+      // Si no hay usuario o perfil, lo redirigimos al login.
       if (!user || !profile) {
         toast.error("Acceso denegado. Debes iniciar sesión.");
         router.push("/login");
+        return; // Detenemos la ejecución para evitar más verificaciones
       }
-      // Si el rol del usuario no es 'partner' ni 'admin', redirigir al dashboard principal.
-      // Un admin también puede acceder a las páginas de partner para depuración o asistencia.
-      else if (profile.role !== "partner" && profile.role !== "admin") {
-        toast.error("Acceso denegado. Se requieren permisos de partner.");
+
+      // Si el rol del usuario no es 'partner' ni 'admin', lo redirigimos al dashboard.
+      // Un 'admin' también puede acceder a las páginas de partner para supervisar.
+      if (profile.role !== "partner" && profile.role !== "admin") {
+        toast.error("Acceso denegado. Se requieren permisos de Partner.");
         router.push("/dashboard");
       }
     }
   }, [user, profile, isAuthLoading, isProfileLoading, router]);
 
-  // Mostrar un loader mientras se verifica la sesión y el perfil.
+  // Mientras se verifica la sesión y el perfil, mostramos un loader.
   if (isAuthLoading || isProfileLoading) {
     return <FullPageLoader />;
   }
 
-  // Si todas las verificaciones pasan, renderizar el contenido protegido para partners.
+  // Si todas las verificaciones pasan, renderizamos el contenido protegido.
   if (
     user &&
     profile &&
@@ -48,6 +50,6 @@ export default function PartnerProtectedLayout({
     return <>{children}</>;
   }
 
-  // Fallback para evitar que el contenido parpadee mientras se redirige.
+  // Un fallback para evitar que el contenido parpadee mientras se redirige.
   return null;
 }

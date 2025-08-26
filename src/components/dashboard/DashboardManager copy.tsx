@@ -22,8 +22,6 @@ export default function DashboardManager() {
   switch (profile?.role) {
     case "admin":
       return <AdminDashboard />;
-    // Añadimos el caso para 'partner'
-    case "partner":
     case "teacher":
       return <TeacherDashboard />;
     case "student":

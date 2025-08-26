@@ -6,14 +6,13 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { type Profile } from "@/lib/types";
 import { toast } from "sonner";
 
-// --- INTERFACES EXISTENTES ---
 interface CreateUserPayload {
   email: string;
   password?: string;
   full_name: string;
   role: Profile["role"];
 }
-// ... (otras interfaces existentes no cambian)
+
 interface UpdateUserPayload {
   userId: string;
   role: Profile["role"];
@@ -25,26 +24,18 @@ interface DeleteUserPayload {
   userIdToDelete: string;
 }
 
+// 1. AÑADIMOS EL PAYLOAD PARA LA INSCRIPCIÓN MANUAL
 interface EnrollUserPayload {
   userId: string;
   courseId: string;
 }
 
-// --- INICIO DEL NUEVO CÓDIGO ---
-// 1. AÑADIMOS LA INTERFACE PARA EL PAYLOAD DE APROBACIÓN
-interface ApproveMembershipPayload {
-  membershipId: number; // Este es el ID de la fila en 'community_memberships'
-}
-// --- FIN DEL NUEVO CÓDIGO ---
-
-// --- FUNCIONES ASÍNCRONAS EXISTENTES ---
 async function updateUserProfile({
   userId,
   role,
   full_name,
   bio,
 }: UpdateUserPayload) {
-  // ... (código existente sin cambios)
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase
     .from("profiles")
@@ -58,12 +49,11 @@ async function updateUserProfile({
 
   if (error) {
     console.error("Error updating user profile:", error);
-    throw new Error("Could not update user profile.");
+    throw new Error("No se pudo actualizar el perfil del usuario.");
   }
 }
 
 async function createNewUser(payload: CreateUserPayload) {
-  // ... (código existente sin cambios)
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase.functions.invoke("create-user", {
     body: payload,
@@ -75,7 +65,6 @@ async function createNewUser(payload: CreateUserPayload) {
 }
 
 async function deleteUserAccount({ userIdToDelete }: DeleteUserPayload) {
-  // ... (código existente sin cambios)
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase.functions.invoke("delete-user", {
     body: { userIdToDelete },
@@ -86,46 +75,31 @@ async function deleteUserAccount({ userIdToDelete }: DeleteUserPayload) {
   return data;
 }
 
+// 2. AÑADIMOS LA FUNCIÓN PARA INSCRIBIR A UN USUARIO EN UN CURSO
 async function enrollUserInCourse({ userId, courseId }: EnrollUserPayload) {
-  // ... (código existente sin cambios)
   const supabase = createSupabaseBrowserClient();
   const { error } = await supabase
     .from("enrollments")
     .insert({ student_id: userId, course_id: courseId });
 
   if (error) {
+    // Si el error es por una clave duplicada, significa que el usuario ya está inscrito.
     if (
       error.message.includes("duplicate key value violates unique constraint")
     ) {
-      throw new Error("This user is already enrolled in this course.");
+      throw new Error("Este usuario ya está inscrito en este curso.");
     }
-    throw new Error("Could not complete enrollment.");
+    throw new Error("No se pudo realizar la inscripción.");
   }
 }
-
-// --- INICIO DEL NUEVO CÓDIGO ---
-// 2. AÑADIMOS LA FUNCIÓN ASÍNCRONA PARA APROBAR
-async function approveMembershipFn({ membershipId }: ApproveMembershipPayload) {
-  const supabase = createSupabaseBrowserClient();
-  const { error } = await supabase
-    .from("community_memberships")
-    .update({ status: "active" }) // Cambiamos el estado a 'active'
-    .eq("id", membershipId); // Para la fila con el ID específico
-
-  if (error) {
-    throw new Error(`Failed to approve membership: ${error.message}`);
-  }
-}
-// --- FIN DEL NUEVO CÓDIGO ---
 
 export function useAdminUserMutations() {
   const queryClient = useQueryClient();
 
   const { mutate: updateUser, isPending: isUpdatingUser } = useMutation({
-    // ... (código existente sin cambios)
     mutationFn: updateUserProfile,
     onSuccess: () => {
-      toast.success("User profile updated successfully!");
+      toast.success("¡Perfil de usuario actualizado con éxito!");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
     onError: (error) => {
@@ -134,10 +108,9 @@ export function useAdminUserMutations() {
   });
 
   const { mutate: createUser, isPending: isCreatingUser } = useMutation({
-    // ... (código existente sin cambios)
     mutationFn: createNewUser,
     onSuccess: (data) => {
-      toast.success(data.message || "User created successfully!");
+      toast.success(data.message || "¡Usuario creado con éxito!");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
     onError: (error) => {
@@ -146,10 +119,9 @@ export function useAdminUserMutations() {
   });
 
   const { mutate: deleteUser, isPending: isDeletingUser } = useMutation({
-    // ... (código existente sin cambios)
     mutationFn: deleteUserAccount,
     onSuccess: (data) => {
-      toast.success(data.message || "User deleted successfully.");
+      toast.success(data.message || "Usuario eliminado con éxito.");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
     onError: (error) => {
@@ -157,33 +129,19 @@ export function useAdminUserMutations() {
     },
   });
 
+  // 3. CREAMOS LA NUEVA MUTACIÓN PARA 'enrollUser'
   const { mutate: enrollUser, isPending: isEnrollingUser } = useMutation({
-    // ... (código existente sin cambios)
     mutationFn: enrollUserInCourse,
     onSuccess: () => {
-      toast.success("User enrolled successfully!");
+      toast.success("¡Usuario inscrito exitosamente!");
+      // Podríamos invalidar queries aquí si fuera necesario, pero por ahora no lo es.
     },
     onError: (error) => {
       toast.error(error.message);
     },
   });
 
-  // --- INICIO DEL NUEVO CÓDIGO ---
-  // 3. CREAMOS Y EXPORTAMOS LA NUEVA MUTACIÓN
-  const { mutate: approveMembership, isPending: isApprovingMembership } =
-    useMutation({
-      mutationFn: approveMembershipFn,
-      onSuccess: () => {
-        toast.success("Membership approved!");
-        // Invalidamos la query de solicitudes pendientes para que la lista se actualice
-        queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    });
-  // --- FIN DEL NUEVO CÓDIGO ---
-
+  // 4. EXPORTAMOS LAS NUEVAS FUNCIONES
   return {
     updateUser,
     isUpdatingUser,
@@ -193,10 +151,5 @@ export function useAdminUserMutations() {
     isDeletingUser,
     enrollUser,
     isEnrollingUser,
-    // --- INICIO DEL NUEVO CÓDIGO ---
-    // 4. AÑADIMOS LAS NUEVAS FUNCIONES AL OBJETO DE RETORNO
-    approveMembership,
-    isApprovingMembership,
-    // --- FIN DEL NUEVO CÓDIGO ---
   };
 }

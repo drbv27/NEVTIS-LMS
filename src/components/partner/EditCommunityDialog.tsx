@@ -1,0 +1,176 @@
+// src/components/partner/EditCommunityDialog.tsx
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { usePartnerCommunityMutations } from "@/hooks/usePartnerCommunityMutations";
+import { type Community } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import Image from "next/image";
+
+interface EditCommunityDialogProps {
+  community: Community;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export default function EditCommunityDialog({
+  community,
+  isOpen,
+  onOpenChange,
+}: EditCommunityDialogProps) {
+  const { updateCommunity, isUpdatingCommunity } =
+    usePartnerCommunityMutations();
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [stripePriceId, setStripePriceId] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (community && isOpen) {
+      setName(community.name);
+      setSlug(community.slug);
+      setDescription(community.description || "");
+      setStripePriceId(community.stripe_price_id || "");
+      setImagePreview(community.image_url || null);
+      setImageFile(null); // Reset file input on open
+    }
+  }, [community, isOpen]);
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleUpdateCommunity = () => {
+    if (!name.trim() || !slug.trim() || !stripePriceId.trim()) {
+      toast.error("Name, slug, and Stripe Price ID are required.");
+      return;
+    }
+
+    updateCommunity(
+      {
+        id: community.id,
+        name,
+        slug,
+        description,
+        stripe_price_id: stripePriceId,
+        imageFile,
+      },
+      {
+        onSuccess: () => {
+          onOpenChange(false);
+        },
+      }
+    );
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Edit Community: {community.name}</DialogTitle>
+          <DialogDescription>
+            Modify the details of your community.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name-edit">Community Name</Label>
+              <Input
+                id="name-edit"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="slug-edit">Slug (URL)</Label>
+              <Input
+                id="slug-edit"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description-edit">Description</Label>
+            <Textarea
+              id="description-edit"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="stripePriceId-edit">Stripe Price ID</Label>
+            <Input
+              id="stripePriceId-edit"
+              value={stripePriceId}
+              onChange={(e) => setStripePriceId(e.target.value)}
+              placeholder="price_1P6..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Ensure this Price ID exists in your Stripe account.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="imageFile-edit">Cover Image</Label>
+            {imagePreview && (
+              <div className="w-full aspect-video relative rounded-md overflow-hidden">
+                <Image
+                  src={imagePreview}
+                  alt="Image preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <Input
+              id="imageFile-edit"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              ref={imageInputRef}
+            />
+            <p className="text-xs text-muted-foreground">
+              Only select a file if you want to replace the current image.
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="ghost">Cancel</Button>
+          </DialogClose>
+          <Button
+            onClick={handleUpdateCommunity}
+            disabled={isUpdatingCommunity}
+          >
+            {isUpdatingCommunity ? "Saving..." : "Save Changes"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
