@@ -51,7 +51,7 @@ export default function PartnerCommunitiesTable({
     return (
       <div className="mt-8 border-2 border-dashed rounded-lg p-12 text-center">
         <p className="text-muted-foreground">
-          You haven't created any communities yet.
+          You havent created any communities yet.
         </p>
       </div>
     );

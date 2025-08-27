@@ -6,9 +6,9 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/authStore";
 import { type Community } from "@/lib/types";
-import { type User } from "@supabase/supabase-js"; // 1. Importamos el tipo 'User'
+import { type User } from "@supabase/supabase-js";
 
-// ... (Interfaces no cambian)
+// Interfaces
 interface CreateCommunityPayload {
   name: string;
   slug: string;
@@ -16,6 +16,7 @@ interface CreateCommunityPayload {
   stripe_price_id: string | null;
   imageFile: File;
 }
+
 interface UpdateCommunityPayload {
   id: string;
   name: string;
@@ -24,17 +25,18 @@ interface UpdateCommunityPayload {
   stripe_price_id: string | null;
   imageFile?: File | null;
 }
+
+// NUEVA interface para el borrado
 interface DeleteCommunityPayload {
   id: string;
 }
 
-// --- FUNCIONES ASÍNCRONAS CORREGIDAS ---
-
+// Funciones asíncronas
 async function createCommunityFn(
   payload: CreateCommunityPayload,
-  user: User // 2. Usamos el tipo 'User' en lugar de 'any'
+  user: User
 ): Promise<void> {
-  // La comprobación de 'user' ya no es necesaria aquí, porque el tipo nos garantiza que no es nulo.
+  //if (!user) throw new Error("User not authenticated.");
   const supabase = createSupabaseBrowserClient();
 
   const { data: newCommunity, error: insertError } = await supabase
@@ -81,8 +83,9 @@ async function createCommunityFn(
 
 async function updateCommunityFn(
   payload: UpdateCommunityPayload,
-  user: User // 3. Usamos el tipo 'User' en lugar de 'any'
+  user: User
 ): Promise<void> {
+  //if (!user) throw new Error("User not authenticated.");
   const supabase = createSupabaseBrowserClient();
   const { id, imageFile, ...textData } = payload;
   const dataToUpdate: Partial<Community> = { ...textData };
@@ -116,6 +119,7 @@ async function updateCommunityFn(
   }
 }
 
+// NUEVA función asíncrona para borrar
 async function deleteCommunityFn(
   payload: DeleteCommunityPayload
 ): Promise<void> {
@@ -138,12 +142,8 @@ export function usePartnerCommunityMutations() {
 
   const { mutate: createCommunity, isPending: isCreatingCommunity } =
     useMutation({
-      mutationFn: (payload: CreateCommunityPayload) => {
-        // 4. Comprobamos si el usuario existe ANTES de llamar a la función.
-        // Esto asegura que 'user' no es nulo y satisface a TypeScript.
-        if (!user) throw new Error("User not authenticated.");
-        return createCommunityFn(payload, user);
-      },
+      mutationFn: (payload: CreateCommunityPayload) =>
+        createCommunityFn(payload, user),
       onSuccess: () => {
         toast.success("Community created successfully!");
         queryClient.invalidateQueries({
@@ -158,11 +158,8 @@ export function usePartnerCommunityMutations() {
 
   const { mutate: updateCommunity, isPending: isUpdatingCommunity } =
     useMutation({
-      mutationFn: (payload: UpdateCommunityPayload) => {
-        // 5. Hacemos la misma comprobación aquí.
-        if (!user) throw new Error("User not authenticated.");
-        return updateCommunityFn(payload, user);
-      },
+      mutationFn: (payload: UpdateCommunityPayload) =>
+        updateCommunityFn(payload, user),
       onSuccess: () => {
         toast.success("Community updated successfully!");
         queryClient.invalidateQueries({
@@ -175,6 +172,7 @@ export function usePartnerCommunityMutations() {
       onError: (error) => toast.error(error.message),
     });
 
+  // NUEVA mutación para borrar
   const { mutate: deleteCommunity, isPending: isDeletingCommunity } =
     useMutation({
       mutationFn: deleteCommunityFn,
@@ -195,7 +193,7 @@ export function usePartnerCommunityMutations() {
     isCreatingCommunity,
     updateCommunity,
     isUpdatingCommunity,
-    deleteCommunity,
-    isDeletingCommunity,
+    deleteCommunity, // <-- Exportamos la nueva función
+    isDeletingCommunity, // <-- y su estado de carga
   };
 }

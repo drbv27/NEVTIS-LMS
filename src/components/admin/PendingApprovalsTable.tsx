@@ -26,15 +26,10 @@ function formatDate(dateString: string) {
 }
 
 export default function PendingApprovalsTable() {
-  // --- INICIO DE LA CORRECCIÓN ---
-  // 1. Obtenemos el objeto 'data' completo del hook.
   const { data, isLoading, error } = usePendingApprovals();
   const { approveMembership, isApprovingMembership } = useAdminUserMutations();
 
-  // 2. Extraemos la lista de 'approvals' y la cantidad 'count' del objeto 'data'.
   const approvals = data?.approvals;
-  const approvalsCount = data?.count;
-  // --- FIN DE LA CORRECCIÓN ---
 
   if (isLoading) {
     return <TableSkeleton columns={4} rows={3} />;

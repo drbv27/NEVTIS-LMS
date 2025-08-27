@@ -61,7 +61,7 @@ export default function PartnerCoursesTable() {
       {!courses || courses.length === 0 ? (
         <div className="border-2 border-dashed rounded-lg p-12 text-center">
           <p className="text-muted-foreground">
-            You haven't created any courses yet.
+            You havent created any courses yet.
           </p>
         </div>
       ) : (
